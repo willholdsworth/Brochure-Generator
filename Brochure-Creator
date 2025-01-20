@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WEBSITE BROCHURE PAGE CREATOR</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .left {
+            flex: 1;
+            text-align: left;
+        }
+        .right {
+            text-align: right;
+            flex: 1;
+        }
+        .url-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .url-item img {
+            margin: 10px;
+            max-width: 100%;
+            height: auto;
+        }
+        .carousel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 33%;
+            overflow: hidden;
+            z-index: 1;
+			background: #596F7A;
+			background: -webkit-linear-gradient(rgba(0, 0, 0, 0.8), rgba(255, 0, 0, 0.8));
+			background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85));
+			filter: contrast(75%);
+        }
+        .carousel img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.25;
+			background-color: black;
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 33%;
+            background-color: rgba(255, 255, 255, 0.75);
+            z-index: 0;
+            opacity: 0;
+        }
+        .arrow {
+            cursor: pointer;
+            font-size: 2em;
+            user-select: none;
+            margin: 0 10px;
+            z-index: 2;
+        }
+        .a4-page {
+            width: 210mm;
+            height: 297mm;
+            margin: auto;
+            padding: 20mm;
+            box-sizing: border-box;
+            border: 1px solid black;
+            position: relative;
+            background-color: #f7f7f7;
+            z-index: 2;
+        }
+        .logo {
+            position: absolute;
+            top: 10mm;
+            left: 10mm;
+            z-index: 3;
+			filter: invert(100%);
+        }
+        .product-info {
+            position: absolute;
+            top: 10mm;
+            right: 10mm;
+            text-align: right;
+            z-index: 3;
+        }
+        .product-name {
+            font-weight: bold;
+            font-size: 40px; 
+            margin-bottom: 1px;
+			color: white;
+        }
+        .subheading {
+            font-weight: 300;
+            font-size: 14px;
+			margin-bottom: 0px;
+			color:white;	
+        }
+        .description {
+            font-size: 10px; 
+            position: absolute;
+            top: 40%;
+            left: 10mm;
+            right: 10mm;
+            height: auto;
+            z-index: 3;
+        }
+        #mainImageContainer {
+            position: absolute;
+            top: 11%;
+            left: 55%;
+            width: 40rem;
+            height: auto;
+            max-width: 100%;
+            z-index: 3;
+        }
+        .main-image {
+            position: absolute;
+            top: 11%;
+            left: 600px;
+            max-width: 100%;
+            height: 100%;
+            z-index: 3;
+        }
+        .tag-button {
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 5px 10px; 
+            margin: 5px;
+            font-size: 0.7em; 
+            z-index: 3;
+        }
+        #tagsContainer {
+            position: absolute;
+            bottom: 4mm;
+            right: 8mm;
+            text-align: right;
+            z-index: 3;
+        }
+        #pageUrls {
+            height: 3em;
+            width: 55%;
+            z-index: 3;
+        }
+        #bottomBlackBox {
+            position: absolute;
+            bottom: 4rem;
+            left: 5%;
+            width: 90%;
+            height: 1px;
+            background-color: black;
+            z-index: 2;
+        }
+        #tableContainer {
+            position: absolute;
+            bottom: 7%; 
+            left: 50%;
+            transform: translateX(-50%); 
+            width: 90%; 
+            max-width: 100%;
+            overflow: hidden; 
+            z-index: 3;
+            border: 1px solid #000000; 
+        }
+			table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 30px; 
+			table-layout: fixed; 
+		}
+        th, td {
+            border: 1px solid #929292;
+            padding: 2px 2px; 
+            white-space: normal;  
+            word-wrap: break-word; 
+            text-align: center; 
+            overflow-wrap: break-word; 
+            word-break: break-word; 
+            height: 100%; 
+            vertical-align: middle; 
+			font-size: 7.5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left">
+            <form id="urlForm">
+                <textarea id="pageUrls" name="pageUrls" placeholder="Enter URL" rows="5" cols="50">https://www.futureautomation.co.uk/Product/Details/PSE90</textarea>
+                <br>
+                <button type="button" onclick="fetchCdnUrls()">CREATE</button>
+                <div class="spinner" id="spinner"></div>
+                <span class="arrow" onclick="prevImage()">&#9664;</span>
+                <span class="arrow" onclick="nextImage()">&#9654;</span>
+            </form>
+        </div>
+    </div>
+    <br>
+    <div class="a4-page">
+        <div class="carousel" id="carouselContainer"></div>
+        <div class="overlay"></div>
+        <img src="https://d2oo5quzpsdib.cloudfront.net/Website/General/Future-Automation-Logo.png" height="60" alt="Future Automation Logo" class="logo">
+        <div class="product-info">
+            <div id="productNameContainer" class="product-name"></div>
+            <div id="subtitleContainer" class="subheading"></div>
+        </div>
+        <div id="mainImageContainer" class="main-image"></div>
+        <div id="descriptionContainer" class="description"></div>
+        <div id="tagsContainer"></div>
+        <div id="tableContainer"></div>
+        <div id="bottomBlackBox"></div>
+    </div>
+
+    <script>
+        function filterDescription(text) {
+            const regex = /\(([^)]+)\)/g;
+            const validPatterns = [
+                /^[A-Za-z0-9\-]+$/, 
+                /^(\d+(\.\d+)?)(in|cm|mm|ft|m|")$/, 
+                /^\d{4}$/ 
+            ];
+            return text.replace(regex, (match, p1) => {
+                return validPatterns.some(pattern => pattern.test(p1)) ? match : '';
+            });
+        }
+
+        function cleanDescription(description) {
+            const tables = description.querySelectorAll('table');
+            const buttons = description.querySelectorAll('button');
+            const links = description.querySelectorAll('a');
+            tables.forEach(table => table.remove());
+            buttons.forEach(button => button.remove());
+            links.forEach(link => link.remove());
+            description.innerHTML = filterDescription(description.innerHTML);
+        }
+
+        function scaleTableText(tableElement) {
+            const cells = tableElement.querySelectorAll('th, td');
+            const tableWidth = tableElement.offsetWidth;  
+            let maxFontSize = 15; 
+
+           
+            function calculateMaxFontSize(cell) {
+                const cellWidth = cell.offsetWidth;
+                const textLength = cell.textContent.length;
+                const maxAllowedFontSize = Math.floor(cellWidth / (textLength * 0.1)); 
+                return Math.min(maxFontSize, maxAllowedFontSize);
+            }
+
+
+        }
+
+        async function fetchCdnUrls() {
+            const pageUrls = document.getElementById('pageUrls').value.split('\n');
+            const carouselContainer = document.getElementById('carouselContainer');
+            const mainImageContainer = document.getElementById('mainImageContainer');
+            const descriptionContainer = document.getElementById('descriptionContainer');
+            const productNameContainer = document.getElementById('productNameContainer');
+            const subtitleContainer = document.getElementById('subtitleContainer');
+            const tagsContainer = document.getElementById('tagsContainer');
+            const tableContainer = document.getElementById('tableContainer');
+            const spinner = document.getElementById('spinner');
+            
+            carouselContainer.innerHTML = '';
+            mainImageContainer.innerHTML = '';
+            descriptionContainer.innerHTML = '';
+            productNameContainer.innerHTML = '';
+            subtitleContainer.innerHTML = '';
+            tagsContainer.innerHTML = '';
+            tableContainer.innerHTML = '';
+            
+            spinner.style.display = 'block';
+
+            for (const pageUrl of pageUrls) {
+                if (!pageUrl.trim()) continue;
+
+                try {
+                    const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(pageUrl.trim())}`);
+                    const data = await response.json();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(data.contents, 'text/html');
+                    
+                    const productName = doc.querySelector('#PageProductID');                    
+                    const h2 = doc.querySelector('h2');
+                    
+                    const images = doc.querySelectorAll('img');
+                    const mainImage = Array.from(images).find(img => img.src.includes(pageUrl.trim().split('/').pop()));
+                    const carouselImages = doc.querySelectorAll('.owl-carousel img');
+
+                    const description = doc.querySelector('.mt-1.mb-5.pb-5');
+                    if (description) cleanDescription(description);
+                    
+                    if (carouselImages.length > 0) {
+                        let currentIndex = carouselImages.length - 1; 
+
+                        const updateCarousel = () => {
+                            carouselContainer.innerHTML = ` 
+                                <img src="${carouselImages[currentIndex].src}" alt="Carousel Image">
+                            `;
+                        };
+
+                        window.prevImage = () => {
+                            currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
+                            updateCarousel();
+                        };
+
+                        window.nextImage = () => {
+                            currentIndex = (currentIndex + 1) % carouselImages.length;
+                            updateCarousel();
+                        };
+
+                        updateCarousel();
+                    }
+
+                    if (mainImage) {
+                        const imageElement = document.createElement('img');
+                        imageElement.src = mainImage.src;
+                        imageElement.style.maxWidth = "50%";
+                        imageElement.style.height = "auto";
+                        mainImageContainer.appendChild(imageElement);
+                    }
+
+                    if (productName) {
+                        productNameContainer.textContent = productName.textContent;
+                    }
+
+                    if (h2) {
+                        subtitleContainer.textContent = h2.textContent;
+                    }
+
+                    if (description) {
+                        descriptionContainer.innerHTML = description.innerHTML;
+                    }
+
+                    const tags = doc.querySelectorAll('.row .Tag');
+                    tags.forEach(tag => {
+                        const button = document.createElement('button');
+                        button.classList.add('tag-button');
+                        button.textContent = tag.title || tag.textContent;
+                        tagsContainer.appendChild(button);
+                    });
+
+                   
+                    const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
+                    if (heading) {
+                        const table = heading.nextElementSibling.querySelector('table');
+
+                        if (table) {
+                          
+                            const rows = Array.from(table.querySelectorAll('tr'));
+                            let currentHeaderRow = null;
+                            let allTBC = true;
+
+                            rows.forEach((row, index) => {
+                                const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
+                                if (cells.some(cell => cell.includes('TBC') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
+                                    row.remove();
+                                } else {
+                                    if (currentHeaderRow && allTBC) {
+                                        currentHeaderRow.remove();
+                                    }
+                                    currentHeaderRow = row;
+                                    allTBC = true;
+                                }
+                                if (!cells.some(cell => cell.includes('TBC') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
+                                    allTBC = false;
+                                }
+                            });
+
+                        
+                            const headers = table.querySelectorAll('th[colspan]');
+                            headers.forEach(header => {
+                                const rowsUnderHeader = Array.from(table.querySelectorAll('tr')).filter(row => row.previousElementSibling === header);
+                                if (rowsUnderHeader.length === 0) {
+                                    header.remove();
+                                }
+                            });
+
+                            tableContainer.appendChild(table);
+                            scaleTableText(table);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching page:', pageUrl, error);
+                }
+            }
+            spinner.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
