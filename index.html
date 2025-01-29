@@ -232,12 +232,16 @@
                 width: 210mm;
                 height: 297mm;
                 page-break-before: none;
-                page-break-after: none;
+                page-break-after: always;
                 margin: 0;
                 padding: 0;
                 border: 0;
                 background-color: #ffffff;
             }
+			    .a4-page:last-child {
+					page-break-after: auto;
+			}
+			
             .carousel {
                 display: block;
                 background: #000000 !important;
