@@ -67,9 +67,22 @@
             cursor: pointer;
             font-size: 2em;
             user-select: none;
-            margin: 0 10px;
+            margin: 10px 10px;
             z-index: 2;
+            position: absolute;
+            top: 0%;
+            transform: translateY(0%);
+			transform: translateX(+3000%);
         }
+		.arrow.prev {
+    left: -30px; 
+    transform: translateX(3000%); 
+}
+
+.arrow.next {
+    right: -30px; 
+    transform: translateX(200%); 
+}
         .status-text {
             font-size: 1em;
             margin-right: 10px;
@@ -82,7 +95,7 @@
             padding: 1rem;
             box-sizing: border-box;
             border: 1px solid;
-			border-color: #000000;
+            border-color: #000000;
             position: relative;
             background-color: #ffffff;
             page-break-after: always;
@@ -161,8 +174,8 @@
             height: 6em;
             width: 35em;
             z-index: 3;
-			padding: 0.5rem;
-			margin: 1rem;
+            padding: 0.5rem;
+            margin: 1rem;
         }
         #bottomBlackBox {
             position: absolute;
@@ -184,12 +197,12 @@
             z-index: 3;
             border: 0px solid transparent; 
             background-color: transparent; 
-			padding: 1px;
+            padding: 1px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-			border: 0px solid #ffffff;
+            border: 0px solid #ffffff;
             font-size: 30px; 
             table-layout: fixed; 
         }
@@ -201,16 +214,15 @@
             text-align: center; 
             overflow-wrap: break-word; 
             word-break: break-word;
-			line-break: break-line;
+            line-break: break-line;
             height: 100%; 
             vertical-align: middle; 
             font-size: 7.5px;
         }
 
-
         @media print {
-     .container, .button-container, .spinner, .status-text, .arrow, .note {
-        display: none;
+            .container, .button-container, .spinner, .status-text, .arrow, .note {
+                display: none;
             }
             .a4-page, .a4-page * {
                 visibility: visible;
@@ -219,13 +231,12 @@
                 position: relative;
                 width: 210mm;
                 height: 297mm;
-				page-break-before: none;
+                page-break-before: none;
                 page-break-after: always;
                 margin: 0;
                 padding: 0;
                 border: 0;
-				background-color: #ffffff;
-
+                background-color: #ffffff;
             }
             .carousel {
                 display: block;
@@ -235,14 +246,14 @@
                 display: block;
             }
         }
-		    .container br, .button-container br, .spinner br, .status-text br, .arrow br, .note br {
-        display: none;
-    }
+        .container br, .button-container br, .spinner br, .status-text br, .arrow br, .note br {
+            display: none;
+        }
         .button-container {
             display: flex;
             align-items: center;
-			margin-left: 1rem;
-			margin-bottom: 1rem;
+            margin-left: 1rem;
+            margin-bottom: 1rem;
         }
         .button-container button {
             margin-right: 10px;
@@ -261,17 +272,14 @@
                 <textarea id="pageUrls" name="pageUrls" placeholder="Enter URL" rows="5" cols="50">https://www.futureautomation.co.uk/Product/Details/PSE90</textarea>
                 <div class="button-container">
                     <button type="button" id="createButton" onclick="fetchCdnUrls()">FETCH PAGES</button>
-					<button type="button" onclick="printPage()">EXPORT PDF</button>
+                    <button type="button" onclick="printPage()">EXPORT PDF</button>
                 </div>
                 <div class="spinner" id="spinner" style="display: none;">Loading...</div>
                 <span class="status-text" id="statusText"></span>
-                <span class="arrow" onclick="prevImage()">&#9664;</span>
-                <span class="arrow" onclick="nextImage()">&#9654;</span>
-                <div class="note"></div>
             </form>
         </div>
     </div>
-    <div id="pagesContainer"></div> <!-- Container for multiple A4 pages -->
+    <div id="pagesContainer"></div> 
 
     <script>
         function cleanDescription(description) {
@@ -294,7 +302,6 @@
                     link.remove();
                 }
             });
-
             const paragraphs = description.querySelectorAll('p');
             paragraphs.forEach(paragraph => {
                 const nextElement = paragraph.nextElementSibling;
@@ -330,33 +337,33 @@
         }
 
         function cleanTechnicalSpecificationTable(table) {
-    const rows = Array.from(table.querySelectorAll('tr'));
-    rows.forEach(row => {
-        const buttons = row.querySelectorAll('button');
-        if (buttons.length > 0) {
-            row.remove();
-            return; // Skip further processing for this row
-        }
-        const cells = Array.from(row.cells);
-        cells.forEach(cell => {
-            const images = cell.querySelectorAll('img');
-            if (images.length > 0) {
-                images.forEach(image => image.remove());
-                const strongTags = cell.querySelectorAll('strong');
-                strongTags.forEach(tag => tag.remove());
-                if (cell.textContent.trim() === '') {
-                    cell.remove();
+            const rows = Array.from(table.querySelectorAll('tr'));
+            rows.forEach(row => {
+                const buttons = row.querySelectorAll('button');
+                if (buttons.length > 0) {
+                    row.remove();
+                    return;
                 }
-            }
-        });
-    });
-    rows.forEach(row => {
-        const cells = Array.from(row.cells);
-        if (cells.some(cell => cell.textContent.trim() === '')) {
-            row.remove();
+                const cells = Array.from(row.cells);
+                cells.forEach(cell => {
+                    const images = cell.querySelectorAll('img');
+                    if (images.length > 0) {
+                        images.forEach(image => image.remove());
+                        const strongTags = cell.querySelectorAll('strong');
+                        strongTags.forEach(tag => tag.remove());
+                        if (cell.textContent.trim() === '') {
+                            cell.remove();
+                        }
+                    }
+                });
+            });
+            rows.forEach(row => {
+                const cells = Array.from(row.cells);
+                if (cells.some(cell => cell.textContent.trim() === '')) {
+                    row.remove();
+                }
+            });
         }
-    });
-}
 
         async function fetchCdnUrls() {
             const pageUrls = document.getElementById('pageUrls').value.split('\n');
@@ -369,7 +376,6 @@
             statusText.textContent = 'Fetching from API...';
             createButton.disabled = true;
             createButton.style.backgroundColor = 'grey';
-            const carouselImagesCache = [];
             for (const pageUrl of pageUrls) {
                 if (!pageUrl.trim()) continue;
                 try {
@@ -384,7 +390,7 @@
                     const carouselImages = doc.querySelectorAll('.owl-carousel img');
                     const description = doc.querySelector('.mt-1.mb-5.pb-5');
                     if (description) cleanDescription(description);
-					
+                    
                     const a4Page = document.createElement('div');
                     a4Page.classList.add('a4-page');
 
@@ -434,23 +440,30 @@
                     a4Page.appendChild(bottomBlackBox);
 
                     if (carouselImages.length > 0) {
-                        carouselImagesCache.push(...carouselImages);
-                        let currentIndex = carouselImagesCache.length - 1;
-                        const updateCarousel = () => {
-                            carouselContainer.innerHTML = ` 
-                                <img src="${carouselImagesCache[currentIndex].src}" alt="Carousel Image">
-                            `;
-                        };
-                        window.prevImage = () => {
-                            currentIndex = (currentIndex - 1 + carouselImagesCache.length) % carouselImagesCache.length;
-                            updateCarousel();
-                        };
-                        window.nextImage = () => {
-                            currentIndex = (currentIndex + 1) % carouselImagesCache.length;
-                            updateCarousel();
-                        };
-                        updateCarousel();
-                    }
+    let currentIndex = carouselImages.length - 1;
+    const updateCarousel = () => {
+        carouselContainer.innerHTML = ` 
+            <img src="${carouselImages[currentIndex].src}" alt="Carousel Image">
+        `;
+    };
+    const prevArrow = document.createElement('span');
+    prevArrow.classList.add('arrow', 'prev');
+    prevArrow.innerHTML = '&#9664;';
+    prevArrow.onclick = () => {
+        currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
+        updateCarousel();
+    };
+    const nextArrow = document.createElement('span');
+    nextArrow.classList.add('arrow', 'next');
+    nextArrow.innerHTML = '&#9654;';
+    nextArrow.onclick = () => {
+        currentIndex = (currentIndex + 1) % carouselImages.length;
+        updateCarousel();
+    };
+    a4Page.appendChild(prevArrow);
+    a4Page.appendChild(nextArrow);
+    updateCarousel();
+}
                     if (mainImage) {
                         const imageElement = document.createElement('img');
                         imageElement.src = mainImage.src;
@@ -495,73 +508,75 @@
                                     allTBC = true;
                                 }
                                 if (!cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
-                                allTBC = false;
-                                hasSpecifications = true;
-                            }
-                        });
-                        const headers = table.querySelectorAll('th[colspan]');
-                        headers.forEach(header => {
-                            const rowsUnderHeader = Array.from(table.querySelectorAll('tr')).filter(row => row.previousElementSibling === header);
-                            if (rowsUnderHeader.length === 0) {
-                                header.remove();
-                            }
-                        });
-                        tableContainer.appendChild(table);
-                        scaleTableText(table);
-                        if (table) {
-                            const rows = Array.from(table.querySelectorAll('tr'));
-                            const nonEmptyRows = rows.filter(row => {
-                                const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
-                                return cells.some(cell => cell !== '');
+                                    allTBC = false;
+                                    hasSpecifications = true;
+                                }
                             });
-                            if (nonEmptyRows.length <= 1) {
-                                table.remove();
-                            } else {
-                                tableContainer.style.border = '0px solid #000000';
-                                tableContainer.style.backgroundColor = '#ffffff';
+                            const headers = table.querySelectorAll('th[colspan]');
+                            headers.forEach(header => {
+                                const rowsUnderHeader = Array.from(table.querySelectorAll('tr')).filter(row => row.previousElementSibling === header);
+                                if (rowsUnderHeader.length === 0) {
+                                    header.remove();
+                                }
+                            });
+                            tableContainer.appendChild(table);
+                            scaleTableText(table);
+                            if (table) {
+                                const rows = Array.from(table.querySelectorAll('tr'));
+                                const nonEmptyRows = rows.filter(row => {
+                                    const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
+                                    return cells.some(cell => cell !== '');
+                                });
+                                if (nonEmptyRows.length <= 1) {
+                                    table.remove();
+                                } else {
+                                    tableContainer.style.border = '0px solid #000000';
+                                    tableContainer.style.backgroundColor = '#ffffff';
+                                }
                             }
                         }
                     }
+                    pagesContainer.appendChild(a4Page);
+                    statusText.textContent = '';
+                } catch (error) {
+                    console.error('Error fetching page:', pageUrl, error);
+                    statusText.textContent = '';
                 }
-                pagesContainer.appendChild(a4Page);
-                statusText.textContent = '';
-            } catch (error) {
-                console.error('Error fetching page:', pageUrl, error);
-                statusText.textContent = '';
             }
+            spinner.style.display = 'none';
+            createButton.disabled = false;
+            createButton.style.backgroundColor = '';
         }
-        spinner.style.display = 'none';
-    }
 
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
 
-    document.getElementById('pageUrls').addEventListener('input', debounce(() => {
-        const createButton = document.getElementById('createButton');
-        createButton.disabled = false;
-        createButton.style.backgroundColor = '';
-        const statusText = document.getElementById('statusText');
-        statusText.textContent = '';
-    }, 300));
+        document.getElementById('pageUrls').addEventListener('input', debounce(() => {
+            const createButton = document.getElementById('createButton');
+            createButton.disabled = false;
+            createButton.style.backgroundColor = '';
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = '';
+        }, 300));
 
-    function printPage() {
-        window.print();
-    }
+        function printPage() {
+            window.print();
+        }
 
-    function scaleTableText(table) {
-        const rows = table.querySelectorAll('tr');
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td, th');
-            cells.forEach(cell => {
-                cell.style.fontSize = '7.5px';
+        function scaleTableText(table) {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td, th');
+                cells.forEach(cell => {
+                    cell.style.fontSize = '7.5px';
+                });
             });
-        });
-    }
-</script>
+        }
+    </script>
 </body>
 </html>
