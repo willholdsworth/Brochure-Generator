@@ -290,11 +290,17 @@
     <div class="container">
         <div class="left">
             <form id="urlForm">
-                <textarea id="pageUrls" name="pageUrls" placeholder="Enter URL" rows="5" cols="50">https://www.futureautomation.co.uk/Product/Details/PSE90</textarea>
+                <textarea id="pageUrls" name="pageUrls" placeholder="Enter URL" rows="5" cols="50">COVER - MOTORISED WALL MOUNTS
+BLANK
+CONTENTS - CONTENTS
+https://www.futureautomation.co.uk/Product/Details/FSE90
+https://www.futureautomation.co.uk/Product/Details/PSE90
+https://www.futureautomation.co.uk/Product/Details/HSE90
+BACK COVER</textarea>
                 <div class="button-container">
                     <button type="button" id="createButton" onclick="fetchCdnUrls()">FETCH PAGES</button>
-                    <button type="button" onclick="printPage()">EXPORT PDF</button>
                     <button type="button" onclick="generateAllUrls()">GENERATE ALL URLS</button>
+                    <button type="button" onclick="printPage()">EXPORT PDF</button>
                 </div>
                 <div class="status-container" id="statusContainer" style="display: none;">
                     <div class="spinner" id="spinner"></div>
@@ -303,8 +309,7 @@
             </form>
         </div>
     </div>
-    <div id="pagesContainer"></div> 
-
+    <div id="pagesContainer"></div>
     <script>
         async function fetchAndExtract() {
             const url = 'https://www.futureautomation.co.uk/Search?c=';
@@ -349,7 +354,7 @@
         async function displayUrl(url) {
             const output = document.getElementById('pageUrls');
             output.value += `${url}\n`;
-            await delay(50); // Reduced delay to 50ms
+            await delay(50);
         }
 
         function delay(ms) {
@@ -443,8 +448,34 @@
             });
         }
 
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
+        document.getElementById('pageUrls').addEventListener('input', debounce(() => {
+            const createButton = document.getElementById('createButton');
+            createButton.disabled = false;
+            createButton.style.backgroundColor = '';
+            const statusText = document.getElementById('statusText');
+            statusText.textContent = '';
+        }, 300));
+
+        function printPage() {
+            window.print();
+        }
+
+        function scaleTableText(table) {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td, th');
+                cells.forEach(cell => {
+                    cell.style.fontSize = '7.5px';
+                });
+            });
         }
 
         async function fetchCdnUrls() {
@@ -459,16 +490,53 @@
             createButton.style.backgroundColor = 'grey';
 
             const totalUrls = pageUrls.length;
-            const batchSize = 5; // Number of URLs to process before a longer delay
-            for (let i = 0; i < totalUrls; i++) {
-                await fetchPage(pageUrls[i].trim());
-                statusText.textContent = `Loading... ${i + 1} of ${totalUrls}`;
-                await delay(1000); // Delay of 1 second between each request
+            const batchSize = 5;
+            let currentContents = [];
+            let contentsTitle = '';
+            const coverPages = [];
+            const contentsPages = [];
+            const backCoverPages = [];
+            const pageOrder = [];
 
-                if ((i + 1) % batchSize === 0) {
-                    await delay(5000); // Longer delay of 5 seconds after every 5 requests
+            for (let i = 0; i < totalUrls; i++) {
+                const url = pageUrls[i].trim();
+                if (url.startsWith('COVER')) {
+                    const coverText = url.split(' - ')[1];
+                    coverPages.push({ index: i, page: createCoverPage(coverText) });
+                    pageOrder.push({ type: 'cover', page: createCoverPage(coverText) });
+                } else if (url.startsWith('CONTENTS')) {
+                    if (currentContents.length > 0) {
+                        contentsPages.push({ index: i, title: contentsTitle, urls: currentContents });
+                        currentContents = [];
+                    }
+                    contentsTitle = url.split(' - ')[1];
+                } else if (url.startsWith('BACK COVER')) {
+                    backCoverPages.push({ index: i, page: createBackCoverPage() });
+                    pageOrder.push({ type: 'backCover', page: createBackCoverPage() });
+                } else {
+                    currentContents.push(url);
+                    await fetchPage(url);
+                    statusText.textContent = `Loading... ${i + 1} of ${totalUrls}`;
+                    await delay(1000);
+
+                    if ((i + 1) % batchSize === 0) {
+                        await delay(5000);
+                    }
+                    pageOrder.push({ type: 'url', page: pagesContainer.lastChild });
                 }
             }
+
+            if (currentContents.length > 0) {
+                contentsPages.push({ index: totalUrls, title: contentsTitle, urls: currentContents });
+            }
+
+            pagesContainer.innerHTML = '';
+            pageOrder.forEach(item => pagesContainer.appendChild(item.page));
+
+            contentsPages.forEach(contents => {
+                const contentsPage = createContentsPage(contents.title, contents.urls);
+                pagesContainer.insertBefore(contentsPage, pagesContainer.children[contents.index]);
+            });
 
             statusContainer.style.display = 'none';
             createButton.disabled = false;
@@ -588,92 +656,423 @@
                     button.textContent = tag.title || tag.textContent;
                     tagsContainer.appendChild(button);
                 });
-                const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
-                if (heading) {
-                    const table = heading.nextElementSibling.querySelector('table');
-                    if (table) {
-                        cleanTechnicalSpecificationTable(table);
-                        const rows = Array.from(table.querySelectorAll('tr'));
-                        let currentHeaderRow = null;
-                        let allTBC = true;
-                        let hasSpecifications = false;
-                        rows.forEach((row, index) => {
-                            const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
-                            if (cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
-                                row.remove();
-                            } else {
-                                if (currentHeaderRow && allTBC) {
-                                    currentHeaderRow.remove();
-                                }
-                                currentHeaderRow = row;
-                                allTBC = true;
-                            }
-                            if (!cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
-                                allTBC = false;
-                                hasSpecifications = true;
-                            }
-                        });
-                        const headers = table.querySelectorAll('th[colspan]');
-                        headers.forEach(header => {
-                            const rowsUnderHeader = Array.from(table.querySelectorAll('tr')).filter(row => row.previousElementSibling === header);
-                            if (rowsUnderHeader.length === 0) {
-                                header.remove();
-                            }
-                        });
-                        tableContainer.appendChild(table);
-                        scaleTableText(table);
-                        if (table) {
-                            const rows = Array.from(table.querySelectorAll('tr'));
-                            const nonEmptyRows = rows.filter(row => {
-                                const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
-                                return cells.some(cell => cell !== '');
-                            });
-                            if (nonEmptyRows.length <= 1) {
-                                table.remove();
-                            } else {
-                                tableContainer.style.border = '0px solid #000000';
-                                tableContainer.style.backgroundColor = '#ffffff';
-                            }
-                        }
-                    }
+
+                const technicalSpecificationTable = doc.querySelector('.TechnicalSpecification table');
+                if (technicalSpecificationTable) {
+                    cleanTechnicalSpecificationTable(technicalSpecificationTable);
+                    tableContainer.appendChild(technicalSpecificationTable);
                 }
+
                 pagesContainer.appendChild(a4Page);
-                statusText.textContent = '';
             } catch (error) {
-                console.error('Error fetching page:', pageUrl, error);
-                statusText.textContent = '';
+                console.error(`Error fetching page: ${pageUrl}`, error);
             }
         }
 
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
+function createCoverPage(text) {
+    const coverPage = document.createElement('div');
+    coverPage.classList.add('a4-page');
+
+    coverPage.style.background = '#ffffff';
+
+    const blackStrip = document.createElement('div');
+    blackStrip.style.position = 'absolute';
+    blackStrip.style.top = '50%';
+    blackStrip.style.left = '0';
+    blackStrip.style.width = '100%';
+    blackStrip.style.height = '100mm';
+    blackStrip.style.backgroundColor = '#000000';
+    blackStrip.style.transform = 'translateY(-50%)';
+    blackStrip.style.backgroundImage = 'url("https://d2oo5quzpsdib.cloudfront.net/Website/General/Header-About.jpg")';
+    blackStrip.style.backgroundSize = 'cover';
+    blackStrip.style.backgroundPosition = 'center';
+    blackStrip.style.opacity = '0.7';
+    coverPage.appendChild(blackStrip);
+
+    const logo = document.createElement('img');
+    logo.src = 'https://d2oo5quzpsdib.cloudfront.net/Website/General/Future-Automation-Logo.png';
+    logo.height = 60;
+    logo.alt = 'Future Automation Logo';
+    logo.style.position = 'absolute';
+    logo.style.top = 'calc(50% - 50mm + 10mm)';
+    logo.style.left = '50%';
+    logo.style.transform = 'translateX(-50%)';
+    logo.style.filter = 'invert(100%)';
+    coverPage.appendChild(logo);
+
+    const title = document.createElement('div');
+    title.style.position = 'absolute';
+    title.style.top = 'calc(50% - 50mm + 55mm)';
+    title.style.left = '50%';
+    title.style.transform = 'translate(-50%, -50%)';
+    title.style.fontSize = '40px';
+    title.style.fontWeight = 'semibold';
+    title.style.color = '#ffffff';
+    title.style.textAlign = 'center';
+    title.textContent = text;
+    title.style.letterSpacing = '0.25rem';
+    coverPage.appendChild(title);
+
+    const url = document.createElement('div');
+    url.style.position = 'absolute';
+    url.style.top = 'calc(50% - 50mm + 85mm)';
+    url.style.left = '50%';
+    url.style.transform = 'translateX(-50%)';
+    url.style.fontSize = '12px';
+    url.style.color = '#ffffff';
+    url.style.letterSpacing = '0.15rem';
+    url.textContent = 'www.futureautomation.net';
+    coverPage.appendChild(url);
+
+    return coverPage;
+}
+
+function createContentsPage(title, urls) {
+    const contentsPage = document.createElement('div');
+    contentsPage.classList.add('a4-page');
+
+    const heading = document.createElement('div');
+    heading.style.fontSize = '30px';
+    heading.style.fontWeight = 'bold';
+    heading.style.textAlign = 'center';
+    heading.style.marginBottom = '20px';
+    heading.style.marginTop = '50px';
+    heading.textContent = title;
+    contentsPage.appendChild(heading);
+
+    const listContainer = document.createElement('div');
+    listContainer.style.textAlign = 'center';
+    const list = document.createElement('ul');
+    list.style.fontSize = '14px';
+    list.style.paddingLeft = '0';
+	list.style.letterSpacing = '0.1rem';
+    list.style.listStyleType = 'none';
+    urls.forEach(url => {
+        const productCode = url.split('/').pop();
+        const listItem = document.createElement('li');
+        listItem.textContent = productCode;
+        list.appendChild(listItem);
+    });
+    listContainer.appendChild(list);
+    contentsPage.appendChild(listContainer);
+
+    return contentsPage;
+}
+
+        function createBackCoverPage() {
+            const backCoverPage = document.createElement('div');
+            backCoverPage.classList.add('a4-page');
+            const logo = document.createElement('img');
+            logo.src = 'https://d2oo5quzpsdib.cloudfront.net/Website/General/Future-Automation-Logo.png';
+            logo.height = 60;
+            logo.alt = 'Future Automation Logo';
+            logo.style.position = 'absolute';
+            logo.style.top = '50%';
+            logo.style.left = '50%';
+            logo.style.transform = 'translate(-50%, -50%)';
+            backCoverPage.appendChild(logo);
+
+            const url = document.createElement('div');
+            url.style.position = 'absolute';
+            url.style.bottom = '10mm';
+            url.style.left = '50%';
+            url.style.transform = 'translateX(-50%)';
+			url.style.letterSpacing = '0.1rem';
+            url.style.fontSize = '14px';
+            url.textContent = 'www.futureautomation.net';
+            backCoverPage.appendChild(url);
+
+            return backCoverPage;
+        }
+
+async function fetchCdnUrls() {
+    const pageUrls = document.getElementById('pageUrls').value.split('\n');
+    const pagesContainer = document.getElementById('pagesContainer');
+    const statusContainer = document.getElementById('statusContainer');
+    const statusText = document.getElementById('statusText');
+    const createButton = document.getElementById('createButton');
+    pagesContainer.innerHTML = '';
+    statusContainer.style.display = 'flex';
+    createButton.disabled = true;
+    createButton.style.backgroundColor = 'grey';
+
+    const totalUrls = pageUrls.length;
+    const batchSize = 5; 
+    let currentContents = [];
+    let contentsTitle = '';
+    const coverPages = [];
+    const contentsPages = [];
+    const backCoverPages = [];
+    const pageOrder = [];
+    const carouselImages = [];
+
+    for (let i = 0; i < totalUrls; i++) {
+        const url = pageUrls[i].trim();
+        if (url.startsWith('COVER')) {
+            const coverText = url.split(' - ')[1];
+            coverPages.push({ index: i, page: createCoverPage(coverText, carouselImages) });
+            pageOrder.push({ type: 'cover', page: createCoverPage(coverText, carouselImages) });
+        } else if (url.startsWith('CONTENTS')) {
+            if (currentContents.length > 0) {
+                contentsPages.push({ index: i, title: contentsTitle, urls: currentContents });
+                currentContents = [];
+            }
+            contentsTitle = url.split(' - ')[1];
+            contentsPages.push({ index: i, title: contentsTitle, urls: [] });
+        } else if (url.startsWith('BACK COVER')) {
+            backCoverPages.push({ index: i, page: createBackCoverPage() });
+            pageOrder.push({ type: 'backCover', page: createBackCoverPage() });
+        } else if (url === 'BLANK') {
+            const blankPage = document.createElement('div');
+            blankPage.classList.add('a4-page');
+            pageOrder.push({ type: 'blank', page: blankPage });
+        } else {
+            if (contentsPages.length > 0) {
+                const currentContentsPage = contentsPages[contentsPages.length - 1];
+                currentContentsPage.urls.push(url);
+            }
+            await fetchPage(url, carouselImages);
+            statusText.textContent = `Loading... ${i + 1} of ${totalUrls}`;
+            await delay(1000);
+
+            if ((i + 1) % batchSize === 0) {
+                await delay(5000); 
+            }
+            pageOrder.push({ type: 'url', page: pagesContainer.lastChild });
+        }
+    }
+
+    if (currentContents.length > 0) {
+        contentsPages.push({ index: totalUrls, title: contentsTitle, urls: currentContents });
+    }
+
+    pagesContainer.innerHTML = '';
+    pageOrder.forEach(item => pagesContainer.appendChild(item.page));
+
+    contentsPages.forEach(contents => {
+        const contentsPage = createContentsPage(contents.title, contents.urls);
+        const insertIndex = contents.index;
+        pagesContainer.insertBefore(contentsPage, pagesContainer.children[insertIndex]);
+    });
+
+    statusContainer.style.display = 'none';
+    createButton.disabled = false;
+    createButton.style.backgroundColor = '';
+    statusText.textContent = `Completed! ${totalUrls} pages generated.`;
+}
+
+async function fetchPage(pageUrl, carouselImages) {
+    if (!pageUrl) return;
+    try {
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(pageUrl)}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(data.contents, 'text/html');
+        const productName = doc.querySelector('#PageProductID');
+        const h2 = doc.querySelector('h2');
+        const images = doc.querySelectorAll('img');
+        const mainImage = Array.from(images).find(img => img.src.includes(pageUrl.split('/').pop())) || Array.from(images).find(img => img.src.includes('QA2-1.png'));
+        const carouselImagesElements = doc.querySelectorAll('.owl-carousel img');
+        const description = doc.querySelector('.mt-1.mb-5.pb-5');
+        if (description) cleanDescription(description);
+
+        carouselImagesElements.forEach(img => {
+            carouselImages.push(img.src);
+        });
+
+        const a4Page = document.createElement('div');
+        a4Page.classList.add('a4-page');
+
+        const carouselContainer = document.createElement('div');
+        carouselContainer.classList.add('carousel');
+        a4Page.appendChild(carouselContainer);
+
+        const overlay = document.createElement('div');
+        overlay.classList.add('overlay');
+        a4Page.appendChild(overlay);
+
+        const logo = document.createElement('img');
+        logo.src = 'https://d2oo5quzpsdib.cloudfront.net/Website/General/Future-Automation-Logo.png';
+        logo.height = 60;
+        logo.alt = 'Future Automation Logo';
+        logo.classList.add('logo');
+        a4Page.appendChild(logo);
+
+        const productInfo = document.createElement('div');
+        productInfo.classList.add('product-info');
+        const productNameContainer = document.createElement('div');
+        productNameContainer.classList.add('product-name');
+        productInfo.appendChild(productNameContainer);
+        const subtitleContainer = document.createElement('div');
+        subtitleContainer.classList.add('subheading');
+        productInfo.appendChild(subtitleContainer);
+        a4Page.appendChild(productInfo);
+
+        const mainImageContainer = document.createElement('div');
+        mainImageContainer.classList.add('main-image');
+        a4Page.appendChild(mainImageContainer);
+
+        const descriptionContainer = document.createElement('div');
+        descriptionContainer.classList.add('description');
+        a4Page.appendChild(descriptionContainer);
+
+        const tagsContainer = document.createElement('div');
+        tagsContainer.id = 'tagsContainer';
+        a4Page.appendChild(tagsContainer);
+
+        const tableContainer = document.createElement('div');
+        tableContainer.id = 'tableContainer';
+        a4Page.appendChild(tableContainer);
+
+        const bottomBlackBox = document.createElement('div');
+        bottomBlackBox.id = 'bottomBlackBox';
+        a4Page.appendChild(bottomBlackBox);
+
+        if (carouselImagesElements.length > 0) {
+            let currentIndex = carouselImagesElements.length - 1;
+            const updateCarousel = () => {
+                carouselContainer.innerHTML = ` 
+                    <img src="${carouselImagesElements[currentIndex].src}" alt="Carousel Image">
+                `;
             };
+            const prevArrow = document.createElement('span');
+            prevArrow.classList.add('arrow', 'prev');
+            prevArrow.innerHTML = '&#9664;';
+            prevArrow.onclick = () => {
+                currentIndex = (currentIndex - 1 + carouselImagesElements.length) % carouselImagesElements.length;
+                updateCarousel();
+            };
+            const nextArrow = document.createElement('span');
+            nextArrow.classList.add('arrow', 'next');
+            nextArrow.innerHTML = '&#9654;';
+            nextArrow.onclick = () => {
+                currentIndex = (currentIndex + 1) % carouselImagesElements.length;
+                updateCarousel();
+            };
+            a4Page.appendChild(prevArrow);
+            a4Page.appendChild(nextArrow);
+            updateCarousel();
         }
 
-        document.getElementById('pageUrls').addEventListener('input', debounce(() => {
-            const createButton = document.getElementById('createButton');
-            createButton.disabled = false;
-            createButton.style.backgroundColor = '';
-            const statusText = document.getElementById('statusText');
-            statusText.textContent = '';
-        }, 300));
+        if (mainImage) {
+            const imageElement = document.createElement('img');
+            imageElement.src = mainImage.src;
+            imageElement.style.maxWidth = "100%";
+            imageElement.style.height = "auto";
+            mainImageContainer.appendChild(imageElement);
+        }
+        if (productName) {
+            productNameContainer.textContent = productName.textContent;
+        }
+        if (h2) {
+            subtitleContainer.textContent = h2.textContent;
+        }
+        if (description) {
+            descriptionContainer.innerHTML = description.innerHTML;
+        }
+        const tags = doc.querySelectorAll('.row .Tag');
+        tags.forEach(tag => {
+            const button = document.createElement('button');
+            button.classList.add('tag-button');
+            button.textContent = tag.title || tag.textContent;
+            tagsContainer.appendChild(button);
+        });
 
-        function printPage() {
-            window.print();
+        const technicalSpecificationTable = doc.querySelector('.TechnicalSpecification table');
+        if (technicalSpecificationTable) {
+            cleanTechnicalSpecificationTable(technicalSpecificationTable);
+            tableContainer.appendChild(technicalSpecificationTable);
         }
 
-        function scaleTableText(table) {
-            const rows = table.querySelectorAll('tr');
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td, th');
-                cells.forEach(cell => {
-                    cell.style.fontSize = '7.5px';
-                });
-            });
-        }
+        pagesContainer.appendChild(a4Page);
+    } catch (error) {
+        console.error(`Error fetching page: ${pageUrl}`, error);
+    }
+}
+function createCoverPage(text) {
+    const coverPage = document.createElement('div');
+    coverPage.classList.add('a4-page');
+
+    coverPage.style.position = 'relative';
+    coverPage.style.overflow = 'hidden'; 
+    coverPage.style.width = '210mm'; 
+    coverPage.style.height = '297mm'; 
+
+    const backgroundImage = document.createElement('div');
+    backgroundImage.style.position = 'absolute';
+    backgroundImage.style.top = '0';
+    backgroundImage.style.left = '0';
+    backgroundImage.style.width = '120%';
+    backgroundImage.style.height = '120%';
+    backgroundImage.style.backgroundImage = 'url("https://d2oo5quzpsdib.cloudfront.net/Website/General/Header-About.jpg")';
+    backgroundImage.style.backgroundSize = 'cover';
+    backgroundImage.style.backgroundPosition = 'center';
+    backgroundImage.style.filter = 'blur(10px)'; 
+    backgroundImage.style.transform = 'translate(-10%, -10%)';
+    coverPage.appendChild(backgroundImage);
+
+    const blackStrip = document.createElement('div');
+    blackStrip.style.position = 'absolute';
+    blackStrip.style.top = '50%';
+    blackStrip.style.left = '0';
+    blackStrip.style.width = '100%';
+    blackStrip.style.height = '100mm';
+    blackStrip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    blackStrip.style.transform = 'translateY(-50%)';
+    blackStrip.style.overflow = 'hidden';
+    coverPage.appendChild(blackStrip);
+
+    const blurredImage = document.createElement('div');
+    blurredImage.style.width = '120%'; 
+    blurredImage.style.height = '120%'; 
+    blurredImage.style.backgroundImage = 'url("https://d2oo5quzpsdib.cloudfront.net/Website/General/Header-About.jpg")';
+    blurredImage.style.backgroundSize = 'cover';
+    blurredImage.style.backgroundPosition = 'center';
+    blurredImage.style.filter = 'brightness(50%) contrast(70%) blur(5px)';
+    blurredImage.style.position = 'absolute';
+    blurredImage.style.top = '-10%'; 
+    blurredImage.style.left = '-10%'; 
+    blackStrip.appendChild(blurredImage);
+
+
+    const logo = document.createElement('img');
+    logo.src = 'https://d2oo5quzpsdib.cloudfront.net/Website/General/Future-Automation-Logo.png';
+    logo.height = 60;
+    logo.alt = 'Future Automation Logo';
+    logo.style.position = 'absolute';
+    logo.style.top = 'calc(50% - 50mm + 10mm)';
+    logo.style.left = '50%';
+    logo.style.transform = 'translateX(-50%)';
+    logo.style.filter = 'invert(100%)';
+    coverPage.appendChild(logo);
+
+    const title = document.createElement('div');
+    title.style.position = 'absolute';
+    title.style.top = 'calc(50% - 50mm + 55mm)';
+    title.style.left = '50%';
+    title.style.transform = 'translate(-50%, -50%)';
+    title.style.fontSize = '40px';
+    title.style.fontWeight = '600';
+    title.style.color = '#ffffff';
+    title.style.textAlign = 'center';
+    title.textContent = text;
+    title.style.letterSpacing = '0.25rem';
+    coverPage.appendChild(title);
+
+    const url = document.createElement('div');
+    url.style.position = 'absolute';
+    url.style.top = 'calc(50% - 50mm + 85mm)';
+    url.style.left = '50%';
+    url.style.transform = 'translateX(-50%)';
+    url.style.fontSize = '12px';
+    url.style.color = '#ffffff';
+    url.style.letterSpacing = '0.15rem';
+    url.textContent = 'www.futureautomation.net';
+    coverPage.appendChild(url);
+
+    return coverPage;
+}
     </script>
 </body>
 </html>
