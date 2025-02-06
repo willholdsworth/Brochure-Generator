@@ -299,7 +299,7 @@ https://www.futureautomation.co.uk/Product/Details/HSE90
 BACK COVER</textarea>
                 <div class="button-container">
                     <button type="button" id="createButton" onclick="fetchCdnUrls()">FETCH PAGES</button>
-                    <button type="button" onclick="generateAllUrls()">GENERATE ALL URLS</button>
+                    <button type="button" onclick="generateAllUrls()">GENERATE ALL URLS (TAKES TIME)</button>
                     <button type="button" onclick="printPage()">EXPORT PDF</button>
                 </div>
                 <div class="status-container" id="statusContainer" style="display: none;">
@@ -713,64 +713,6 @@ BACK COVER</textarea>
             }
         }
 
-function createCoverPage(text) {
-    const coverPage = document.createElement('div');
-    coverPage.classList.add('a4-page');
-
-    coverPage.style.background = '#ffffff';
-
-    const blackStrip = document.createElement('div');
-    blackStrip.style.position = 'absolute';
-    blackStrip.style.top = '50%';
-    blackStrip.style.left = '0';
-    blackStrip.style.width = '100%';
-    blackStrip.style.height = '100mm';
-    blackStrip.style.backgroundColor = '#000000';
-    blackStrip.style.transform = 'translateY(-50%)';
-    blackStrip.style.backgroundImage = 'url("https://d2oo5quzpsdib.cloudfront.net/Website/General/Header-About.jpg")';
-    blackStrip.style.backgroundSize = 'cover';
-    blackStrip.style.backgroundPosition = 'center';
-    blackStrip.style.opacity = '0.7';
-    coverPage.appendChild(blackStrip);
-
-    const logo = document.createElement('img');
-    logo.src = 'https://d2oo5quzpsdib.cloudfront.net/Website/General/Future-Automation-Logo.png';
-    logo.height = 60;
-    logo.alt = 'Future Automation Logo';
-    logo.style.position = 'absolute';
-    logo.style.top = 'calc(50% - 50mm + 10mm)';
-    logo.style.left = '50%';
-    logo.style.transform = 'translateX(-50%)';
-    logo.style.filter = 'invert(100%)';
-    coverPage.appendChild(logo);
-
-    const title = document.createElement('div');
-    title.style.position = 'absolute';
-    title.style.top = 'calc(50% - 50mm + 55mm)';
-    title.style.left = '50%';
-    title.style.transform = 'translate(-50%, -50%)';
-    title.style.fontSize = '40px';
-    title.style.fontWeight = 'semibold';
-    title.style.color = '#ffffff';
-    title.style.textAlign = 'center';
-    title.textContent = text;
-    title.style.letterSpacing = '0.25rem';
-    coverPage.appendChild(title);
-
-    const url = document.createElement('div');
-    url.style.position = 'absolute';
-    url.style.top = 'calc(50% - 50mm + 85mm)';
-    url.style.left = '50%';
-    url.style.transform = 'translateX(-50%)';
-    url.style.fontSize = '12px';
-    url.style.color = '#ffffff';
-    url.style.letterSpacing = '0.15rem';
-    url.textContent = 'www.futureautomation.net';
-    coverPage.appendChild(url);
-
-    return coverPage;
-}
-
 function createContentsPage(title, urls) {
     const contentsPage = document.createElement('div');
     contentsPage.classList.add('a4-page');
@@ -1081,19 +1023,9 @@ function createCoverPage(text) {
     coverPage.style.overflow = 'hidden'; 
     coverPage.style.width = '210mm'; 
     coverPage.style.height = '297mm'; 
-
-    const backgroundImage = document.createElement('div');
-    backgroundImage.style.position = 'absolute';
-    backgroundImage.style.top = '0';
-    backgroundImage.style.left = '0';
-    backgroundImage.style.width = '120%';
-    backgroundImage.style.height = '120%';
-    backgroundImage.style.backgroundImage = 'url("https://d2oo5quzpsdib.cloudfront.net/Website/General/Header-About.jpg")';
-    backgroundImage.style.backgroundSize = 'cover';
-    backgroundImage.style.backgroundPosition = 'center';
-    backgroundImage.style.filter = 'blur(10px)'; 
-    backgroundImage.style.transform = 'translate(-10%, -10%)';
-    coverPage.appendChild(backgroundImage);
+    coverPage.style.backgroundColor = '#000000'; 
+    coverPage.style.opacity = '1'; 
+    coverPage.style.backgroundImage = 'repeating-radial-gradient(circle at 0 0, transparent 0, #000000 500px), repeating-linear-gradient(#2A2722, #000000)'; 
 
     const blackStrip = document.createElement('div');
     blackStrip.style.position = 'absolute';
@@ -1117,7 +1049,6 @@ function createCoverPage(text) {
     blurredImage.style.top = '-10%'; 
     blurredImage.style.left = '-10%'; 
     blackStrip.appendChild(blurredImage);
-
 
     const logo = document.createElement('img');
     logo.src = 'https://d2oo5quzpsdib.cloudfront.net/Website/General/Future-Automation-Logo.png';
