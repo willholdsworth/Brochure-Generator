@@ -577,16 +577,26 @@ https://www.futureautomation.co.uk/TV" rows="5" cols="50"></textarea>
     }
 
     function addBackCoverAndBlanks() {
-        const resultsDiv = document.getElementById('results'), productLinksCount = resultsDiv.querySelectorAll('div').length;
-        const totalPages = Math.ceil((productLinksCount + 2) / 4) * 4, blankPagesNeeded = totalPages - (productLinksCount + 2);
+    const resultsDiv = document.getElementById('results');
+    const productLinksCount = resultsDiv.querySelectorAll('div').length;
+    const totalPages = Math.ceil((productLinksCount + 1) / 4) * 4;
+    const blankPagesNeeded = totalPages - (productLinksCount + 1);
+
+    if (blankPagesNeeded === 3) {
+        const blankPage = document.createElement('div');
+        blankPage.textContent = 'BLANK';
+        resultsDiv.insertBefore(blankPage, resultsDiv.children[1]);
+        for (let i = 0; i < 2; i++) {
+            const blankPage = document.createElement('div');
+            blankPage.textContent = 'BLANK';
+            resultsDiv.appendChild(blankPage);
+        }
+    } else {
         for (let i = 0; i < blankPagesNeeded; i++) {
             const blankPage = document.createElement('div');
             blankPage.textContent = 'BLANK';
             resultsDiv.appendChild(blankPage);
         }
-        const backCoverPage = document.createElement('div');
-        backCoverPage.textContent = 'BACK COVER';
-        resultsDiv.appendChild(backCoverPage);
     }
 
     function startScraping() {
