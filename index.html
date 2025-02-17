@@ -18,11 +18,7 @@
         .left {
             display: flex;
             flex-direction: column;
-            align-items: flex-start;
-        }
-        .right {
-            text-align: right;
-            flex: 1;
+;
         }
         .url-item {
             display: flex;
@@ -190,7 +186,7 @@
         }
         #pageUrls, #urlInput {
             width: 90%;
-			margin-top: 1rem;
+            margin-top: 1rem;
             margin-bottom: 1rem;
             padding: 0.5rem;
             box-sizing: border-box;
@@ -311,767 +307,788 @@ https://www.futureautomation.co.uk/TV" rows="5" cols="50"></textarea>
     <div id="pagesContainer"></div>
     <div id="results" style="display: none;"></div>
     <div id="loading" style="display: none;">Generating List Using Pasted Links...</div>
-<script>
-    async function fetchAndExtract() {
-        const url = 'https://www.futureautomation.co.uk/Search?c=';
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-        const spinner = document.getElementById('spinner');
-        const output = document.getElementById('pageUrls');
-        const statusText = document.getElementById('statusText');
+    <script>
+        const visitedLinks = new Set(), processedUrls = new Set(), excludeKeywords = ['Login', 'Account', 'mailto:', 'facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com'];
+        const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
+        const rateLimit = 5, delayBetweenRequests = 1000 / rateLimit;
 
-        spinner.style.visibility = 'visible';
-        statusText.textContent = 'Generating URLs...';
-        output.value = '';
+        async function fetchAndExtract() {
+            const url = 'https://www.futureautomation.co.uk/Search?c=';
+            const proxyUrl = `${corsProxyAPI}${encodeURIComponent(url)}`;
+            const spinner = document.getElementById('spinner');
+            const output = document.getElementById('pageUrls');
+            const statusText = document.getElementById('statusText');
 
-        try {
-            const response = await fetch(proxyUrl);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const data = await response.json();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.contents, 'text/html');
-            const productElements = doc.querySelectorAll('.SearchResult a');
+            spinner.style.visibility = 'visible';
+            statusText.textContent = 'Generating URLs...';
+            output.value = '';
 
-            const promises = [];
-            for (let i = 0; i < productElements.length; i++) {
-                const productCodeElement = productElements[i].querySelector('h4.center');
-                if (productCodeElement) {
-                    const productUrl = 'https://www.futureautomation.co.uk' + productElements[i].getAttribute('href');
-                    promises.push(displayUrl(productUrl));
+            try {
+                const response = await fetch(proxyUrl);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(data.contents, 'text/html');
+                const productElements = doc.querySelectorAll('.SearchResult a');
+
+                const batchSize = 5;
+
+                for (let i = 0; i < productElements.length; i += batchSize) {
+                    const batch = [];
+                    for (let j = i; j < i + batchSize && j < productElements.length; j++) {
+                        const productCodeElement = productElements[j].querySelector('h4.center');
+                        if (productCodeElement) {
+                            const productUrl = 'https://www.futureautomation.co.uk' + productElements[j].getAttribute('href');
+                            batch.push(fetchWithRetry(productUrl));
+                        }
+                    }
+                    await Promise.all(batch);
+                    await new Promise(resolve => setTimeout(resolve, delayBetweenRequests));
                 }
-            }
 
-            await Promise.all(promises);
-            statusText.textContent = 'URLs generated!';
-        } catch (error) {
-            output.value = `Error fetching or parsing the page: ${error.message}`;
-            statusText.textContent = 'Error generating URLs';
-        } finally {
-            spinner.style.visibility = 'hidden';
+                statusText.textContent = 'URLs generated!';
+            } catch (error) {
+                output.value = `Error fetching or parsing the page: ${error.message}`;
+                statusText.textContent = 'Error generating URLs';
+            } finally {
+                spinner.style.visibility = 'hidden';
+            }
         }
-    }
 
-    async function displayUrl(url) {
-        const output = document.getElementById('pageUrls');
-        output.value += `${url}\n`;
-        await delay(50);
-    }
-
-    function delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    function cleanDescription(description) {
-        const tables = description.querySelectorAll('table');
-        const buttons = description.querySelectorAll('button');
-        const links = description.querySelectorAll('a');
-        const images = description.querySelectorAll('img, video, iframe');
-
-        images.forEach(image => {
-            const parent = image.parentElement;
-            if (parent) parent.remove();
-            image.remove();
-        });
-
-        tables.forEach(table => table.remove());
-        buttons.forEach(button => button.remove());
-        links.forEach(link => {
-            const href = link.getAttribute('href');
-            if (!/^\/Product\/Details\/[A-Za-z0-9\-]+$/.test(href)) {
-                link.remove();
-            }
-        });
-        const paragraphs = description.querySelectorAll('p');
-        paragraphs.forEach(paragraph => {
-            const nextElement = paragraph.nextElementSibling;
-            if (nextElement && (nextElement.querySelectorAll('img').length > 0 || nextElement.querySelectorAll('div').length > 0)) {
-                paragraph.remove();
-            }
-        });
-
-        description.innerHTML = filterDescription(description.innerHTML);
-    }
-
-    function filterDescription(text) {
-        const productLinkPattern = /^\/Product\/Details\/[A-Za-z0-9\-]+$/;
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(text, 'text/html');
-        const links = doc.querySelectorAll('a');
-        links.forEach(link => {
-            const href = link.getAttribute('href');
-            const linkText = link.textContent.trim();
-            const isProductPage = productLinkPattern.test(href);
-            const isProductCode = /^[A-Za-z0-9\-]+$/.test(linkText);
-            if (isProductPage && isProductCode) {
-                const textNode = document.createTextNode(linkText);
-                link.replaceWith(textNode);
-            } else {
-                link.remove();
-            }
-        });
-        const filteredText = doc.body.innerHTML;
-        const sentences = filteredText.split('. ');
-        const filteredSentences = sentences.filter(sentence => !(sentence.includes('see') && sentence.includes('for details')));
-        return filteredSentences.join('. ');
-    }
-
-    function cleanTechnicalSpecificationTable(table) {
-        const rows = Array.from(table.querySelectorAll('tr'));
-        rows.forEach(row => {
-            const buttons = row.querySelectorAll('button');
-            if (buttons.length > 0) {
-                row.remove();
-                return;
-            }
-            const cells = Array.from(row.cells);
-            cells.forEach(cell => {
-                const images = cell.querySelectorAll('img');
-                if (images.length > 0) {
-                    images.forEach(image => image.remove());
-                    const strongTags = cell.querySelectorAll('strong');
-                    strongTags.forEach(tag => tag.remove());
-                    if (cell.textContent.trim() === '') {
-                        cell.remove();
+        async function fetchWithRetry(url, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const proxyUrl = `${corsProxyAPI}${encodeURIComponent(url)}`;
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    displayUrl(url);
+                    return data;
+                } catch (error) {
+                    console.error('Error fetching URL:', url, error);
+                    if (i < retries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                    } else {
+                        throw error;
                     }
                 }
-            });
-        });
-        rows.forEach(row => {
-            const cells = Array.from(row.cells);
-            if (cells.some(cell => cell.textContent.trim() === '')) {
-                row.remove();
             }
-        });
-    }
+        }
 
-    function debounce(func, wait) {
-        let timeout;
-        return function(...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-        };
-    }
-
-    document.getElementById('pageUrls').addEventListener('input', debounce(() => {
-        const createButton = document.getElementById('createButton');
-        createButton.disabled = false;
-        createButton.style.backgroundColor = '';
-        const statusText = document.getElementById('statusText');
-        statusText.textContent = '';
-    }, 300));
-
-    function printPage() {
-        window.print();
-    }
-
-    const visitedLinks = new Set(), processedUrls = new Set(), excludeKeywords = ['Login', 'Account', 'mailto:', 'facebook.com', 'twitter.com', 'instagram.com', 'linkedin.com'];
-    const corsProxyAPIs = ['https://api.codetabs.com/v1/proxy?quest=', 'https://api.allorigins.win/get?url='];
-    const rateLimit = 5, delayBetweenRequests = 1000 / rateLimit;
-    let apiIndex = 0, useSingleAPI = false, apiUsage = [0, 0], apiLimit = [rateLimit, rateLimit];
-
-    async function fetchHTML(url) {
-        try {
-            if (apiUsage[apiIndex] >= apiLimit[apiIndex]) {
+        async function fetchHTML(url) {
+            try {
                 await delay(delayBetweenRequests);
-                apiUsage[apiIndex] = 0;
+                const response = await fetch(`${corsProxyAPI}${encodeURIComponent(url)}`);
+                const contentType = response.headers.get('Content-Type');
+                if (contentType.includes('application/json')) return (await response.json()).contents;
+                if (contentType.includes('text/html') || contentType.includes('text/plain')) return await response.text();
+                console.error(`Unexpected content type: ${contentType}`);
+                return '';
+            } catch (error) {
+                console.error('Error fetching HTML:', error);
+                return '';
             }
-            const response = await fetch(`${corsProxyAPIs[apiIndex]}${encodeURIComponent(url)}`);
-            apiUsage[apiIndex]++;
-            const contentType = response.headers.get('Content-Type');
-            if (contentType.includes('application/json')) return (await response.json()).contents;
-            if (contentType.includes('text/html') || contentType.includes('text/plain')) return await response.text();
-            console.error(`Unexpected content type: ${contentType}`);
-            return '';
-        } catch (error) {
-            console.error('Error fetching HTML:', error);
-            if (!useSingleAPI) {
-                apiIndex = (apiIndex + 1) % corsProxyAPIs.length;
-                useSingleAPI = true;
-                return fetchHTML(url);
-            }
-            return '';
         }
-    }
 
-    function shouldExcludeLink(href) {
-        return excludeKeywords.some(keyword => href.includes(keyword));
-    }
+        async function displayUrl(url) {
+            const output = document.getElementById('pageUrls');
+            output.value += `${url}\n`;
+            await delay(50);
+        }
 
-    async function getSublinks(url, baseUrl) {
-        const html = await fetchHTML(url), parser = new DOMParser(), doc = parser.parseFromString(html, 'text/html');
-        const sublinks = [], mainContent = doc.querySelector('main') || doc.body;
-        mainContent.querySelectorAll('a:not(nav a):not(footer a):not(.MegaMenu a):not(.btn)').forEach(a => {
-            const href = a.getAttribute('href');
-            if (href && href.startsWith('/') && !href.includes('#') && !visitedLinks.has(href) && !shouldExcludeLink(href)) {
-                sublinks.push(new URL(href, baseUrl).href);
-                visitedLinks.add(href);
-            }
-        });
-        return sublinks;
-    }
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
-    async function getProductLinks(url) {
-        const html = await fetchHTML(url), parser = new DOMParser(), doc = parser.parseFromString(html, 'text/html');
-        const productLinks = new Set();
-        doc.querySelectorAll('.ProductList a, .col-12 a').forEach(a => {
-            const href = a.getAttribute('href');
-            if (href && href.startsWith('/Product/Details/')) productLinks.add(new URL(href, url).href);
-        });
-        return Array.from(productLinks);
-    }
+        function shouldExcludeLink(href) {
+            return excludeKeywords.some(keyword => href.includes(keyword));
+        }
 
-    function formatTitle(url) {
-        return url.split('/').pop().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/-/g, ' ').toUpperCase();
-    }
-
-    function generateCoverTitle(urls) {
-        const titles = Array.from(new Set(urls.map(url => formatTitle(url))));
-        return `COVER - ${titles.length > 1 ? titles.slice(0, -1).join(', ') + ' & ' + titles.slice(-1) : titles[0]} GUIDE`;
-    }
-
-    async function scrape(url, parentDiv, baseUrl) {
-        if (visitedLinks.has(url)) return;
-        visitedLinks.add(url);
-        const productLinks = await getProductLinks(url);
-        if (productLinks.length > 0) {
-            const heading = document.createElement('div');
-            heading.textContent = 'CONTENTS - ' + formatTitle(url);
-            heading.dataset.url = url;
-            parentDiv.appendChild(heading);
-            productLinks.forEach(link => {
-                const linkElement = document.createElement('div');
-                linkElement.textContent = link;
-                linkElement.dataset.url = url;
-                parentDiv.appendChild(linkElement);
+        async function getSublinks(url, baseUrl) {
+            const html = await fetchHTML(url), parser = new DOMParser(), doc = parser.parseFromString(html, 'text/html');
+            const sublinks = [], mainContent = doc.querySelector('main') || doc.body;
+            mainContent.querySelectorAll('a:not(nav a):not(footer a):not(.MegaMenu a):not(.btn)').forEach(a => {
+                const href = a.getAttribute('href');
+                if (href && href.startsWith('/') && !href.includes('#') && !visitedLinks.has(href) && !shouldExcludeLink(href)) {
+                    sublinks.push(new URL(href, baseUrl).href);
+                    visitedLinks.add(href);
+                }
             });
+            return sublinks;
+        }
+
+        async function getProductLinks(url) {
+            const html = await fetchHTML(url), parser = new DOMParser(), doc = parser.parseFromString(html, 'text/html');
+            const productLinks = new Set();
+            doc.querySelectorAll('.ProductList a, .col-12 a').forEach(a => {
+                const href = a.getAttribute('href');
+                if (href && href.startsWith('/Product/Details/')) productLinks.add(new URL(href, url).href);
+            });
+            return Array.from(productLinks);
+        }
+
+        function formatTitle(url) {
+            return url.split('/').pop().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/-/g, ' ').toUpperCase();
+        }
+
+        function generateCoverTitle(urls) {
+            const titles = Array.from(new Set(urls.map(url => formatTitle(url))));
+            return `COVER - ${titles.length > 1 ? titles.slice(0, -1).join(', ') + ' & ' + titles.slice(-1) : titles[0]} GUIDE`;
+        }
+
+        async function scrape(url, parentDiv, baseUrl) {
+            if (visitedLinks.has(url)) return;
+            visitedLinks.add(url);
+            const productLinks = await getProductLinks(url);
+            if (productLinks.length > 0) {
+                const heading = document.createElement('div');
+                heading.textContent = 'CONTENTS - ' + formatTitle(url);
+                heading.dataset.url = url;
+                parentDiv.appendChild(heading);
+                productLinks.forEach(link => {
+                    const linkElement = document.createElement('div');
+                    linkElement.textContent = link;
+                    linkElement.dataset.url = url;
+                    parentDiv.appendChild(linkElement);
+                });
+                updatePageURLs();
+                return;
+            }
+            const sublinks = await getSublinks(url, baseUrl);
+            for (const sublink of sublinks) {
+                await delay(delayBetweenRequests);
+                await scrape(sublink, parentDiv, baseUrl);
+            }
+        }
+
+        async function scrapeMultipleWebsites(urls) {
+            const resultsDiv = document.getElementById('results'), loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'block';
+            removeBackCoverAndBlanks();
+            const coverTitle = generateCoverTitle(urls), coverPage = document.createElement('div');
+            coverPage.textContent = coverTitle;
+            resultsDiv.insertBefore(coverPage, resultsDiv.firstChild);
+            for (const url of urls) {
+                if (!processedUrls.has(url)) {
+                    await scrape(url, resultsDiv, new URL(url).origin);
+                    processedUrls.add(url);
+                }
+            }
+            addBackCoverAndBlanks();
+            loadingDiv.style.display = 'none';
             updatePageURLs();
-            return;
-        }
-        const sublinks = await getSublinks(url, baseUrl);
-        for (const sublink of sublinks) {
-            await delay(delayBetweenRequests);
-            await scrape(sublink, parentDiv, baseUrl);
-        }
-    }
-
-    async function scrapeMultipleWebsites(urls) {
-        const resultsDiv = document.getElementById('results'), loadingDiv = document.getElementById('loading');
-        loadingDiv.style.display = 'block';
-        removeBackCoverAndBlanks();
-        const coverTitle = generateCoverTitle(urls), coverPage = document.createElement('div');
-        coverPage.textContent = coverTitle;
-        resultsDiv.insertBefore(coverPage, resultsDiv.firstChild);
-        for (const url of urls) {
-            if (!processedUrls.has(url)) {
-                await scrape(url, resultsDiv, new URL(url).origin);
-                processedUrls.add(url);
-            }
-        }
-        addBackCoverAndBlanks();
-        loadingDiv.style.display = 'none';
-        updatePageURLs();
-    }
-
-    function removeBackCoverAndBlanks() {
-		const resultsDiv = document.getElementById('results');
-		Array.from(resultsDiv.children).filter(div => div.textContent === 'BACK COVER' || div.textContent === 'BLANK').forEach(div => div.remove());
-	}
-
-	function addBackCoverAndBlanks() {
-		const resultsDiv = document.getElementById('results');
-		const productLinksCount = resultsDiv.querySelectorAll('div').length;
-		const totalPages = Math.ceil((productLinksCount + 1) / 4) * 4;
-		const blankPagesNeeded = totalPages - (productLinksCount + 1);
-
-		if (blankPagesNeeded === 3) {
-			const blankPage = document.createElement('div');
-			blankPage.textContent = 'BLANK';
-			resultsDiv.insertBefore(blankPage, resultsDiv.children[1]);
-			for (let i = 0; i < 2; i++) {
-				const blankPage = document.createElement('div');
-				blankPage.textContent = 'BLANK';
-				resultsDiv.appendChild(blankPage);
-			}
-		} else {
-			for (let i = 0; i < blankPagesNeeded; i++) {
-				const blankPage = document.createElement('div');
-				blankPage.textContent = 'BLANK';
-				resultsDiv.appendChild(blankPage);
-			}
-		}
-
-		const backCoverPage = document.createElement('div');
-		backCoverPage.textContent = 'BACK COVER';
-		resultsDiv.appendChild(backCoverPage);
-	}
-    function startScraping() {
-        visitedLinks.clear();
-        processedUrls.clear();
-        apiUsage = [0, 0];
-        useSingleAPI = false;
-        document.getElementById('results').innerHTML = '';
-        document.getElementById('pageUrls').value = ''; 
-        const urls = Array.from(new Set(document.getElementById('urlInput').value.split('\n').map(url => url.trim()).filter(url => url)));
-        if (urls.length > 0) scrapeMultipleWebsites(urls);
-        else alert('Please enter one or more URLs.');
-    }
-
-    function updatePageURLs() {
-        const resultsDiv = document.getElementById('results'), pageURLs = document.getElementById('pageUrls');
-        const productLinks = Array.from(resultsDiv.querySelectorAll('div')).map(div => div.textContent).join('\n');
-        pageURLs.value = productLinks;
-    }
-
-    function updateResultsForRemovedUrls(urls) {
-        const resultsDiv = document.getElementById('results'), allDivs = Array.from(resultsDiv.children);
-        Array.from(processedUrls).filter(url => !urls.includes(url)).forEach(url => {
-            allDivs.forEach(div => {
-                if (div.dataset.url === url) div.remove();
-            });
-            processedUrls.delete(url);
-        });
-    }
-
-    function scaleTableText(table) {
-        const rows = table.querySelectorAll('tr');
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td, th');
-            cells.forEach(cell => {
-                cell.style.fontSize = '7.5px';
-            });
-        });
-    }
-
-    function createCoverPage(text) {
-        const coverPage = document.createElement('div');
-        coverPage.classList.add('a4-page');
-
-        coverPage.style.position = 'relative';
-        coverPage.style.overflow = 'hidden'; 
-        coverPage.style.width = '210mm'; 
-        coverPage.style.height = '297mm'; 
-        coverPage.style.backgroundColor = '#ffffff';
-
-        function generateGradient(text) {
-            const uniqueChars = Array.from(new Set(text.toUpperCase()));
-            const luxuryColors = ['#F6F6F6', '#f1f1f1', '#999999', '#FFFFFF', '#FFFFFF'];
-            const gradientColors = uniqueChars.map((char, index) => luxuryColors[index % luxuryColors.length]);
-            return gradientColors;
         }
 
-        function generateBokehGradient(text) {
-            const colors = generateGradient(text);
-            const bokeh = colors.map((color, index) => {
-                const size = 100; 
-                const x = (index + 1) * 20; 
-                const y = (index + 1) * 20;
-                return `radial-gradient(circle at ${x}% ${y}%, ${color}, transparent ${size}%)`;
-            });
-            return bokeh.join(', ');
+        function removeBackCoverAndBlanks() {
+            const resultsDiv = document.getElementById('results');
+            Array.from(resultsDiv.children).filter(div => div.textContent === 'BACK COVER' || div.textContent === 'BLANK').forEach(div => div.remove());
         }
 
-        const gradientRect = document.createElement('div');
-        gradientRect.style.position = 'absolute';
-        gradientRect.style.top = '10mm';
-        gradientRect.style.left = '10mm';
-        gradientRect.style.width = 'calc(100% - 20mm)';
-        gradientRect.style.height = 'calc(100% - 20mm)';
-        gradientRect.style.background = generateBokehGradient(text);
-        coverPage.appendChild(gradientRect);
+        function addBackCoverAndBlanks() {
+            const resultsDiv = document.getElementById('results');
+            const productLinksCount = resultsDiv.querySelectorAll('div').length;
+            const totalPages = Math.ceil((productLinksCount + 1) / 4) * 4;
+            const blankPagesNeeded = totalPages - (productLinksCount + 1);
 
-        const wavePattern = document.createElement('div');
-        wavePattern.style.position = 'absolute';
-        wavePattern.style.top = '10mm';
-        wavePattern.style.left = '10mm';
-        wavePattern.style.width = 'calc(100% - 20mm)';
-        wavePattern.style.height = 'calc(100% - 20mm)';
-        wavePattern.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/11/27/29/13/1000_F_1127291390_NOfDcoRWKNQNVpcgjt3VfiSTUCesuvOd.jpg")';
-        wavePattern.style.backgroundSize = '130%'; 
-        wavePattern.style.backgroundPosition = 'center'; 
-        wavePattern.style.opacity = '0.1'; 
-        coverPage.appendChild(wavePattern);
-
-        const blackBox = document.createElement('div');
-        blackBox.style.position = 'absolute';
-        blackBox.style.left = '50%';
-        blackBox.style.top = '0'; 
-        blackBox.style.transform = 'translateX(-50%)';
-        blackBox.style.width = '50mm';
-        blackBox.style.height = '90mm';
-        blackBox.style.backgroundColor = '#000000';
-        coverPage.appendChild(blackBox);
-
-        const logo = document.createElement('img');
-        logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
-        logo.height = 60;
-        logo.alt = 'Future Automation Logo';
-        logo.style.position = 'absolute';
-        logo.style.bottom = '10mm';
-        logo.style.left = '50%';
-        logo.style.transform = 'translateX(-50%)';
-        logo.style.filter = 'invert(100%)'; 
-        blackBox.appendChild(logo);
-
-        const title = document.createElement('div');
-        title.style.position = 'absolute';
-        title.style.top = '60%'; 
-        title.style.left = '50%';
-        title.style.transform = 'translate(-50%, -50%)';
-        title.style.width = 'calc(100% - 40mm)'; 
-        title.style.fontSize = '60px'; 
-        title.style.color = '#000000';
-        title.style.fontWeight = '100'; 
-        title.style.textAlign = 'center';
-        title.style.whiteSpace = 'normal'; 
-        title.style.wordWrap = 'break-word'; 
-        title.style.padding = '20mm';
-        title.style.letterSpacing = '0.15rem';
-        title.textContent = text;
-        coverPage.appendChild(title);
-
-        const url = document.createElement('div');
-        url.style.position = 'absolute';
-        url.style.bottom = '20mm';
-        url.style.left = '50%';
-        url.style.transform = 'translateX(-50%)';
-        url.style.fontSize = '12px';
-        url.style.color = '#000000';
-        url.style.letterSpacing = '0.15rem';
-        url.textContent = 'www.futureautomation.net';
-        coverPage.appendChild(url);
-
-        return coverPage;
-    }
-
-    function createContentsPage(title, urls) {
-        const contentsPage = document.createElement('div');
-        contentsPage.classList.add('a4-page');
-
-        contentsPage.style.position = 'relative';
-        contentsPage.style.overflow = 'hidden'; 
-        contentsPage.style.width = '210mm'; 
-        contentsPage.style.height = '297mm'; 
-        contentsPage.style.backgroundColor = '#ffffff';
-
-        const heading = document.createElement('div');
-        heading.style.fontSize = '60px'; 
-        heading.style.color = '#000000';
-        heading.style.fontWeight = '100'; 
-        heading.style.textAlign = 'center';
-        heading.style.whiteSpace = 'normal'; 
-        heading.style.wordWrap = 'break-word'; 
-        heading.style.padding = '15mm';
-        heading.style.letterSpacing = '0.15rem';
-        heading.style.marginBottom = '10px';
-        heading.style.marginTop = '10px';
-        heading.textContent = title;
-        contentsPage.appendChild(heading);
-
-        const listContainer = document.createElement('div');
-        listContainer.style.textAlign = 'center';
-        listContainer.style.overflowY = 'auto';
-        listContainer.style.height = 'calc(100% - 200px)';
-        const list = document.createElement('ul');
-        list.style.fontSize = '14px';
-        list.style.paddingLeft = '0';
-        list.style.letterSpacing = '0.1rem';
-        list.style.listStyleType = 'none';
-        list.style.margin = '0';
-        urls.forEach(url => {
-            const productCode = url.split('/').pop();
-            const listItem = document.createElement('li');
-            listItem.textContent = productCode;
-            list.appendChild(listItem);
-        });
-        listContainer.appendChild(list);
-        contentsPage.appendChild(listContainer);
-
-        const wavePattern = document.createElement('div');
-        wavePattern.style.position = 'absolute';
-        wavePattern.style.bottom = '0';
-        wavePattern.style.left = '0';
-        wavePattern.style.width = '100%';
-        wavePattern.style.height = '100mm';
-        wavePattern.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/11/27/29/13/1000_F_1127291390_NOfDcoRWKNQNVpcgjt3VfiSTUCesuvOd.jpg")';
-        wavePattern.style.backgroundSize = 'cover'; 
-        wavePattern.style.backgroundPosition = 'center'; 
-        wavePattern.style.opacity = '0.2'; 
-        wavePattern.style.backgroundSize = '120%'; 
-        wavePattern.style.transform = 'rotate(0deg)'; 
-        contentsPage.appendChild(wavePattern);
-
-        return contentsPage;
-    }
-
-    function createBackCoverPage() {
-        const backCoverPage = document.createElement('div');
-        backCoverPage.classList.add('a4-page');
-        const logo = document.createElement('img');
-        logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
-        logo.height = 60;
-        logo.alt = 'Future Automation Logo';
-        logo.style.position = 'absolute';
-        logo.style.top = '50%';
-        logo.style.left = '50%';
-        logo.style.transform = 'translate(-50%, -50%)';
-        backCoverPage.appendChild(logo);
-
-        const url = document.createElement('div');
-        url.style.position = 'absolute';
-        url.style.bottom = '10mm';
-        url.style.left = '50%';
-        url.style.transform = 'translateX(-50%)';
-        url.style.letterSpacing = '0.1rem';
-        url.style.fontSize = '14px';
-        url.textContent = 'www.futureautomation.net';
-        backCoverPage.appendChild(url);
-
-        return backCoverPage;
-    }
-
-    async function fetchCdnUrls() {
-        const pageUrls = document.getElementById('pageUrls').value.split('\n');
-        const pagesContainer = document.getElementById('pagesContainer');
-        const statusContainer = document.getElementById('statusContainer');
-        const statusText = document.getElementById('statusText');
-        const createButton = document.getElementById('createButton');
-        pagesContainer.innerHTML = '';
-        statusContainer.style.display = 'flex';
-        createButton.disabled = true;
-        createButton.style.backgroundColor = 'grey';
-
-        const totalUrls = pageUrls.length;
-        const batchSize = 5; 
-        let currentContents = [];
-        let contentsTitle = '';
-        const coverPages = [];
-        const contentsPages = [];
-        const backCoverPages = [];
-        const pageOrder = [];
-        const carouselImages = [];
-
-        for (let i = 0; i < totalUrls; i++) {
-            const url = pageUrls[i].trim();
-            if (url.startsWith('COVER')) {
-                const coverText = url.split(' - ')[1];
-                coverPages.push({ index: i, page: createCoverPage(coverText, carouselImages) });
-                pageOrder.push({ type: 'cover', page: createCoverPage(coverText, carouselImages) });
-            } else if (url.startsWith('CONTENTS')) {
-                if (currentContents.length > 0) {
-                    contentsPages.push({ index: i, title: contentsTitle, urls: currentContents });
-                    currentContents = [];
-                }
-                contentsTitle = url.split(' - ')[1];
-                contentsPages.push({ index: i, title: contentsTitle, urls: [] });
-            } else if (url.startsWith('BACK COVER')) {
-                backCoverPages.push({ index: i, page: createBackCoverPage() });
-                pageOrder.push({ type: 'backCover', page: createBackCoverPage() });
-            } else if (url === 'BLANK') {
+            if (blankPagesNeeded === 3) {
                 const blankPage = document.createElement('div');
-                blankPage.classList.add('a4-page');
-                pageOrder.push({ type: 'blank', page: blankPage });
+                blankPage.textContent = 'BLANK';
+                resultsDiv.insertBefore(blankPage, resultsDiv.children[1]);
+                for (let i = 0; i < 2; i++) {
+                    const blankPage = document.createElement('div');
+                    blankPage.textContent = 'BLANK';
+                    resultsDiv.appendChild(blankPage);
+                }
             } else {
-                if (contentsPages.length > 0) {
-                    const currentContentsPage = contentsPages[contentsPages.length - 1];
-                    currentContentsPage.urls.push(url);
+                for (let i = 0; i < blankPagesNeeded; i++) {
+                    const blankPage = document.createElement('div');
+                    blankPage.textContent = 'BLANK';
+                    resultsDiv.appendChild(blankPage);
                 }
-                await fetchPage(url, carouselImages);
-                statusText.textContent = `Loading... ${i + 1} of ${totalUrls}`;
-                await delay(1000);
-
-                if ((i + 1) % batchSize === 0) {
-                    await delay(5000); 
-                }
-                pageOrder.push({ type: 'url', page: pagesContainer.lastChild });
             }
+            const backCoverPage = document.createElement('div');
+            backCoverPage.textContent = 'BACK COVER';
+            resultsDiv.appendChild(backCoverPage);
         }
 
-        if (currentContents.length > 0) {
-            contentsPages.push({ index: totalUrls, title: contentsTitle, urls: currentContents });
+        function startScraping() {
+            visitedLinks.clear();
+            processedUrls.clear();
+            document.getElementById('results').innerHTML = '';
+            document.getElementById('pageUrls').value = ''; 
+            const urls = Array.from(new Set(document.getElementById('urlInput').value.split('\n').map(url => url.trim()).filter(url => url)));
+            if (urls.length > 0) scrapeMultipleWebsites(urls);
+            else alert('Please enter one or more URLs.');
         }
 
-        pagesContainer.innerHTML = '';
-        pageOrder.forEach(item => pagesContainer.appendChild(item.page));
+        function updatePageURLs() {
+            const resultsDiv = document.getElementById('results'), pageURLs = document.getElementById('pageUrls');
+            const productLinks = Array.from(resultsDiv.querySelectorAll('div')).map(div => div.textContent).join('\n');
+            pageURLs.value = productLinks;
+        }
 
-        contentsPages.forEach(contents => {
-            const contentsPage = createContentsPage(contents.title, contents.urls);
-            const insertIndex = contents.index;
-            pagesContainer.insertBefore(contentsPage, pagesContainer.children[insertIndex]);
-        });
+        function updateResultsForRemovedUrls(urls) {
+            const resultsDiv = document.getElementById('results'), allDivs = Array.from(resultsDiv.children);
+            Array.from(processedUrls).filter(url => !urls.includes(url)).forEach(url => {
+                allDivs.forEach(div => {
+                    if (div.dataset.url === url) div.remove();
+                });
+                processedUrls.delete(url);
+            });
+        }
 
-        statusContainer.style.display = 'none';
-        createButton.disabled = false;
-        createButton.style.backgroundColor = '';
-        statusText.textContent = `Completed! ${totalUrls} pages generated.`;
-    }
+        function scaleTableText(table) {
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td, th');
+                cells.forEach(cell => {
+                    cell.style.fontSize = '7.5px';
+                });
+            });
+        }
 
-    async function fetchPage(pageUrl) {
-        if (!pageUrl) return;
-        try {
-            const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(pageUrl)}`);
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            const data = await response.json();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(data.contents, 'text/html');
-            const productName = doc.querySelector('#PageProductID');
-            const h2 = doc.querySelector('h2');
-            const images = doc.querySelectorAll('img');
-            const mainImage = Array.from(images).find(img => img.src.includes(pageUrl.split('/').pop())) || Array.from(images).find(img => img.src.includes('QA2-1.png'));
-            const carouselImages = doc.querySelectorAll('.owl-carousel img');
-            const description = doc.querySelector('.mt-1.mb-5.pb-5');
-            if (description) cleanDescription(description);
+        function createCoverPage(text) {
+            const coverPage = document.createElement('div');
+            coverPage.classList.add('a4-page');
 
-            const a4Page = document.createElement('div');
-            a4Page.classList.add('a4-page');
+            coverPage.style.position = 'relative';
+            coverPage.style.overflow = 'hidden'; 
+            coverPage.style.width = '210mm'; 
+            coverPage.style.height = '297mm'; 
+            coverPage.style.backgroundColor = '#ffffff';
 
-            const carouselContainer = document.createElement('div');
-            carouselContainer.classList.add('carousel');
-            a4Page.appendChild(carouselContainer);
+            function generateGradient(text) {
+                const uniqueChars = Array.from(new Set(text.toUpperCase()));
+                const luxuryColors = ['#F6F6F6', '#f1f1f1', '#999999', '#FFFFFF', '#FFFFFF'];
+                const gradientColors = uniqueChars.map((char, index) => luxuryColors[index % luxuryColors.length]);
+                return gradientColors;
+            }
 
-            const overlay = document.createElement('div');
-            overlay.classList.add('overlay');
-            a4Page.appendChild(overlay);
+            function generateBokehGradient(text) {
+                const colors = generateGradient(text);
+                const bokeh = colors.map((color, index) => {
+                    const size = 100; 
+                    const x = (index + 1) * 20; 
+                    const y = (index + 1) * 20;
+                    return `radial-gradient(circle at ${x}% ${y}%, ${color}, transparent ${size}%)`;
+                });
+                return bokeh.join(', ');
+            }
+
+            const gradientRect = document.createElement('div');
+            gradientRect.style.position = 'absolute';
+            gradientRect.style.top = '10mm';
+            gradientRect.style.left = '10mm';
+            gradientRect.style.width = 'calc(100% - 20mm)';
+            gradientRect.style.height = 'calc(100% - 20mm)';
+            gradientRect.style.background = generateBokehGradient(text);
+            coverPage.appendChild(gradientRect);
+
+            const wavePattern = document.createElement('div');
+            wavePattern.style.position = 'absolute';
+            wavePattern.style.top = '10mm';
+            wavePattern.style.left = '10mm';
+            wavePattern.style.width = 'calc(100% - 20mm)';
+            wavePattern.style.height = 'calc(100% - 20mm)';
+            wavePattern.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/11/27/29/13/1000_F_1127291390_NOfDcoRWKNQNVpcgjt3VfiSTUCesuvOd.jpg")';
+            wavePattern.style.backgroundSize = '130%'; 
+            wavePattern.style.backgroundPosition = 'center'; 
+            wavePattern.style.opacity = '0.1'; 
+            coverPage.appendChild(wavePattern);
+
+            const blackBox = document.createElement('div');
+            blackBox.style.position = 'absolute';
+            blackBox.style.left = '50%';
+            blackBox.style.top = '0'; 
+            blackBox.style.transform = 'translateX(-50%)';
+            blackBox.style.width = '50mm';
+            blackBox.style.height = '90mm';
+            blackBox.style.backgroundColor = '#000000';
+            coverPage.appendChild(blackBox);
 
             const logo = document.createElement('img');
             logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
             logo.height = 60;
             logo.alt = 'Future Automation Logo';
-            logo.classList.add('logo');
-            a4Page.appendChild(logo);
+            logo.style.position = 'absolute';
+            logo.style.bottom = '10mm';
+            logo.style.left = '50%';
+            logo.style.transform = 'translateX(-50%)';
+            logo.style.filter = 'invert(100%)'; 
+            blackBox.appendChild(logo);
 
-            const productInfo = document.createElement('div');
-            productInfo.classList.add('product-info');
-            const productNameContainer = document.createElement('div');
-            productNameContainer.classList.add('product-name');
-            productInfo.appendChild(productNameContainer);
-            const subtitleContainer = document.createElement('div');
-            subtitleContainer.classList.add('subheading');
-            productInfo.appendChild(subtitleContainer);
-            a4Page.appendChild(productInfo);
+            const title = document.createElement('div');
+            title.style.position = 'absolute';
+            title.style.top = '60%'; 
+            title.style.left = '50%';
+            title.style.transform = 'translate(-50%, -50%)';
+            title.style.width = 'calc(100% - 40mm)'; 
+            title.style.fontSize = '60px'; 
+            title.style.color = '#000000';
+            title.style.fontWeight = '100'; 
+            title.style.textAlign = 'center';
+            title.style.whiteSpace = 'normal'; 
+            title.style.wordWrap = 'break-word'; 
+            title.style.padding = '20mm';
+            title.style.letterSpacing = '0.15rem';
+            title.textContent = text;
+            coverPage.appendChild(title);
 
-            const mainImageContainer = document.createElement('div');
-            mainImageContainer.classList.add('main-image');
-            a4Page.appendChild(mainImageContainer);
+            const url = document.createElement('div');
+            url.style.position = 'absolute';
+            url.style.bottom = '20mm';
+            url.style.left = '50%';
+            url.style.transform = 'translateX(-50%)';
+            url.style.fontSize = '12px';
+            url.style.color = '#000000';
+            url.style.letterSpacing = '0.15rem';
+            url.textContent = 'www.futureautomation.net';
+            coverPage.appendChild(url);
 
-            const descriptionContainer = document.createElement('div');
-            descriptionContainer.classList.add('description');
-            a4Page.appendChild(descriptionContainer);
+            return coverPage;
+        }
 
-            const tagsContainer = document.createElement('div');
-            tagsContainer.id = 'tagsContainer';
-            a4Page.appendChild(tagsContainer);
+        function createContentsPage(title, urls) {
+            const contentsPage = document.createElement('div');
+            contentsPage.classList.add('a4-page');
 
-            const tableContainer = document.createElement('div');
-            tableContainer.id = 'tableContainer';
-            a4Page.appendChild(tableContainer);
+            contentsPage.style.position = 'relative';
+            contentsPage.style.overflow = 'hidden'; 
+            contentsPage.style.width = '210mm'; 
+            contentsPage.style.height = '297mm'; 
+            contentsPage.style.backgroundColor = '#ffffff';
 
-            const bottomBlackBox = document.createElement('div');
-            bottomBlackBox.id = 'bottomBlackBox';
-            a4Page.appendChild(bottomBlackBox);
+            const heading = document.createElement('div');
+            heading.style.fontSize = '60px'; 
+            heading.style.color = '#000000';
+            heading.style.fontWeight = '100'; 
+            heading.style.textAlign = 'center';
+            heading.style.whiteSpace = 'normal'; 
+            heading.style.wordWrap = 'break-word'; 
+            heading.style.padding = '15mm';
+            heading.style.letterSpacing = '0.15rem';
+            heading.style.marginBottom = '10px';
+            heading.style.marginTop = '10px';
+            heading.textContent = title;
+            contentsPage.appendChild(heading);
 
-            if (carouselImages.length > 0) {
-                let currentIndex = carouselImages.length - 1;
-                const updateCarousel = () => {
-                    carouselContainer.innerHTML = ` 
-                        <img src="${carouselImages[currentIndex].src}" alt="Carousel Image">
-                    `;
-                };
-                const prevArrow = document.createElement('span');
-                prevArrow.classList.add('arrow', 'prev');
-                prevArrow.innerHTML = '&#9664;';
-                prevArrow.onclick = () => {
-                    currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
-                    updateCarousel();
-                };
-                const nextArrow = document.createElement('span');
-                nextArrow.classList.add('arrow', 'next');
-                nextArrow.innerHTML = '&#9654;';
-                nextArrow.onclick = () => {
-                    currentIndex = (currentIndex + 1) % carouselImages.length;
-                    updateCarousel();
-                };
-                a4Page.appendChild(prevArrow);
-                a4Page.appendChild(nextArrow);
-                updateCarousel();
-            }
-            if (mainImage) {
-                const imageElement = document.createElement('img');
-                imageElement.src = mainImage.src;
-                imageElement.style.maxWidth = "100%";
-                imageElement.style.height = "auto";
-                mainImageContainer.appendChild(imageElement);
-            }
-            if (productName) {
-                productNameContainer.textContent = productName.textContent;
-            }
-            if (h2) {
-                subtitleContainer.textContent = h2.textContent;
-            }
-            if (description) {
-                descriptionContainer.innerHTML = description.innerHTML;
-            }
-            const tags = doc.querySelectorAll('.row .Tag');
-            tags.forEach(tag => {
-                const button = document.createElement('button');
-                button.classList.add('tag-button');
-                button.textContent = tag.title || tag.textContent;
-                tagsContainer.appendChild(button);
+            const listContainer = document.createElement('div');
+            listContainer.style.textAlign = 'center';
+            listContainer.style.overflowY = 'auto';
+            listContainer.style.height = 'calc(100% - 200px)';
+            const list = document.createElement('ul');
+            list.style.fontSize = '14px';
+            list.style.paddingLeft = '0';
+            list.style.letterSpacing = '0.1rem';
+            list.style.listStyleType = 'none';
+            list.style.margin = '0';
+            urls.forEach(url => {
+                const productCode = url.split('/').pop();
+                const listItem = document.createElement('li');
+                listItem.textContent = productCode;
+                list.appendChild(listItem);
             });
-            const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
-            if (heading) {
-                const table = heading.nextElementSibling.querySelector('table');
-                if (table) {
-                    cleanTechnicalSpecificationTable(table);
-                    const rows = Array.from(table.querySelectorAll('tr'));
-                    let currentHeaderRow = null;
-                    let allTBC = true;
-                    let hasSpecifications = false;
-                    rows.forEach((row, index) => {
-                        const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
-                        if (cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
-                            row.remove();
-                        } else {
-                            if (currentHeaderRow && allTBC) {
-                                currentHeaderRow.remove();
-                            }
-                            currentHeaderRow = row;
-                            allTBC = true;
-                        }
-                        if (!cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
-                            allTBC = false;
-                            hasSpecifications = true;
-                        }
-                    });
-                    const headers = table.querySelectorAll('th[colspan]');
-                    headers.forEach(header => {
-                        const rowsUnderHeader = Array.from(table.querySelectorAll('tr')).filter(row => row.previousElementSibling === header);
-                        if (rowsUnderHeader.length === 0) {
-                            header.remove();
-                        }
-                    });
-                    tableContainer.appendChild(table);
-                    scaleTableText(table);
-                    if (table) {
-                        const rows = Array.from(table.querySelectorAll('tr'));
-                        const nonEmptyRows = rows.filter(row => {
-                            const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
-                            return cells.some(cell => cell !== '');
-                        });
-                        if (nonEmptyRows.length <= 1) {
-                            table.remove();
-                        } else {
-                            tableContainer.style.border = '0px solid #000000';
-                            tableContainer.style.backgroundColor = '#ffffff';
-                        }
+            listContainer.appendChild(list);
+            contentsPage.appendChild(listContainer);
+
+            const wavePattern = document.createElement('div');
+            wavePattern.style.position = 'absolute';
+            wavePattern.style.bottom = '0';
+            wavePattern.style.left = '0';
+            wavePattern.style.width = '100%';
+            wavePattern.style.height = '100mm';
+            wavePattern.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/11/27/29/13/1000_F_1127291390_NOfDcoRWKNQNVpcgjt3VfiSTUCesuvOd.jpg")';
+            wavePattern.style.backgroundSize = 'cover'; 
+            wavePattern.style.backgroundPosition = 'center'; 
+            wavePattern.style.opacity = '0.2'; 
+            wavePattern.style.backgroundSize = '120%'; 
+            wavePattern.style.transform = 'rotate(0deg)'; 
+            contentsPage.appendChild(wavePattern);
+
+            return contentsPage;
+        }
+
+        function createBackCoverPage() {
+            const backCoverPage = document.createElement('div');
+            backCoverPage.classList.add('a4-page');
+            const logo = document.createElement('img');
+            logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
+            logo.height = 60;
+            logo.alt = 'Future Automation Logo';
+            logo.style.position = 'absolute';
+            logo.style.top = '50%';
+            logo.style.left = '50%';
+            logo.style.transform = 'translate(-50%, -50%)';
+            backCoverPage.appendChild(logo);
+
+            const url = document.createElement('div');
+            url.style.position = 'absolute';
+            url.style.bottom = '10mm';
+            url.style.left = '50%';
+            url.style.transform = 'translateX(-50%)';
+            url.style.letterSpacing = '0.1rem';
+            url.style.fontSize = '14px';
+            url.textContent = 'www.futureautomation.net';
+            backCoverPage.appendChild(url);
+
+            return backCoverPage;
+        }
+
+        async function fetchCdnUrls() {
+            const pageUrls = document.getElementById('pageUrls').value.split('\n');
+            const pagesContainer = document.getElementById('pagesContainer');
+            const statusContainer = document.getElementById('statusContainer');
+            const statusText = document.getElementById('statusText');
+            const createButton = document.getElementById('createButton');
+            pagesContainer.innerHTML = '';
+            statusContainer.style.display = 'flex';
+            createButton.disabled = true;
+            createButton.style.backgroundColor = 'grey';
+
+            const totalUrls = pageUrls.length;
+            const batchSize = 5; 
+            let currentContents = [];
+            let contentsTitle = '';
+            const coverPages = [];
+            const contentsPages = [];
+            const backCoverPages = [];
+            const pageOrder = [];
+            const carouselImages = [];
+
+            for (let i = 0; i < totalUrls; i++) {
+                const url = pageUrls[i].trim();
+                if (url.startsWith('COVER')) {
+                    const coverText = url.split(' - ')[1];
+                    coverPages.push({ index: i, page: createCoverPage(coverText, carouselImages) });
+                    pageOrder.push({ type: 'cover', page: createCoverPage(coverText, carouselImages) });
+                } else if (url.startsWith('CONTENTS')) {
+                    if (currentContents.length > 0) {
+                        contentsPages.push({ index: i, title: contentsTitle, urls: currentContents });
+                        currentContents = [];
                     }
+                    contentsTitle = url.split(' - ')[1];
+                    contentsPages.push({ index: i, title: contentsTitle, urls: [] });
+                } else if (url.startsWith('BACK COVER')) {
+                    backCoverPages.push({ index: i, page: createBackCoverPage() });
+                    pageOrder.push({ type: 'backCover', page: createBackCoverPage() });
+                } else if (url === 'BLANK') {
+                    const blankPage = document.createElement('div');
+                    blankPage.classList.add('a4-page');
+                    pageOrder.push({ type: 'blank', page: blankPage });
+                } else {
+                    if (contentsPages.length > 0) {
+                        const currentContentsPage = contentsPages[contentsPages.length - 1];
+                        currentContentsPage.urls.push(url);
+                    }
+                    await fetchPage(url, carouselImages);
+                    statusText.textContent = `Loading... ${i + 1} of ${totalUrls}`;
+                    await delay(1000);
+
+                    if ((i + 1) % batchSize === 0) {
+                        await delay(5000); 
+                    }
+                    pageOrder.push({ type: 'url', page: pagesContainer.lastChild });
                 }
             }
-            pagesContainer.appendChild(a4Page);
-            statusText.textContent = '';
-        } catch (error) {
-            console.error('Error fetching page:', pageUrl, error);
-            statusText.textContent = '';
+
+            if (currentContents.length > 0) {
+                contentsPages.push({ index: totalUrls, title: contentsTitle, urls: currentContents });
+            }
+
+            pagesContainer.innerHTML = '';
+            pageOrder.forEach(item => pagesContainer.appendChild(item.page));
+
+            contentsPages.forEach(contents => {
+                const contentsPage = createContentsPage(contents.title, contents.urls);
+                const insertIndex = contents.index;
+                pagesContainer.insertBefore(contentsPage, pagesContainer.children[insertIndex]);
+            });
+
+            statusContainer.style.display = 'none';
+            createButton.disabled = false;
+            createButton.style.backgroundColor = '';
+            statusText.textContent = `Completed! ${totalUrls} pages generated.`;
+        }
+
+        async function fetchPage(pageUrl) {
+    if (!pageUrl) return;
+    try {
+        const response = await fetch(`${corsProxyAPI}${encodeURIComponent(pageUrl)}`);
+        const contentType = response.headers.get('Content-Type');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        let doc;
+        if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            const parser = new DOMParser();
+            doc = parser.parseFromString(data.contents, 'text/html');
+        } else if (contentType && (contentType.includes('text/html') || contentType.includes('text/plain'))) {
+            const text = await response.text();
+            const parser = new DOMParser();
+            doc = parser.parseFromString(text, 'text/html');
+        } else {
+            throw new Error(`Unexpected content type: ${contentType}`);
+        }
+
+        processPageContent(doc, pageUrl);
+    } catch (error) {
+        console.error('Error fetching page:', pageUrl, error);
+        const statusText = document.getElementById('statusText');
+        statusText.textContent = `Error fetching page: ${pageUrl}`;
+    }
+}
+
+function processPageContent(doc, pageUrl) {
+    const productName = doc.querySelector('#PageProductID');
+    const h2 = doc.querySelector('h2');
+    const images = doc.querySelectorAll('img');
+    const mainImage = Array.from(images).find(img => img.src.includes(pageUrl.split('/').pop())) || Array.from(images).find(img => img.src.includes('QA2-1.png'));
+    const carouselImages = doc.querySelectorAll('.owl-carousel img');
+    const description = doc.querySelector('.mt-1.mb-5.pb-5');
+    if (description) cleanDescription(description);
+
+    const a4Page = document.createElement('div');
+    a4Page.classList.add('a4-page');
+
+    const carouselContainer = document.createElement('div');
+    carouselContainer.classList.add('carousel');
+    a4Page.appendChild(carouselContainer);
+
+    const overlay = document.createElement('div');
+    overlay.classList.add('overlay');
+    a4Page.appendChild(overlay);
+
+    const logo = document.createElement('img');
+    logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
+    logo.height = 60;
+    logo.alt = 'Future Automation Logo';
+    logo.classList.add('logo');
+    a4Page.appendChild(logo);
+
+    const productInfo = document.createElement('div');
+    productInfo.classList.add('product-info');
+    const productNameContainer = document.createElement('div');
+    productNameContainer.classList.add('product-name');
+    productInfo.appendChild(productNameContainer);
+    const subtitleContainer = document.createElement('div');
+    subtitleContainer.classList.add('subheading');
+    productInfo.appendChild(subtitleContainer);
+    a4Page.appendChild(productInfo);
+
+    const mainImageContainer = document.createElement('div');
+    mainImageContainer.classList.add('main-image');
+    a4Page.appendChild(mainImageContainer);
+
+    const descriptionContainer = document.createElement('div');
+    descriptionContainer.classList.add('description');
+    a4Page.appendChild(descriptionContainer);
+
+    const tagsContainer = document.createElement('div');
+    tagsContainer.id = 'tagsContainer';
+    a4Page.appendChild(tagsContainer);
+
+    const tableContainer = document.createElement('div');
+    tableContainer.id = 'tableContainer';
+    a4Page.appendChild(tableContainer);
+
+    const bottomBlackBox = document.createElement('div');
+    bottomBlackBox.id = 'bottomBlackBox';
+    a4Page.appendChild(bottomBlackBox);
+
+    if (carouselImages.length > 0) {
+        let currentIndex = carouselImages.length - 1;
+        const updateCarousel = () => {
+            carouselContainer.innerHTML = ` 
+                <img src="${carouselImages[currentIndex].src}" alt="Carousel Image">
+            `;
+        };
+        const prevArrow = document.createElement('span');
+        prevArrow.classList.add('arrow', 'prev');
+        prevArrow.innerHTML = '&#9664;';
+        prevArrow.onclick = () => {
+            currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
+            updateCarousel();
+        };
+        const nextArrow = document.createElement('span');
+        nextArrow.classList.add('arrow', 'next');
+        nextArrow.innerHTML = '&#9654;';
+        nextArrow.onclick = () => {
+            currentIndex = (currentIndex + 1) % carouselImages.length;
+            updateCarousel();
+        };
+        a4Page.appendChild(prevArrow);
+        a4Page.appendChild(nextArrow);
+        updateCarousel();
+    }
+    if (mainImage) {
+        const imageElement = document.createElement('img');
+        imageElement.src = mainImage.src;
+        imageElement.style.maxWidth = "100%";
+        imageElement.style.height = "auto";
+        mainImageContainer.appendChild(imageElement);
+    }
+    if (productName) {
+        productNameContainer.textContent = productName.textContent;
+    }
+    if (h2) {
+        subtitleContainer.textContent = h2.textContent;
+    }
+    if (description) {
+        descriptionContainer.innerHTML = description.innerHTML;
+    }
+    const tags = doc.querySelectorAll('.row .Tag');
+    tags.forEach(tag => {
+        const button = document.createElement('button');
+        button.classList.add('tag-button');
+        button.textContent = tag.title || tag.textContent;
+        tagsContainer.appendChild(button);
+    });
+    const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
+    if (heading) {
+        const table = heading.nextElementSibling.querySelector('table');
+        if (table) {
+            cleanTechnicalSpecificationTable(table);
+            const rows = Array.from(table.querySelectorAll('tr'));
+            let currentHeaderRow = null;
+            let allTBC = true;
+            let hasSpecifications = false;
+            rows.forEach((row, index) => {
+                const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
+                if (cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
+                    row.remove();
+                } else {
+                    if (currentHeaderRow && allTBC) {
+                        currentHeaderRow.remove();
+                    }
+                    currentHeaderRow = row;
+                    allTBC = true;
+                }
+                if (!cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
+                    allTBC = false;
+                    hasSpecifications = true;
+                }
+            });
+            const headers = table.querySelectorAll('th[colspan]');
+            headers.forEach(header => {
+                const rowsUnderHeader = Array.from(table.querySelectorAll('tr')).filter(row => row.previousElementSibling === header);
+                if (rowsUnderHeader.length === 0) {
+                    header.remove();
+                }
+            });
+            tableContainer.appendChild(table);
+            scaleTableText(table);
+            if (table) {
+                const rows = Array.from(table.querySelectorAll('tr'));
+                const nonEmptyRows = rows.filter(row => {
+                    const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
+                    return cells.some(cell => cell !== '');
+                });
+                if (nonEmptyRows.length <= 1) {
+                    table.remove();
+                } else {
+                    tableContainer.style.border = '0px solid #000000';
+                    tableContainer.style.backgroundColor = '#ffffff';
+                }
+            }
         }
     }
-</script>
+    pagesContainer.appendChild(a4Page);
+    statusText.textContent = '';
+}
+
+        function cleanDescription(description) {
+            const tables = description.querySelectorAll('table');
+            const buttons = description.querySelectorAll('button');
+            const links = description.querySelectorAll('a');
+            const images = description.querySelectorAll('img, video, iframe');
+
+            images.forEach(image => {
+                const parent = image.parentElement;
+                if (parent) parent.remove();
+                image.remove();
+            });
+
+            tables.forEach(table => table.remove());
+            buttons.forEach(button => button.remove());
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                if (!/^\/Product\/Details\/[A-Za-z0-9\-]+$/.test(href)) {
+                    link.remove();
+                }
+            });
+            const paragraphs = description.querySelectorAll('p');
+            paragraphs.forEach(paragraph => {
+                const nextElement = paragraph.nextElementSibling;
+                if (nextElement && (nextElement.querySelectorAll('img').length > 0 || nextElement.querySelectorAll('div').length > 0)) {
+                    paragraph.remove();
+                }
+            });
+
+            description.innerHTML = filterDescription(description.innerHTML);
+        }
+
+        function filterDescription(text) {
+            const productLinkPattern = /^\/Product\/Details\/[A-Za-z0-9\-]+$/;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(text, 'text/html');
+            const links = doc.querySelectorAll('a');
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                const linkText = link.textContent.trim();
+                const isProductPage = productLinkPattern.test(href);
+                const isProductCode = /^[A-Za-z0-9\-]+$/.test(linkText);
+                if (isProductPage && isProductCode) {
+                    const textNode = document.createTextNode(linkText);
+                    link.replaceWith(textNode);
+                } else {
+                    link.remove();
+                }
+            });
+            const filteredText = doc.body.innerHTML;
+            const sentences = filteredText.split('. ');
+            const filteredSentences = sentences.filter(sentence => !(sentence.includes('see') && sentence.includes('for details')));
+            return filteredSentences.join('. ');
+        }
+
+        function cleanTechnicalSpecificationTable(table) {
+            const rows = Array.from(table.querySelectorAll('tr'));
+            rows.forEach(row => {
+                const buttons = row.querySelectorAll('button');
+                if (buttons.length > 0) {
+                    row.remove();
+                    return;
+                }
+                const cells = Array.from(row.cells);
+                cells.forEach(cell => {
+                    const images = cell.querySelectorAll('img');
+                    if (images.length > 0) {
+                        images.forEach(image => image.remove());
+                        const strongTags = cell.querySelectorAll('strong');
+                        strongTags.forEach(tag => tag.remove());
+                        if (cell.textContent.trim() === '') {
+                            cell.remove();
+                        }
+                    }
+                });
+            });
+            rows.forEach(row => {
+                const cells = Array.from(row.cells);
+                if (cells.some(cell => cell.textContent.trim() === '')) {
+                    row.remove();
+                }
+            });
+        }
+
+        function debounce(func, wait) {
+            let timeout;
+            return function(...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+    </script>
 </body>
 </html>
