@@ -313,7 +313,7 @@ https://www.futureautomation.co.uk/TV" rows="5" cols="50"></textarea>
         const rateLimit = 5, delayBetweenRequests = 1000 / rateLimit;
 
         async function fetchAndExtract() {
-            const url = 'https://www.futureautomation.co.uk/Search?c=';
+            const url = 'https://www.futureautomation.co.uk/Search?';
             const proxyUrl = `${corsProxyAPI}${encodeURIComponent(url)}`;
             const spinner = document.getElementById('spinner');
             const output = document.getElementById('pageUrls');
@@ -418,14 +418,40 @@ https://www.futureautomation.co.uk/TV" rows="5" cols="50"></textarea>
         }
 
         async function getProductLinks(url) {
-            const html = await fetchHTML(url), parser = new DOMParser(), doc = parser.parseFromString(html, 'text/html');
-            const productLinks = new Set();
-            doc.querySelectorAll('.ProductList a, .col-12 a').forEach(a => {
-                const href = a.getAttribute('href');
-                if (href && href.startsWith('/Product/Details/')) productLinks.add(new URL(href, url).href);
-            });
-            return Array.from(productLinks);
-        }
+			const html = await fetchHTML(url);
+			const parser = new DOMParser();
+			const doc = parser.parseFromString(html, 'text/html');
+			const productLinks = new Set();
+			const excludeUrls = [
+				'/Product/EnclosureParts',
+				'/Product/EnclosureSupport',
+				'/Product/AudioVisual'
+			];
+
+			doc.querySelectorAll('a').forEach(a => {
+				const href = a.getAttribute('href');
+				if (href && href.startsWith('/Product/') && !excludeUrls.some(excludeUrl => href.includes(excludeUrl))) {
+					const fullUrl = new URL(href, url).href;
+					const productName = href.split('/').pop();
+					if (/^\/Product\/Details\/[A-Z0-9-]+$/.test(href) || /^\/Product\/[A-Za-z]+$/.test(href)) {
+						productLinks.add(fullUrl);
+					}
+				}
+			});
+
+			return Array.from(productLinks);
+		}
+		
+		function shouldExcludeLink(href) {
+			const enclosurePartsUrl = 'https://www.futureautomation.co.uk/Product/EnclosureParts';
+			const urlInput = document.getElementById('urlInput').value;
+
+				if (href === enclosurePartsUrl && urlInput !== enclosurePartsUrl) {
+				return true;
+			}
+
+			return excludeKeywords.some(keyword => href.includes(keyword));
+		}
 
         function formatTitle(url) {
             return url.split('/').pop().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/-/g, ' ').toUpperCase();
@@ -1089,6 +1115,7 @@ function processPageContent(doc, pageUrl) {
                 timeout = setTimeout(() => func.apply(this, args), wait);
             };
         }
+		
     function printPage() {
         window.print();
     }
