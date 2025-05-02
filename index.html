@@ -451,8 +451,17 @@
             right: 10mm;
             height: auto;
             z-index: 3;
-            line-height: 1.8;
         }
+		
+		.description ul, .description ol {
+			padding-left: 50px; 
+			margin-left: 0;
+		}
+
+		.description li {
+			margin-bottom: 0px; 
+			margin-top: 5px
+		}
         
         .main-image {
             position: absolute;
@@ -579,7 +588,6 @@
             border-radius: 4px;
         }
         
-        /* Collapsible Panels */
         .panel {
             margin-bottom: 1rem;
             border: 1px solid var(--border-color);
@@ -613,7 +621,6 @@
             max-height: 1000px;
         }
         
-        /* Page Navigator */
         .page-navigator {
             position: fixed;
             top: 50%;
@@ -632,7 +639,7 @@
         }
         
         .page-navigator::-webkit-scrollbar {
-            width: 6px;
+            width: 20px;
         }
         
         .page-navigator::-webkit-scrollbar-track {
@@ -703,44 +710,54 @@
             opacity: 1;
         }
         
-        /* Print Styles */
-        @media print {
-            .container, .button-container, .status-container, .panel, 
-            .toast-container, .page-navigator, .page-controls, .carousel-controls {
-                display: none !important;
-            }
-            
-            .a4-page, .a4-page * {
-                visibility: visible !important;
-            }
-            
-            .a4-page {
-                position: relative !important;
-                width: 210mm !important;
-                height: 297mm !important;
-                page-break-before: auto !important;
-                page-break-after: always !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                border: 0 !important;
-                background-color: #ffffff !important;
-                transform: none !important;
-                box-shadow: none !important;
-            }
-            
-            .a4-page:last-child {
-                page-break-after: auto !important;
-            }
-            
-            .carousel {
-                display: block !important;
-                background: #000000 !important;
-            }
-            
-            .carousel img {
-                display: block !important;
-            }
-        }
+       @media print {
+			.container,
+			.button-container,
+			.status-container,
+			.panel,
+			.toast-container,
+			.page-navigator,
+			.page-controls,
+			.carousel-controls,
+			.page-control-btn,
+			.arrow.prev,
+			.arrow.next {
+				display: none !important;
+			}
+
+			.a4-page,
+			.a4-page * {
+				visibility: visible !important;
+			}
+
+			.a4-page {
+				position: relative !important;
+				width: 210mm !important;
+				height: 297mm !important;
+				page-break-before: auto !important;
+				page-break-after: always !important;
+				margin: 0 !important;
+				padding: 0 !important;
+				border: 0 !important;
+				background-color: #ffffff !important;
+				transform: none !important;
+				box-shadow: none !important;
+			}
+
+			.a4-page:last-child {
+				page-break-after: auto !important;
+			}
+
+			.carousel {
+				display: block !important;
+				background: #000000 !important;
+			}
+
+			.carousel img {
+				display: block !important;
+			}
+		}
+
     </style>
 </head>
 <body>
@@ -748,7 +765,6 @@
         <h1>Brochure Maker</h1>
         
         <div class="left">
-            <!-- Input Panel -->
             <div class="panel" id="inputPanel">
                 <div class="panel-header" style="cursor: default;">
                     <h3>Input URLs</h3>
@@ -782,7 +798,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                 </div>
             </div>
             
-            <!-- Status Container -->
             <div class="status-container" id="statusContainer" style="display: none;">
                 <div class="spinner" id="spinner"></div>
                 <div class="progress-container">
@@ -793,30 +808,24 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
         </div>
     </div>
     
-    <!-- Pages Container -->
     <div id="pagesContainer"></div>
     
-    <!-- Hidden Results Container -->
     <div id="results" style="display: none;"></div>
     
-    <!-- Page Navigator -->
     <div class="page-navigator" id="pageNavigator" style="display: none;"></div>
     
-    <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
     
     <script>
-        // Global Variables and Constants
         const visitedLinks = new Set();
         const processedUrls = new Set();
         const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
-        const rateLimit = 3; // Reduced rate to be more conservative
+        const rateLimit = 3; 
         const delayBetweenRequests = 1000 / rateLimit;
         const retryDelay = 2000;
         const maxRetries = 3;
-        const cacheExpirationTime = 30 * 60 * 1000; // 30 minutes
+        const cacheExpirationTime = 30 * 60 * 1000; 
         
-        // Cache for network requests
         const cache = {
             data: {},
             set: function(key, value) {
@@ -825,11 +834,9 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                     timestamp: Date.now()
                 };
                 
-                // Store in localStorage for persistence
                 try {
                     localStorage.setItem('brochureMakerCache', JSON.stringify(this.data));
                 } catch (e) {
-                    // localStorage might be full, so just ignore
                     console.warn('Failed to save cache to localStorage', e);
                 }
             },
@@ -861,17 +868,17 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
             }
         };
         
-        // Load cache from localStorage
+
         cache.loadFromStorage();
         
-        // Exclude Keywords 
+
         const excludeKeywords = [
             'Login', 'Account', 'mailto:', 'facebook.com', 'twitter.com', 
             'instagram.com', 'linkedin.com', 'privacy', 'terms', 'cookies',
             'copyright', 'sitemap', 'contact-us', 'about-us', 'help', 'faq'
         ];
         
-        // Template Manager
+
         class TemplateManager {
             constructor() {
                 this.templates = this.loadTemplates();
@@ -938,7 +945,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                     return;
                 }
                 
-                // Apply template settings to UI
                 document.getElementById('coverStyle').value = template.coverStyle;
                 document.getElementById('tableStyle').value = template.tableStyle;
                 document.getElementById('includeSpecs').checked = template.includeSpecs;
@@ -1929,7 +1935,7 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
         }
         
         function setupCarousel(carouselImages, carouselContainer, a4Page) {
-            let currentIndex = carouselImages.length - 1; // Start with the last image
+            let currentIndex = carouselImages.length - 1; 
             
             function updateCarousel() {
                 carouselContainer.innerHTML = '';
@@ -1938,7 +1944,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                 img.alt = "Carousel Image";
                 carouselContainer.appendChild(img);
                 
-                // Re-add the controls after updating the image
                 addCarouselControls();
             }
             
@@ -2002,53 +2007,68 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
             
             updateCarousel();
         }
+		
+		function addPageControls(page) {
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'page-controls';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'page-control-btn';
+            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
+            deleteBtn.title = 'Delete page';
+            deleteBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (confirm('Delete this page?')) {
+                    page.remove();
+                    updatePageNavigator();
+                }
+            });
+            
+            controlsDiv.appendChild(deleteBtn);
+            page.appendChild(controlsDiv);
+        }
         
         function cleanDescription(description) {
             const tables = description.querySelectorAll('table');
             const buttons = description.querySelectorAll('button');
             const links = description.querySelectorAll('a');
             const images = description.querySelectorAll('img, video, iframe');
-            
+
             images.forEach(image => {
                 const parent = image.parentElement;
                 if (parent) parent.remove();
                 image.remove();
             });
-            
+
             tables.forEach(table => table.remove());
             buttons.forEach(button => button.remove());
-            
             links.forEach(link => {
                 const href = link.getAttribute('href');
                 if (!/^\/Product\/Details\/[A-Za-z0-9\-]+$/.test(href)) {
                     link.remove();
                 }
             });
-            
             const paragraphs = description.querySelectorAll('p');
             paragraphs.forEach(paragraph => {
                 const nextElement = paragraph.nextElementSibling;
-                if (nextElement && (nextElement.querySelectorAll('img').length > 0 || 
-                                  nextElement.querySelectorAll('div').length > 0)) {
+                if (nextElement && (nextElement.querySelectorAll('img').length > 0 || nextElement.querySelectorAll('div').length > 0)) {
                     paragraph.remove();
                 }
             });
-            
+
             description.innerHTML = filterDescription(description.innerHTML);
         }
-        
+
         function filterDescription(text) {
             const productLinkPattern = /^\/Product\/Details\/[A-Za-z0-9\-]+$/;
             const parser = new DOMParser();
             const doc = parser.parseFromString(text, 'text/html');
-            
             const links = doc.querySelectorAll('a');
             links.forEach(link => {
                 const href = link.getAttribute('href');
                 const linkText = link.textContent.trim();
                 const isProductPage = productLinkPattern.test(href);
                 const isProductCode = /^[A-Za-z0-9\-]+$/.test(linkText);
-                
                 if (isProductPage && isProductCode) {
                     const textNode = document.createTextNode(linkText);
                     link.replaceWith(textNode);
@@ -2056,15 +2076,12 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                     link.remove();
                 }
             });
-            
             const filteredText = doc.body.innerHTML;
             const sentences = filteredText.split('. ');
-            const filteredSentences = sentences.filter(sentence => 
-                !(sentence.includes('see') && sentence.includes('for details'))
-            );
-            
+            const filteredSentences = sentences.filter(sentence => !(sentence.includes('see') && sentence.includes('for details')));
             return filteredSentences.join('. ');
         }
+
         
         function cleanTechnicalSpecificationTable(table) {
             const rows = Array.from(table.querySelectorAll('tr'));
@@ -2122,7 +2139,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
             pageNavigator.innerHTML = '';
             pageNavigator.style.display = 'flex';
             
-            // If we have a large number of pages, group them
             if (pages.length > 30) {
                 const groupSize = Math.ceil(pages.length / 30);
                 const groups = [];
@@ -2149,7 +2165,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                     pageNavigator.appendChild(groupDiv);
                 });
             } else {
-                // For smaller number of pages, no grouping needed
                 pages.forEach((page, index) => {
                     const dot = createPageDot(page, index);
                     pageNavigator.appendChild(dot);
@@ -2160,7 +2175,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                 const dot = document.createElement('div');
                 dot.className = 'page-navigator-dot';
                 
-                // Get the page title for the tooltip
                 let pageTitle = '';
                 if (page.dataset.productName) {
                     pageTitle = page.dataset.productName;
@@ -2179,7 +2193,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                     pageTitle = `Page ${index + 1}`;
                 }
                 
-                // Create tooltip
                 const tooltip = document.createElement('div');
                 tooltip.className = 'tooltip';
                 tooltip.textContent = pageTitle;
@@ -2211,7 +2224,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
         }
         
         function printPage() {
-            // Remove extra page-break-after on last page before printing
             const pages = document.querySelectorAll('.a4-page');
             if (pages.length > 0) {
                 const lastPage = pages[pages.length - 1];
@@ -2220,7 +2232,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                 
                 window.print();
                 
-                // Restore original style after printing
                 setTimeout(() => {
                     lastPage.style.pageBreakAfter = originalStyle;
                 }, 1000);
