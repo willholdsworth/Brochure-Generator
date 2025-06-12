@@ -830,7 +830,7 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
         const processedUrls = new Set();
         const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
         const rateLimit = 3; 
-        const delayBetweenRequests = 1000 / rateLimit;
+        const delayBetweenRequests = 250 / rateLimit;
         const retryDelay = 2000;
         const maxRetries = 3;
         const cacheExpirationTime = 30 * 60 * 1000; 
