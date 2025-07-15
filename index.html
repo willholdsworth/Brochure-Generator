@@ -6,7 +6,7 @@
     <title>BROCHURE MAKER</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
         :root {
             --primary-color: #333;
             --secondary-color: #f9f9f9;
@@ -31,18 +31,35 @@
         }
         
         body {
-            font-family: 'Open Sans', sans-serif;
-            color: var(--text-color);
-            background-color: var(--bg-color);
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #000000;
+            background-color: #ffffff;
+            line-height: 1.5;
         }
         
         .container {
-            width: 90%;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 1rem;
-            margin-bottom: 200px; 
+            padding: 20px;
+            margin-bottom: 55px; 
+        }
+        
+        .top-container {
+            background: #ffffff;
+            border: 0px solid #000000;
+            border-radius: 0;
+            padding: 30px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #000000;
+            text-align: center;
+            margin: 0 0 5px 0;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: bold;
+            padding-bottom: 15px;
         }
         
         .left {
@@ -50,48 +67,70 @@
             flex-direction: column;
             width: 100%;
         }
-        
 
-        textarea, input, select, button {
-            font-family: 'Open Sans', sans-serif;
+        textarea, input, select {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 14px;
+        }
+        
+        .input-section {
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #000000;
+            font-size: 1rem;
         }
         
         #pageUrls, #urlInput {
             width: 100%;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-            padding: 0.75rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
+            min-height: 120px;
+            padding: 15px;
+            border: 1px solid #000000;
+            border-radius: 8px;
             resize: vertical;
-            min-height: 100px;
+            background: #ffffff;
+            color: #000000;
+            font-family: monospace;
+			
         }
         
+        #pageUrls:focus, #urlInput:focus {
+            outline: none;
+            border-color: #000000;
+            box-shadow: inset 0 0 0 2px #000000;
+        }
 
         .button-container {
             display: flex;
             flex-wrap: wrap;
-            align-items: center;
-            margin-bottom: 1rem;
+            gap: 15px;
+            margin-top: 20px;
             width: 100%;
-            gap: 10px;
         }
         
         button {
-            padding: 10px 15px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
             flex: 1;
-            min-width: 120px;
+            min-width: 60px;
+            padding: 15px 20px;
+            border: 1px solid #000000;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #ffffff;
+            color: #000000;
+            transition: all 0.2s ease;
         }
         
-        button:hover {
-            background-color: #555;
+        button:hover:not(:disabled) {
+            background: #f5f5f5;
         }
         
         button:active {
@@ -99,8 +138,26 @@
         }
         
         button:disabled {
-            background-color: #ccc;
+            opacity: 0.5;
             cursor: not-allowed;
+        }
+        
+        button.primary-btn {
+            background: #000000;
+            color: #ffffff;
+        }
+        
+        button.primary-btn:hover:not(:disabled) {
+            background: #333333;
+        }
+        
+        #createButton {
+            background: #000000;
+            color: #ffffff;
+        }
+        
+        #createButton:hover:not(:disabled) {
+            background: #333333;
         }
         
         button.icon-button {
@@ -119,18 +176,21 @@
         .status-container {
             display: flex;
             align-items: center;
-            margin-top: 10px;
+            margin-top: 20px;
             margin-bottom: 20px;
-            padding: 10px;
-            border-radius: 4px;
-            background-color: var(--secondary-color);
+            padding: 15px;
+			border-radius: 15px;
+            border: 2px solid #000000;
+            background-color: #f0f0f0;
+            font-weight: 500;
+            width: 100%;
         }
         
         .progress-container {
             flex-grow: 1;
-            height: 10px;
-            background-color: #eee;
-            border-radius: 5px;
+            height: 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #000000;
             overflow: hidden;
             margin: 0 10px;
         }
@@ -138,7 +198,7 @@
         .progress-bar {
             height: 100%;
             width: 0;
-            background-color: var(--accent-color);
+            background-color: #000000;
             transition: width 0.3s ease;
         }
         
@@ -147,7 +207,7 @@
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            border-left-color: var(--info-color);
+            border-left-color: #000000;
             animation: spin 1s linear infinite;
             margin-right: 10px;
         }
@@ -160,6 +220,7 @@
         
         .status-text {
             font-size: 1em;
+            color: #000000;
         }
         
         .toast-container {
@@ -170,10 +231,10 @@
         }
         
         .toast {
-            background-color: var(--primary-color);
+            background-color: #000000;
             color: white;
             padding: 12px 20px;
-            border-radius: 4px;
+            border-radius: 0;
             margin-bottom: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             display: flex;
@@ -181,22 +242,28 @@
             animation: slideIn 0.3s ease-out forwards;
             max-width: 300px;
             position: relative;
+            border: 2px solid #000000;
         }
         
         .toast.error {
-            background-color: var(--error-color);
+            background-color: #000000;
+            color: #ffffff;
         }
         
         .toast.success {
-            background-color: var(--success-color);
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #000000;
         }
         
         .toast.warning {
-            background-color: var(--warning-color);
+            background-color: #000000;
+            color: #ffffff;
         }
         
         .toast.info {
-            background-color: var(--info-color);
+            background-color: #000000;
+            color: #ffffff;
         }
         
         .toast i {
@@ -248,6 +315,39 @@
             }
         }
         
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .top-container {
+                padding: 20px;
+            }
+            
+            .button-container {
+                flex-direction: column;
+            }
+            
+            button {
+                flex: none;
+                width: 100%;
+            }
+            
+            #pageUrls, #urlInput {
+                font-size: 16px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .top-container {
+                padding: 15px;
+            }
+            
+            button {
+                padding: 12px 15px;
+                font-size: 12px;
+            }
+        }
 
         .a4-page {
             width: 210mm;
@@ -296,19 +396,8 @@
                 transform: translateX(-25%) scale(0.5);
 				margin-left: 15px;
             }
-        }	auto;
-            padding: 0;
-            box-sizing: border-box;
-            border: 1px solid var(--primary-color);
-            position: relative;
-            background-color: var(--bg-color);
-            page-break-after: always;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
         }
 		
-		
-        
         .page-controls {
             position: absolute;
             top: 10px;
@@ -317,20 +406,22 @@
             opacity: 1;
         }
         
-        .page-control-btn {
-            background-color: rgba(0, 0, 0, 0.6);
-            color: white;
-            border: none;
-            border-radius: 3px;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.2s;
-        }
+		.page-control-btn {
+			background-color: rgba(0, 0, 0, 0.6);
+			color: white;
+			border: none;
+			border-radius: 3px;
+			width: 30px;
+			height: 30px;
+			padding: 0;
+			box-sizing: border-box;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			font-size: 14px;
+			transition: background-color 0.2s;
+		}
         
         .page-control-btn:hover {
             background-color: rgba(0, 0, 0, 0.8);
@@ -553,7 +644,6 @@
             vertical-align: middle; 
             font-size: var(--table-font-size);
         }
-        
 
         .template-control {
             display: flex;
@@ -771,48 +861,45 @@
 </head>
 <body>
     <div class="container">
-        <h1>Brochure Maker</h1>
-        
-        <div class="left">
-            <div class="panel" id="inputPanel">
-                <div class="panel-header" style="cursor: default;">
-                    <h3>Input URLs</h3>
+        <div class="top-container">
+            <h1>FLYER / BROCHURE DESIGNER</h1>
+            
+            <div class="left">
+                <div class="input-section">
+                    <label for="pageUrls">PAGES:</label>
+                    <textarea id="pageUrls" name="pageUrls" placeholder="Current page list will appear here">https://www.futureautomation.co.uk/Product/Details/FSE90</textarea>
                 </div>
-                <div class="panel-body open">
-                    <form id="urlForm">
-                        <label for="pageUrls">Current Page List:</label>
-                        <textarea id="pageUrls" name="pageUrls" placeholder="Current page list will appear here" rows="5">https://www.futureautomation.co.uk/Product/Details/FSE90</textarea>
-                        
-                        <label for="urlInput">Paste URLs to Generate List:</label>
-                        <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST' - 
+                
+                <div class="input-section">
+                    <label for="urlInput">PASTE URLS HERE TO GENERATE BROCHURE:</label>
+                    <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST' - 
 Eg. 
 https://www.futureautomation.co.uk/Projector
-https://www.futureautomation.co.uk/TV" rows="5"></textarea>
-                        
-                        <div class="button-container">
-                            <button type="button" id="createButton" onclick="fetchCdnUrls()" style="background-color: #4CAF50;">
-                                <i class="fas fa-file-pdf"></i> Create Brochure
-                            </button>
-                            <button type="button" id="generateListBtn" onclick="startScraping()" style="background-color: #2196F3;">
-                                <i class="fas fa-list"></i> Generate List
-                            </button>
-                            <button type="button" id="exportPdfBtn" onclick="printPage()" style="background-color: #ff9800;">
-                                <i class="fas fa-download"></i> Export PDF
-                            </button>
-                            <button type="button" id="clearAllBtn" onclick="clearAll()" style="background-color: #f44336;">
-                                <i class="fas fa-trash"></i> Clear All
-                            </button>
-                        </div>
-                    </form>
+https://www.futureautomation.co.uk/TV"></textarea>
                 </div>
-            </div>
-            
-            <div class="status-container" id="statusContainer" style="display: none;">
-                <div class="spinner" id="spinner"></div>
-                <div class="progress-container">
-                    <div class="progress-bar" id="progressBar"></div>
+                
+                <div class="button-container">
+                    <button type="button" id="createButton" onclick="fetchCdnUrls()" class="primary-btn">
+                        <i class="fas fa-file-pdf"></i> Create Brochure
+                    </button>
+                    <button type="button" id="generateListBtn" onclick="startScraping()">
+                        <i class="fas fa-list"></i> Generate List
+                    </button>
+                    <button type="button" id="exportPdfBtn" onclick="printPage()">
+                        <i class="fas fa-download"></i> Export PDF
+                    </button>
+                    <button type="button" id="clearAllBtn" onclick="clearAll()">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
                 </div>
-                <span class="status-text" id="statusText">Ready</span>
+                
+                <div class="status-container" id="statusContainer" style="display: none;">
+                    <div class="spinner" id="spinner"></div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <span class="status-text" id="statusText">Ready</span>
+                </div>
             </div>
         </div>
     </div>
@@ -830,7 +917,7 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
         const processedUrls = new Set();
         const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
         const rateLimit = 3; 
-        const delayBetweenRequests = 250 / rateLimit;
+        const delayBetweenRequests = 1000 / rateLimit;
         const retryDelay = 2000;
         const maxRetries = 3;
         const cacheExpirationTime = 30 * 60 * 1000; 
@@ -842,12 +929,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                     value: value,
                     timestamp: Date.now()
                 };
-                
-                try {
-                    localStorage.setItem('brochureMakerCache', JSON.stringify(this.data));
-                } catch (e) {
-                    console.warn('Failed to save cache to localStorage', e);
-                }
             },
             get: function(key) {
                 const item = this.data[key];
@@ -863,31 +944,17 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
             },
             clear: function() {
                 this.data = {};
-                localStorage.removeItem('brochureMakerCache');
             },
             loadFromStorage: function() {
-                try {
-                    const storedCache = localStorage.getItem('brochureMakerCache');
-                    if (storedCache) {
-                        this.data = JSON.parse(storedCache);
-                    }
-                } catch (e) {
-                    console.warn('Failed to load cache from localStorage', e);
-                }
             }
         };
         
-
-        cache.loadFromStorage();
-        
-
         const excludeKeywords = [
             'Login', 'Account', 'mailto:', 'facebook.com', 'twitter.com', 
             'instagram.com', 'linkedin.com', 'privacy', 'terms', 'cookies',
             'copyright', 'sitemap', 'contact-us', 'about-us', 'help', 'faq'
         ];
         
-
         class TemplateManager {
             constructor() {
                 this.templates = this.loadTemplates();
@@ -896,22 +963,10 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
             }
             
             loadTemplates() {
-                try {
-                    const savedTemplates = localStorage.getItem('brochureTemplates');
-                    return savedTemplates ? JSON.parse(savedTemplates) : this.getDefaultTemplates();
-                } catch (error) {
-                    console.error('Error loading templates:', error);
-                    return this.getDefaultTemplates();
-                }
+                return this.getDefaultTemplates();
             }
             
             saveTemplates() {
-                try {
-                    localStorage.setItem('brochureTemplates', JSON.stringify(this.templates));
-                } catch (error) {
-                    console.error('Error saving templates:', error);
-                    showToast('Failed to save templates', 'error');
-                }
             }
             
             getDefaultTemplates() {
@@ -938,10 +993,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
             }
             
             initEventListeners() {
-                document.getElementById('templateSelect').addEventListener('change', this.loadTemplate.bind(this));
-                document.getElementById('saveTemplateBtn').addEventListener('click', this.showSaveDialog.bind(this));
-                document.getElementById('deleteTemplateBtn').addEventListener('click', this.deleteTemplate.bind(this));
-                document.getElementById('applySettingsBtn').addEventListener('click', this.applySettings.bind(this));
             }
             
             loadTemplate(event) {
@@ -954,102 +1005,33 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                     return;
                 }
                 
-                document.getElementById('coverStyle').value = template.coverStyle;
-                document.getElementById('tableStyle').value = template.tableStyle;
-                document.getElementById('includeSpecs').checked = template.includeSpecs;
-                document.getElementById('includeTags').checked = template.includeTags;
-                
                 this.applySettings();
                 showToast(`Template "${templateName}" loaded`, 'success');
             }
             
             showSaveDialog() {
-                const templateName = prompt('Enter a name for this template:');
-                if (!templateName) return;
-                
-                if (this.templates[templateName] && 
-                    !confirm(`Template "${templateName}" already exists. Overwrite?`)) {
-                    return;
-                }
-                
-                const settings = {
-                    coverStyle: document.getElementById('coverStyle').value,
-                    tableStyle: document.getElementById('tableStyle').value,
-                    includeSpecs: document.getElementById('includeSpecs').checked,
-                    includeTags: document.getElementById('includeTags').checked
-                };
-                
-                this.templates[templateName] = settings;
-                this.saveTemplates();
-                
-                this.updateTemplateDropdown(templateName);
-                showToast(`Template "${templateName}" saved`, 'success');
             }
             
             deleteTemplate() {
-                const select = document.getElementById('templateSelect');
-                const templateName = select.value;
-                
-                if (!templateName) {
-                    showToast('No template selected', 'error');
-                    return;
-                }
-                
-                if (!confirm(`Delete template "${templateName}"?`)) {
-                    return;
-                }
-                
-                delete this.templates[templateName];
-                this.saveTemplates();
-                this.updateTemplateDropdown();
-                showToast(`Template "${templateName}" deleted`, 'success');
             }
             
             updateTemplateDropdown(selectTemplate = '') {
-                const select = document.getElementById('templateSelect');
-                select.innerHTML = '<option value="">Select Template</option>';
-                
-                Object.keys(this.templates).forEach(key => {
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = key;
-                    
-                    if (key === selectTemplate) {
-                        option.selected = true;
-                    }
-                    
-                    select.appendChild(option);
-                });
             }
             
             applySettings() {
                 const settings = {
-                    coverStyle: document.getElementById('coverStyle').value,
-                    tableStyle: document.getElementById('tableStyle').value,
-                    includeSpecs: document.getElementById('includeSpecs').checked,
-                    includeTags: document.getElementById('includeTags').checked
+                    coverStyle: 'modern',
+                    tableStyle: 'compact',
+                    includeSpecs: true,
+                    includeTags: true
                 };
                 
                 window.brochureSettings = settings;
                 
-                if (settings.coverStyle === 'modern') {
-                    window.createCoverPageStyle = 'modern';
-                } else if (settings.coverStyle === 'technical') {
-                    window.createCoverPageStyle = 'technical';
-                } else {
-                    window.createCoverPageStyle = 'minimal';
-                }
+                window.createCoverPageStyle = 'modern';
                 
-                if (settings.tableStyle === 'compact') {
-                    document.documentElement.style.setProperty('--table-padding', '2px 2px');
-                    document.documentElement.style.setProperty('--table-font-size', '7.5px');
-                } else if (settings.tableStyle === 'detailed') {
-                    document.documentElement.style.setProperty('--table-padding', '5px 5px');
-                    document.documentElement.style.setProperty('--table-font-size', '9px');
-                } else {
-                    document.documentElement.style.setProperty('--table-padding', '3px');
-                    document.documentElement.style.setProperty('--table-font-size', '8px');
-                }
+                document.documentElement.style.setProperty('--table-padding', '2px 2px');
+                document.documentElement.style.setProperty('--table-font-size', '7.5px');
                 
                 document.documentElement.style.setProperty(
                     '--specs-display', 
@@ -1059,8 +1041,6 @@ https://www.futureautomation.co.uk/TV" rows="5"></textarea>
                     '--tags-display', 
                     settings.includeTags ? 'flex' : 'none'
                 );
-                
-                showToast('Settings applied', 'success');
                 
                 const pages = document.querySelectorAll('.a4-page');
                 pages.forEach(page => {
@@ -1948,99 +1928,62 @@ function processPageContent(doc, pageUrl) {
 
         
         function setupCarousel(carouselImages, carouselContainer, a4Page) {
-            let currentIndex = carouselImages.length - 1; 
-            
-            function updateCarousel() {
-                carouselContainer.innerHTML = '';
-                const img = document.createElement('img');
-                img.src = carouselImages[currentIndex].src;
-                img.alt = "Carousel Image";
-                carouselContainer.appendChild(img);
-                
-                addCarouselControls();
-            }
-            
-            function addCarouselControls() {
-                const prevArrow = document.createElement('span');
-                prevArrow.className = 'arrow prev';
-                prevArrow.innerHTML = '&#9664;';
-                prevArrow.style.position = 'absolute';
-                prevArrow.style.top = '10px';
-                prevArrow.style.right = '45px';
-                prevArrow.style.zIndex = '100';
-                prevArrow.style.color = 'white';
-                prevArrow.style.cursor = 'pointer';
-                prevArrow.style.fontSize = '16px';
-                prevArrow.style.backgroundColor = 'rgba(0,0,0,0.6)';
-                prevArrow.style.padding = '5px 10px';
-                prevArrow.style.borderRadius = '3px';
-                prevArrow.onclick = () => {
-                    currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
-                    updateCarousel();
-                };
-                
-                const nextArrow = document.createElement('span');
-                nextArrow.className = 'arrow next';
-                nextArrow.innerHTML = '&#9654;';
-                nextArrow.style.position = 'absolute';
-                nextArrow.style.top = '10px';
-                nextArrow.style.right = '10px';
-                nextArrow.style.zIndex = '100';
-                nextArrow.style.color = 'white';
-                nextArrow.style.cursor = 'pointer';
-                nextArrow.style.fontSize = '16px';
-                nextArrow.style.backgroundColor = 'rgba(0,0,0,0.6)';
-                nextArrow.style.padding = '5px 10px';
-                nextArrow.style.borderRadius = '3px';
-                nextArrow.onclick = () => {
-                    currentIndex = (currentIndex + 1) % carouselImages.length;
-                    updateCarousel();
-                };
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'page-control-btn';
-                deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                deleteBtn.title = 'Delete page';
-                deleteBtn.style.position = 'absolute';
-                deleteBtn.style.top = '10px';
-                deleteBtn.style.right = '80px';
-                deleteBtn.style.zIndex = '100';
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (confirm('Delete this page?')) {
-                        a4Page.remove();
-                        updatePageNavigator();
-                    }
-                });
-                
-                carouselContainer.appendChild(prevArrow);
-                carouselContainer.appendChild(nextArrow);
-                carouselContainer.appendChild(deleteBtn);
-            }
-            
-            updateCarousel();
-        }
-		
-		function addPageControls(page) {
-            const controlsDiv = document.createElement('div');
-            controlsDiv.className = 'page-controls';
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'page-control-btn';
-            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            deleteBtn.title = 'Delete page';
-            deleteBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (confirm('Delete this page?')) {
-                    page.remove();
-                    updatePageNavigator();
-                }
-            });
-            
-            controlsDiv.appendChild(deleteBtn);
-            page.appendChild(controlsDiv);
-        }
-        
+			let currentIndex = carouselImages.length - 1; 
+			
+			function updateCarousel() {
+				carouselContainer.innerHTML = '';
+				const img = document.createElement('img');
+				img.src = carouselImages[currentIndex].src;
+				img.alt = "Carousel Image";
+				carouselContainer.appendChild(img);
+				
+				addCarouselControls();
+			}
+			
+			function addCarouselControls() {
+				const prevArrow = document.createElement('span');
+				prevArrow.className = 'arrow prev';
+				prevArrow.innerHTML = '&#9664;';
+				prevArrow.style.position = 'absolute';
+				prevArrow.style.top = '10px';
+				prevArrow.style.right = '120px';
+				prevArrow.style.zIndex = '100';
+				prevArrow.style.color = 'white';
+				prevArrow.style.cursor = 'pointer';
+				prevArrow.style.fontSize = '16px';
+				prevArrow.style.backgroundColor = 'rgba(0,0,0,0.6)';
+				prevArrow.style.padding = '5px 10px';
+				prevArrow.style.borderRadius = '3px';
+				prevArrow.onclick = () => {
+					currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
+					updateCarousel();
+				};
+				
+				const nextArrow = document.createElement('span');
+				nextArrow.className = 'arrow next';
+				nextArrow.innerHTML = '&#9654;';
+				nextArrow.style.position = 'absolute';
+				nextArrow.style.top = '10px';
+				nextArrow.style.right = '80px';
+				nextArrow.style.zIndex = '100';
+				nextArrow.style.color = 'white';
+				nextArrow.style.cursor = 'pointer';
+				nextArrow.style.fontSize = '16px';
+				nextArrow.style.backgroundColor = 'rgba(0,0,0,0.6)';
+				nextArrow.style.padding = '5px 10px';
+				nextArrow.style.borderRadius = '3px';
+				nextArrow.onclick = () => {
+					currentIndex = (currentIndex + 1) % carouselImages.length;
+					updateCarousel();
+				};
+				
+				carouselContainer.appendChild(prevArrow);
+				carouselContainer.appendChild(nextArrow);
+			}
+			
+			updateCarousel();
+		}
+
         function cleanDescription(description) {
             const tables = description.querySelectorAll('table');
             const buttons = description.querySelectorAll('button');
