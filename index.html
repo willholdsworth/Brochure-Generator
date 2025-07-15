@@ -809,7 +809,12 @@
             opacity: 1;
         }
         
-       @media print {
+		@media print {
+			@page {
+				size: A4 portrait !important;
+				margin: 0 !important;
+			}
+			
 			.container,
 			.button-container,
 			.status-container,
@@ -823,12 +828,12 @@
 			.arrow.next {
 				display: none !important;
 			}
-
+			
 			.a4-page,
 			.a4-page * {
 				visibility: visible !important;
 			}
-
+			
 			.a4-page {
 				position: relative !important;
 				width: 210mm !important;
@@ -842,16 +847,16 @@
 				transform: none !important;
 				box-shadow: none !important;
 			}
-
+			
 			.a4-page:last-child {
 				page-break-after: auto !important;
 			}
-
+			
 			.carousel {
 				display: block !important;
 				background: #000000 !important;
 			}
-
+			
 			.carousel img {
 				display: block !important;
 			}
