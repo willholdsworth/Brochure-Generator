@@ -10,2231 +10,1172 @@
         :root {
             --primary-color: #333;
             --secondary-color: #f9f9f9;
-            --accent-color: #4CAF50;
-            --error-color: #f44336;
             --border-color: #ddd;
-            --text-color: #333;
             --bg-color: #ffffff;
-            --success-color: #4CAF50;
-            --warning-color: #ff9800;
-            --info-color: #2196F3;
-            --table-padding: 2px 2px;
-            --table-font-size: 7.5px;
-            --specs-display: block;
-            --tags-display: flex;
         }
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #000000;
-            background-color: #ffffff;
-            line-height: 1.5;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-            margin-bottom: 55px; 
-        }
-        
-        .top-container {
-            background: #ffffff;
-            border: 0px solid #000000;
-            border-radius: 0;
-            padding: 30px;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-        
-        h1 {
-            color: #000000;
-            text-align: center;
-            margin: 0 0 5px 0;
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
-            font-weight: bold;
-            padding-bottom: 15px;
-        }
-        
-        .left {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-        }
-
-        textarea, input, select {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 14px;
-        }
-        
-        .input-section {
-            margin-bottom: 30px;
-            width: 100%;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #000000;
-            font-size: 1rem;
-        }
-        
-        #pageUrls, #urlInput {
-            width: 100%;
-            min-height: 120px;
-            padding: 15px;
-            border: 1px solid #000000;
-            border-radius: 8px;
-            resize: vertical;
-            background: #ffffff;
-            color: #000000;
-            font-family: monospace;
-			
-        }
-        
-        #pageUrls:focus, #urlInput:focus {
-            outline: none;
-            border-color: #000000;
-            box-shadow: inset 0 0 0 2px #000000;
-        }
-
-        .button-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
-            width: 100%;
-        }
-        
-        button {
-            flex: 1;
-            min-width: 60px;
-            padding: 15px 20px;
-            border: 1px solid #000000;
-            border-radius: 25px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            background: #ffffff;
-            color: #000000;
-            transition: all 0.2s ease;
-        }
-        
-        button:hover:not(:disabled) {
-            background: #f5f5f5;
-        }
-        
-        button:active {
-            transform: scale(0.98);
-        }
-        
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        button.primary-btn {
-            background: #000000;
-            color: #ffffff;
-        }
-        
-        button.primary-btn:hover:not(:disabled) {
-            background: #333333;
-        }
-        
-        #createButton {
-            background: #000000;
-            color: #ffffff;
-        }
-        
-        #createButton:hover:not(:disabled) {
-            background: #333333;
-        }
-        
-        button.icon-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-            min-width: auto;
-            flex: 0;
-        }
-        
-        button.icon-button i {
-            margin-right: 5px;
-        }
-        
-        .status-container {
-            display: flex;
-            align-items: center;
-            margin-top: 20px;
-            margin-bottom: 20px;
-            padding: 15px;
-			border-radius: 15px;
-            border: 2px solid #000000;
-            background-color: #f0f0f0;
-            font-weight: 500;
-            width: 100%;
-        }
-        
-        .progress-container {
-            flex-grow: 1;
-            height: 8px;
-            background-color: #f0f0f0;
-            border: 1px solid #000000;
-            overflow: hidden;
-            margin: 0 10px;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            width: 0;
-            background-color: #000000;
-            transition: width 0.3s ease;
-        }
-        
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border-left-color: #000000;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-        
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        
-        .status-text {
-            font-size: 1em;
-            color: #000000;
-        }
-        
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        .toast {
-            background-color: #000000;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 0;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            animation: slideIn 0.3s ease-out forwards;
-            max-width: 300px;
-            position: relative;
-            border: 2px solid #000000;
-        }
-        
-        .toast.error {
-            background-color: #000000;
-            color: #ffffff;
-        }
-        
-        .toast.success {
-            background-color: #ffffff;
-            color: #000000;
-            border-color: #000000;
-        }
-        
-        .toast.warning {
-            background-color: #000000;
-            color: #ffffff;
-        }
-        
-        .toast.info {
-            background-color: #000000;
-            color: #ffffff;
-        }
-        
-        .toast i {
-            margin-right: 10px;
-            font-size: 18px;
-        }
-        
-        .toast-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 3px;
-            width: 100%;
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-        
-        .toast-progress-bar {
-            height: 100%;
-            width: 100%;
-            background-color: rgba(255, 255, 255, 0.7);
-            animation: progress 5s linear forwards;
-        }
-        
-        @keyframes progress {
-            to {
-                width: 0%;
-            }
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #000; background: #fff; line-height: 1.5; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; margin-bottom: 55px; }
+        .top-container { background: #fff; padding: 30px; width: 100%; margin-bottom: 30px; }
+        h1 { color: #000; text-align: center; margin: 0 0 5px 0; font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: bold; padding-bottom: 15px; }
+        .left { display: flex; flex-direction: column; width: 100%; }
+        textarea, input, select { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; }
+        .input-section { margin-bottom: 30px; width: 100%; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: #000; font-size: 1rem; }
+        #pageUrls, #urlInput { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #000; border-radius: 8px; resize: vertical; background: #fff; color: #000; font-family: monospace; }
+        #pageUrls:focus, #urlInput:focus { outline: none; box-shadow: inset 0 0 0 2px #000; }
+        .button-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; width: 100%; }
+        button { flex: 1; min-width: 60px; padding: 15px 20px; border: 1px solid #000; border-radius: 25px; font-size: 14px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; background: #fff; color: #000; transition: all 0.2s ease; }
+        button:hover:not(:disabled) { background: #f5f5f5; }
+        button:active { transform: scale(0.98); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        #createButton { background: #000; color: #fff; }
+        #createButton:hover:not(:disabled) { background: #333; }
+        .status-container { display: flex; align-items: center; margin-top: 20px; margin-bottom: 20px; padding: 15px; border-radius: 15px; border: 2px solid #000; background: #f0f0f0; font-weight: 500; width: 100%; }
+        .progress-container { flex-grow: 1; height: 8px; background: #f0f0f0; border: 1px solid #000; overflow: hidden; margin: 0 10px; }
+        .progress-bar { height: 100%; width: 0; background: #000; transition: width 0.3s ease; }
+        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #000; animation: spin 1s linear infinite; margin-right: 10px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .status-text { font-size: 1em; color: #000; }
+        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .toast { background: #000; color: white; padding: 12px 20px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; animation: slideIn 0.3s ease-out forwards; max-width: 300px; position: relative; border: 2px solid #000; }
+        .toast.success { background: #fff; color: #000; }
+        .toast i { margin-right: 10px; font-size: 18px; }
+        .toast-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background: rgba(255,255,255,0.3); }
+        .toast-progress-bar { height: 100%; width: 100%; background: rgba(255,255,255,0.7); animation: progress 5s linear forwards; }
+        @keyframes progress { to { width: 0%; } }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
         @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .top-container {
-                padding: 20px;
-            }
-            
-            .button-container {
-                flex-direction: column;
-            }
-            
-            button {
-                flex: none;
-                width: 100%;
-            }
-            
-            #pageUrls, #urlInput {
-                font-size: 16px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .top-container {
-                padding: 15px;
-            }
-            
-            button {
-                padding: 12px 15px;
-                font-size: 12px;
-            }
+            .container { padding: 10px; }
+            .top-container { padding: 20px; }
+            .button-container { flex-direction: column; }
+            button { flex: none; width: 100%; }
         }
 
+        /* A4 PAGE — fixed mm dimensions, scaled with transform */
         .a4-page {
             width: 210mm;
             height: 297mm;
             margin: 2rem auto;
-            padding: 0;
-            box-sizing: border-box;
-            border: 1px solid var(--primary-color);
+            background: #fff;
             position: relative;
-            left: 0%;
-            transform: translateX(-00%);
-            background-color: var(--bg-color);
             page-break-after: always;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
             overflow: hidden;
             transform-origin: top center;
         }
-        
-        @media screen and (max-width: 1200px) {
-            .a4-page {
-                transform: translateX(-0%) scale(0.9);
-            }
-        }
-        
-        @media screen and (max-width: 992px) {
-            .a4-page {
-                transform: translateX(-0%) scale(0.7);
-            }
-        }
-        
-        @media screen and (max-width: 768px) {
-            .a4-page {
-                transform: translateX(-10%) scale(0.5);
-            }
-        }
-        
-        @media screen and (max-width: 576px) {
-            .a4-page {
-                transform: translateX(-30%) scale(0.5);
-				margin-left: 120px;
-            }
-        } 
-        
-		@media screen and (max-width: 470px) {
-            .a4-page {
-                transform: translateX(-25%) scale(0.5);
-				margin-left: 15px;
-            }
-        }
-		
-        .page-controls {
+        @media screen and (max-width: 1200px) { .a4-page { transform: scale(0.9); } }
+        @media screen and (max-width: 992px)  { .a4-page { transform: scale(0.7); } }
+        @media screen and (max-width: 768px)  { .a4-page { transform: translateX(-10%) scale(0.5); } }
+        @media screen and (max-width: 576px)  { .a4-page { transform: translateX(-30%) scale(0.5); margin-left: 120px; } }
+        @media screen and (max-width: 470px)  { .a4-page { transform: translateX(-25%) scale(0.5); margin-left: 15px; } }
+
+        /* delete button — not printed */
+        .page-controls { position: absolute; top: 5mm; right: 5mm; z-index: 100; }
+        .page-control-btn { background: rgba(180,0,0,0.55); color: white; border: none; border-radius: 2mm; width: 6mm; height: 6mm; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 3mm; transition: background 0.2s; }
+        .page-control-btn:hover { background: rgba(180,0,0,0.85); }
+
+        /* page navigator sidebar */
+        .page-navigator { position: fixed; top: 50%; left: 15px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 4px; z-index: 100; background: rgba(255,255,255,0.85); padding: 8px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; }
+        .page-navigator-dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; cursor: pointer; transition: transform 0.2s, background 0.2s; position: relative; }
+        .page-navigator-dot:hover { transform: scale(1.2); }
+        .page-navigator-dot.active { background: #000; }
+        .page-navigator-dot .tooltip { position: absolute; right: 20px; top: 0; background: rgba(0,0,0,0.8); color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap; visibility: hidden; opacity: 0; transition: opacity 0.2s; transform: translateY(-50%); z-index: 1000; }
+        .page-navigator-dot:hover .tooltip { visibility: visible; opacity: 1; }
+
+        /* ── PRODUCT PAGE ── clean editorial, content-aware ──
+           7mm safe print margins all sides.
+           Row 1: header bar
+           Row 2: image + text side by side — flex row, image natural width, text fills rest
+           Row 3: lifestyle image if present — spans description column width
+           Row 4: spec table — spans full width, anchored to bottom
+           Everything sizes to content. Spacer between text and spec absorbs whitespace. */
+
+        .fa-inner {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 100;
-            opacity: 1;
-        }
-        
-		.page-control-btn {
-			background-color: rgba(0, 0, 0, 0.6);
-			color: white;
-			border: none;
-			border-radius: 3px;
-			width: 30px;
-			height: 30px;
-			padding: 0;
-			box-sizing: border-box;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			cursor: pointer;
-			font-size: 14px;
-			transition: background-color 0.2s;
-		}
-        
-        .page-control-btn:hover {
-            background-color: rgba(0, 0, 0, 0.8);
-        }
-        
-        .carousel {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 33%;
-            overflow: hidden;
-            z-index: 1;
-            background: #000000;
-        }
-        
-        .carousel img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            opacity: 0.75;
-            background-color: black;
-            filter: contrast(30%) brightness(70%);
-            transition: opacity 0.5s;
-        }
-        
-        .carousel-controls {
-            position: absolute;
-            top: 50%;
-            width: 100%;
-            transform: translateY(-50%);
+            inset: 7mm;
             display: flex;
-            justify-content: space-between;
-            padding: 0 15px;
-            z-index: 2;
+            flex-direction: column;
+            font-family: 'Open Sans', sans-serif;
+            overflow: hidden;
         }
-        
-        .carousel-arrow {
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+
+        /* ── HEADER ── */
+        .pg-header {
             display: flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 18px;
-            transition: background-color 0.2s;
+            justify-content: space-between;
+            background: #000;
+            border-radius: 2mm;
+            padding: 2.5mm 4mm;
+            flex-shrink: 0;
+            margin-bottom: 5mm;
         }
-        
-        .carousel-arrow:hover {
-            background-color: rgba(0, 0, 0, 0.8);
-        }
-        
-        .carousel-indicators {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 5px;
-            z-index: 2;
-        }
-        
-        .carousel-indicator {
-            width: 10px;
-            height: 10px;
-            background-color: rgba(255, 255, 255, 0.5);
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        
-        .carousel-indicator.active {
-            background-color: white;
-        }
-        
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 33%;
-            background-color: rgba(255, 255, 255, 0.2);
-            z-index: 0;
-        }
-        
-        .logo {
-            position: absolute;
-            top: 10mm;
-            left: 10mm;
-            z-index: 3;
-            filter: invert(100%);
-            max-height: 60px;
-            max-width: 150px;
-        }
-        
-        .product-info {
-            position: absolute;
-            top: 10mm;
-            right: 10mm;
-            text-align: right;
-            z-index: 3;
-        }
-        
-        .product-name {
-            font-weight: bold;
-            font-size: 40px; 
-            margin-bottom: 5px;
-            color: white;
-        }
-        
-        .subheading {
-            font-weight: 300;
-            font-size: 14px;
-            margin-bottom: 0px;
-			margin-top: -10px;
-            color: white;    
-        }
-        
-        .description {
-            font-size: 10px; 
-            position: absolute;
-            top: 40%;
-            left: 10mm;
-            right: 10mm;
-            height: auto;
-            z-index: 3;
-        }
-		
-		.description ul, .description ol {
-			padding-left: 50px; 
-			margin-left: 0;
-		}
+        .pg-logo { height: 9mm; filter: invert(1); flex-shrink: 0; }
+        .pg-url  { font-size: 1.5mm; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; text-transform: uppercase; }
 
-		.description li {
-			margin-bottom: 0px; 
-			margin-top: 5px
-		}
-        
-        .main-image {
-            position: absolute;
-            top: 11%;
-            left: 55%;
-            width: 20rem;
-            height: auto;
-            max-width: 100%;
-            z-index: 3;
+        /* ── CONTENT ROW ── */
+        .pg-body {
+            display: flex;
+            flex-direction: row;
+            gap: 0;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
         }
-        
-        #tagsContainer {
+
+        /* Multi-image: column stretches to body height, images share it equally */
+        .pg-imgcol {
+            flex-shrink: 0;
+            width: 38%;
+            display: flex;
+            flex-direction: column;
+            align-self: stretch;
+            overflow: hidden;
+            border-right: 0.2mm solid #e8e8e8;
+            padding-right: 6mm;
+            margin-right: 7mm;
+        }
+        .pg-img {
+            flex: 1;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow: hidden;
+            min-height: 0;
+        }
+        .pg-img + .pg-img {
+            border-top: 0.2mm solid #e8e8e8;
+            padding-top: 4mm;
+            margin-top: 4mm;
+        }
+        .pg-img img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* 1-2 images: images size to content, column stretches via border */
+        .pg-imgcol.natural-height {
+            align-self: stretch;
+        }
+        .pg-imgcol.natural-height .pg-img {
+            flex: none;
+        }
+        .pg-imgcol.natural-height .pg-img img {
+            max-height: 90mm;
+            width: auto;
+        }
+
+        /* Full-width spec table below the body row */
+        .pg-specwrap-fullwidth {
+            margin-top: 10mm;
+            padding-top: 10mm;
+            border-top: 0.2mm solid #ddd;
+        }
+        .pg-body.single-img {
+            flex-direction: column;
+        }
+        .pg-body.single-img .pg-imgcol {
+            width: 100%;
+            align-self: auto;
+            flex-shrink: 0;
+            border-right: none;
+            border-bottom: 0.2mm solid #e8e8e8;
+            padding-right: 0;
+            padding-bottom: 5mm;
+            margin-right: 0;
+            margin-bottom: 5mm;
+            height: 90mm;
+        }
+        .pg-body.single-img .pg-img {
+            flex: none;
+            height: 100%;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        .pg-body.single-img .pg-img img {
+            max-height: 100%;
+            max-width: 55%;
+        }
+        .pg-body.single-img .pg-desccol {
+            border-left: none;
+            padding-left: 0;
+        }
+
+        /* Right column: full height flex column, spacer pushes spec to bottom */
+        .pg-desccol {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* product name */
+        .fa-namebox {
+            flex-shrink: 0;
+            padding-bottom: 3mm;
+            margin-bottom: 3.5mm;
+            border-bottom: 0.2mm solid #ddd;
+        }
+        .fa-pname {
+            font-size: 9mm;
+            font-weight: 300;
+            letter-spacing: 0.06em;
+            color: #000;
+            line-height: 1;
+        }
+        .fa-psub {
+            font-size: 2mm;
+            color: #999;
+            font-weight: 300;
+            letter-spacing: 0.14em;
+            margin-top: 1.2mm;
+            text-transform: uppercase;
+        }
+
+        /* description */
+        .fa-desc {
+            font-size: 2.3mm;
+            color: #444;
+            line-height: 1.75;
+            flex-shrink: 0;
+        }
+        .fa-desc p { margin: 0 0 1.8mm; }
+        .fa-desc p:first-child {
+            font-size: 2.5mm;
+            color: #111;
+            font-weight: 300;
+            line-height: 1.7;
+            margin-bottom: 3mm;
+        }
+        .fa-desc ul { margin: 0; padding: 0; list-style: none; }
+        .fa-desc li {
+            margin-bottom: 3mm;
+            padding-left: 3mm;
+            position: relative;
+            color: #555;
+            font-size: 2.2mm;
+        }
+        .fa-desc li::before { content: '—'; position: absolute; left: 0; color: #ccc; }
+        .fa-desc .alert { display: none; }
+        .fa-desc .row   { display: none; }
+
+        /* lifestyle: spans description column width */
+        .fa-lifestyle {
+            flex-shrink: 0;
+            overflow: hidden;
+            background: #0a0a0a;
+            position: relative;
+            aspect-ratio: 16 / 9;
+            max-height: 75mm;
+            min-height: 30mm;
+            border-radius: 2mm;
+            margin-bottom: 4mm;
+        }
+        .fa-lifestyle img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .fa-lifestyle-container + .fa-namebox { margin-top: 3.5mm; }
+        .fa-lifestyle-container .fa-lifestyle { margin-bottom: 0; }
+        .fa-ls-arrows { position: absolute; bottom: 2mm; right: 2mm; display: flex; gap: 1.5mm; align-items: center; }
+        .fa-ls-btn { background: rgba(255,255,255,0.15); color: white; border: none; border-radius: 1mm; width: 4.5mm; height: 4.5mm; font-size: 1.8mm; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .fa-ls-count { color: rgba(255,255,255,0.35); font-size: 1.6mm; letter-spacing: 0.05em; }
+
+        /* spec table */
+        .pg-specwrap {
+            flex-shrink: 0;
+            padding-top: 5mm;
+            border-top: 0.2mm solid #ddd;
+        }
+        .fa-speczone { }
+        .fa-speclabel {
+            font-size: 1.6mm;
+            font-weight: 400;
+            letter-spacing: 0.14em;
+            color: #aaa;
+            text-transform: uppercase;
+            margin-bottom: 3mm;
+        }
+        .fa-specwrap { border-radius: 2mm; overflow: hidden; border: 0.2mm solid #e8e8e8; }
+        .fa-spectable { width: 100%; border-collapse: collapse; font-size: 1.85mm; table-layout: fixed; }
+        .fa-spectable thead tr { background: #000; }
+        .fa-spectable thead th { padding: 1.2mm 2.5mm; color: white; font-weight: 400; text-align: center; letter-spacing: 0.04em; }
+        .fa-spectable thead th:first-child { text-align: left; width: 28%; }
+        .fa-spectable tbody tr:nth-child(odd)  { background: #fff; }
+        .fa-spectable tbody tr:nth-child(even) { background: #fafafa; }
+        .fa-spectable tbody td { padding: 0.85mm 2.5mm; color: #333; text-align: center; border-bottom: 0.2mm solid #f0f0f0; }
+        .fa-spectable tbody tr:last-child td { border-bottom: none; }
+        .fa-spectable tbody td:first-child { text-align: left; color: #666; font-weight: 400; letter-spacing: 0.02em; }
+
+        /* ── PAGE EDITOR PANEL (screen only, never printed) ── */
+        .pg-editor {
             position: absolute;
-            bottom: 4mm;
-            right: 8mm;
-            text-align: right;
-            z-index: 3;
-            display: var(--tags-display);
+            bottom: 5mm;
+            right: 5mm;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 2mm;
+            align-items: flex-end;
+        }
+        .pg-editor-section {
+            background: rgba(0,0,0,0.72);
+            border-radius: 2mm;
+            padding: 1.5mm 2mm;
+            display: flex;
+            flex-direction: row;
+            gap: 1.5mm;
+            align-items: center;
             flex-wrap: wrap;
             justify-content: flex-end;
-            max-width: 50%;
-            gap: 5px;
+            max-width: 70mm;
         }
-        
-        .tag-button {
-            background-color: black;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            padding: 5px 10px; 
-            margin: 0;
-            font-size: 0.7em; 
-            z-index: 3;
-            pointer-events: none;
-        }
-        
-        #bottomBlackBox {
-            position: absolute;
-            bottom: 4rem;
-            left: 5%;
-            width: 90%;
-            height: 1px;
-            background-color: black;
-            z-index: 2;
-        }
-        
-        #tableContainer {
-            position: absolute;
-            bottom: 7%; 
-            left: 50%;
-            transform: translateX(-50%); 
-            width: 90%; 
-            max-width: 100%;
-            overflow: hidden; 
-            z-index: 3;
-            border: 0px solid transparent; 
-            background-color: transparent; 
-            padding: 1px;
-            display: var(--specs-display);
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            border: 0px solid #ffffff;
-            font-size: 30px; 
-            table-layout: fixed; 
-        }
-        
-        th, td {
-            border: 1px solid #929292;
-            padding: var(--table-padding);
-            white-space: normal;  
-            word-wrap: break-word; 
-            text-align: center; 
-            overflow-wrap: break-word; 
-            word-break: break-word;
-            line-break: break-line;
-            height: 100%; 
-            vertical-align: middle; 
-            font-size: var(--table-font-size);
-        }
-
-        .template-control {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            gap: 5px;
-        }
-        
-        .template-control select {
-            flex-grow: 1;
-            padding: 8px;
-        }
-        
-        .template-settings {
-            background-color: var(--secondary-color);
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 15px;
-            border: 1px solid var(--border-color);
-        }
-        
-        .template-settings h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 16px;
-        }
-        
-        .setting-group {
-            margin-bottom: 10px;
-        }
-        
-        .setting-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        
-        .setting-group select, .setting-group input {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-        }
-        
-        .panel {
-            margin-bottom: 1rem;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        
-        .panel-header {
-            background-color: var(--secondary-color);
-            padding: 10px 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-        }
-        
-        .panel-header h3 {
-            margin: 0;
-            font-size: 16px;
-        }
-        
-        .panel-body {
-            padding: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease, padding 0.3s ease;
-        }
-        
-        .panel-body.open {
-            padding: 15px;
-            max-height: 1000px;
-        }
-        
-        .page-navigator {
-            position: fixed;
-            top: 50%;
-            left: 15px;
-            transform: translateY(-50%);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            z-index: 100;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 8px;
-            border-radius: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .page-navigator::-webkit-scrollbar {
-            width: 20px;
-        }
-        
-        .page-navigator::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 10px;
-        }
-        
-        .page-navigator::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-        
-        .page-navigator::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.3);
-        }
-        
-        .page-navigator-group {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            margin-bottom: 8px;
-        }
-        
-        .page-navigator-group-header {
-            font-size: 10px;
-            color: #555;
-            text-align: center;
-            margin-bottom: 2px;
-        }
-        
-        .page-navigator-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #ccc;
-            cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
-            position: relative;
-        }
-        
-        .page-navigator-dot:hover {
-            transform: scale(1.2);
-        }
-        
-        .page-navigator-dot.active {
-            background-color: var(--accent-color);
-        }
-        
-        .page-navigator-dot .tooltip {
-            position: absolute;
-            right: 20px;
-            top: 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 4px;
-            font-size: 12px;
+        .pg-editor-label {
+            font-size: 1.6mm;
+            color: rgba(255,255,255,0.45);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-right: 1mm;
             white-space: nowrap;
-            visibility: hidden;
-            opacity: 0;
-            transition: visibility 0s, opacity 0.2s;
-            transform: translateY(-50%);
-            z-index: 1000;
         }
-        
-        .page-navigator-dot:hover .tooltip {
-            visibility: visible;
-            opacity: 1;
+        .pg-ed-btn {
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border: 0.2mm solid rgba(255,255,255,0.2);
+            border-radius: 1.5mm;
+            padding: 0.8mm 1.8mm;
+            font-size: 1.6mm;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: 'Open Sans', sans-serif;
+            transition: background 0.15s;
         }
-        
-		@media print {
-			@page {
-				size: A4 portrait !important;
-				margin: 0 !important;
-			}
-			
-			.container,
-			.button-container,
-			.status-container,
-			.panel,
-			.toast-container,
-			.page-navigator,
-			.page-controls,
-			.carousel-controls,
-			.page-control-btn,
-			.arrow.prev,
-			.arrow.next {
-				display: none !important;
-			}
-			
-			.a4-page,
-			.a4-page * {
-				visibility: visible !important;
-			}
-			
-			.a4-page {
-				position: relative !important;
-				width: 210mm !important;
-				height: 297mm !important;
-				page-break-before: auto !important;
-				page-break-after: always !important;
-				margin: 0 !important;
-				padding: 0 !important;
-				border: 0 !important;
-				background-color: #ffffff !important;
-				transform: none !important;
-				box-shadow: none !important;
-			}
-			
-			.a4-page:last-child {
-				page-break-after: auto !important;
-			}
-			
-			.carousel {
-				display: block !important;
-				background: #000000 !important;
-			}
-			
-			.carousel img {
-				display: block !important;
-			}
-		}
+        .pg-ed-btn:hover { background: rgba(255,255,255,0.25); }
+        .pg-ed-btn.active { background: white; color: #000; }
+        .pg-ed-btn.del { background: rgba(180,0,0,0.5); border-color: rgba(180,0,0,0.6); }
+        .pg-ed-btn.del:hover { background: rgba(180,0,0,0.8); }
 
+        @media print {
+            @page { size: A4 portrait !important; margin: 0 !important; }
+            .container, .button-container, .status-container, .toast-container,
+            .page-navigator, .page-controls, .fa-ls-arrows, .pg-editor { display: none !important; }
+            .pg-img.hidden-img, .fa-lifestyle.hidden-ls { display: none !important; }
+            .a4-page {
+                position: relative !important;
+                width: 210mm !important; height: 297mm !important;
+                page-break-after: always !important;
+                margin: 0 !important; padding: 0 !important;
+                border: 0 !important; transform: none !important;
+                box-shadow: none !important;
+            }
+            .a4-page:last-child { page-break-after: auto !important; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="top-container">
-            <h1>FLYER / BROCHURE DESIGNER</h1>
-            
-            <div class="left">
-                <div class="input-section">
-                    <label for="pageUrls">PAGES:</label>
-                    <textarea id="pageUrls" name="pageUrls" placeholder="Current page list will appear here">https://www.futureautomation.co.uk/Product/Details/FSE90</textarea>
-                </div>
-                
-                <div class="input-section">
-                    <label for="urlInput">PASTE URLS HERE TO GENERATE BROCHURE:</label>
-                    <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST' - 
-Eg. 
+<div class="container">
+    <div class="top-container">
+        <h1>FLYER / BROCHURE DESIGNER</h1>
+        <div class="left">
+            <div class="input-section">
+                <label for="pageUrls">PAGES:</label>
+                <textarea id="pageUrls" placeholder="Current page list will appear here">https://www.futureautomation.co.uk/Product/Details/FSE90</textarea>
+            </div>
+            <div class="input-section">
+                <label for="urlInput">PASTE URLS HERE TO GENERATE BROCHURE:</label>
+                <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST'
+Eg.
 https://www.futureautomation.co.uk/Projector
 https://www.futureautomation.co.uk/TV"></textarea>
-                </div>
-                
-                <div class="button-container">
-                    <button type="button" id="createButton" onclick="fetchCdnUrls()" class="primary-btn">
-                        <i class="fas fa-file-pdf"></i> Create Brochure
-                    </button>
-                    <button type="button" id="generateListBtn" onclick="startScraping()">
-                        <i class="fas fa-list"></i> Generate List
-                    </button>
-                    <button type="button" id="exportPdfBtn" onclick="printPage()">
-                        <i class="fas fa-download"></i> Export PDF
-                    </button>
-                    <button type="button" id="clearAllBtn" onclick="clearAll()">
-                        <i class="fas fa-trash"></i> Clear All
-                    </button>
-                </div>
-                
-                <div class="status-container" id="statusContainer" style="display: none;">
-                    <div class="spinner" id="spinner"></div>
-                    <div class="progress-container">
-                        <div class="progress-bar" id="progressBar"></div>
-                    </div>
-                    <span class="status-text" id="statusText">Ready</span>
-                </div>
+            </div>
+            <div class="button-container">
+                <button type="button" id="createButton" onclick="fetchCdnUrls()"><i class="fas fa-file-pdf"></i> Create Brochure</button>
+                <button type="button" onclick="startScraping()"><i class="fas fa-list"></i> Generate List</button>
+                <button type="button" onclick="printPage()"><i class="fas fa-download"></i> Export PDF</button>
+                <button type="button" onclick="clearAll()"><i class="fas fa-trash"></i> Clear All</button>
+            </div>
+            <div class="status-container" id="statusContainer" style="display:none;">
+                <div class="spinner"></div>
+                <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+                <span class="status-text" id="statusText">Ready</span>
             </div>
         </div>
     </div>
-    
-    <div id="pagesContainer"></div>
-    
-    <div id="results" style="display: none;"></div>
-    
-    <div class="page-navigator" id="pageNavigator" style="display: none;"></div>
-    
-    <div class="toast-container" id="toastContainer"></div>
-    
-    <script>
-        const visitedLinks = new Set();
-        const processedUrls = new Set();
-        const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
-        const rateLimit = 3; 
-        const delayBetweenRequests = 1000 / rateLimit;
-        const retryDelay = 2000;
-        const maxRetries = 3;
-        const cacheExpirationTime = 30 * 60 * 1000; 
-        
-        const cache = {
-            data: {},
-            set: function(key, value) {
-                this.data[key] = {
-                    value: value,
-                    timestamp: Date.now()
-                };
-            },
-            get: function(key) {
-                const item = this.data[key];
-                if (!item) return null;
-                
-                const now = Date.now();
-                if (now - item.timestamp > cacheExpirationTime) {
-                    delete this.data[key];
-                    return null;
-                }
-                
-                return item.value;
-            },
-            clear: function() {
-                this.data = {};
-            },
-            loadFromStorage: function() {
-            }
-        };
-        
-        const excludeKeywords = [
-            'Login', 'Account', 'mailto:', 'facebook.com', 'twitter.com', 
-            'instagram.com', 'linkedin.com', 'privacy', 'terms', 'cookies',
-            'copyright', 'sitemap', 'contact-us', 'about-us', 'help', 'faq'
-        ];
-        
-        class TemplateManager {
-            constructor() {
-                this.templates = this.loadTemplates();
-                this.initEventListeners();
-                this.updateTemplateDropdown();
-            }
-            
-            loadTemplates() {
-                return this.getDefaultTemplates();
-            }
-            
-            saveTemplates() {
-            }
-            
-            getDefaultTemplates() {
-                return {
-                    'Product Catalog': {
-                        coverStyle: 'modern',
-                        tableStyle: 'compact',
-                        includeSpecs: true,
-                        includeTags: true
-                    },
-                    'Technical Guide': {
-                        coverStyle: 'technical',
-                        tableStyle: 'detailed',
-                        includeSpecs: true,
-                        includeTags: false
-                    },
-                    'Quick Reference': {
-                        coverStyle: 'minimal',
-                        tableStyle: 'simple',
-                        includeSpecs: false,
-                        includeTags: true
-                    }
-                };
-            }
-            
-            initEventListeners() {
-            }
-            
-            loadTemplate(event) {
-                const templateName = event.target.value;
-                if (!templateName) return;
-                
-                const template = this.templates[templateName];
-                if (!template) {
-                    showToast(`Template "${templateName}" not found`, 'error');
-                    return;
-                }
-                
-                this.applySettings();
-                showToast(`Template "${templateName}" loaded`, 'success');
-            }
-            
-            showSaveDialog() {
-            }
-            
-            deleteTemplate() {
-            }
-            
-            updateTemplateDropdown(selectTemplate = '') {
-            }
-            
-            applySettings() {
-                const settings = {
-                    coverStyle: 'modern',
-                    tableStyle: 'compact',
-                    includeSpecs: true,
-                    includeTags: true
-                };
-                
-                window.brochureSettings = settings;
-                
-                window.createCoverPageStyle = 'modern';
-                
-                document.documentElement.style.setProperty('--table-padding', '2px 2px');
-                document.documentElement.style.setProperty('--table-font-size', '7.5px');
-                
-                document.documentElement.style.setProperty(
-                    '--specs-display', 
-                    settings.includeSpecs ? 'block' : 'none'
-                );
-                document.documentElement.style.setProperty(
-                    '--tags-display', 
-                    settings.includeTags ? 'flex' : 'none'
-                );
-                
-                const pages = document.querySelectorAll('.a4-page');
-                pages.forEach(page => {
-                    applyTemplateToPage(page, settings);
-                });
-            }
+</div>
+
+<div id="pagesContainer"></div>
+<div id="results" style="display:none;"></div>
+<div class="page-navigator" id="pageNavigator" style="display:none;"></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const visitedLinks = new Set();
+const processedUrls = new Set();
+const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
+const delayBetweenRequests = 333;
+const retryDelay = 2000;
+const maxRetries = 3;
+const cacheExpirationTime = 30 * 60 * 1000;
+const cache = {
+    data: {},
+    set(k, v) { this.data[k] = { value: v, timestamp: Date.now() }; },
+    get(k) {
+        const item = this.data[k];
+        if (!item) return null;
+        if (Date.now() - item.timestamp > cacheExpirationTime) { delete this.data[k]; return null; }
+        return item.value;
+    },
+    clear() { this.data = {}; }
+};
+const excludeKeywords = ['Login','Account','mailto:','facebook.com','twitter.com','instagram.com','linkedin.com','privacy','terms','cookies','copyright','sitemap','contact-us','about-us','help','faq'];
+
+function showToast(message, type = 'info', duration = 5000) {
+    const tc = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    const icons = { success:'fa-check-circle', error:'fa-exclamation-circle', warning:'fa-exclamation-triangle' };
+    toast.innerHTML = `<i class="fas ${icons[type]||'fa-info-circle'}"></i><span>${message}</span><div class="toast-progress"><div class="toast-progress-bar"></div></div>`;
+    tc.appendChild(toast);
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out forwards';
+        setTimeout(() => tc.removeChild(toast), 300);
+    }, duration);
+}
+
+async function fetchWithRetry(url, retries = maxRetries, backoff = retryDelay) {
+    const cached = cache.get(url);
+    if (cached) return cached;
+    for (let i = 0; i < retries; i++) {
+        try {
+            const proxyUrl = `${corsProxyAPI}${encodeURIComponent(url)}`;
+            updateStatus(`Fetching: ${url.split('/').pop()}... (${i+1}/${retries})`);
+            const res = await fetch(proxyUrl);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const ct = res.headers.get('Content-Type') || '';
+            let data;
+            if (ct.includes('application/json')) data = await res.json();
+            else data = { contents: await res.text() };
+            cache.set(url, data);
+            return data;
+        } catch (err) {
+            if (i < retries - 1) { await delay(backoff * Math.pow(2, i)); }
+            else { showToast(`Failed to fetch ${url.split('/').pop()}`, 'error'); throw err; }
         }
-        
-        function applyTemplateToPage(page, settings) {
-            const tableContainer = page.querySelector('#tableContainer');
-            const tagsContainer = page.querySelector('#tagsContainer');
-            
-            if (tableContainer) {
-                tableContainer.style.display = settings.includeSpecs ? 'block' : 'none';
-            }
-            
-            if (tagsContainer) {
-                tagsContainer.style.display = settings.includeTags ? 'flex' : 'none';
-            }
-            
-            const carousel = page.querySelector('.carousel');
-            if (carousel && settings.coverStyle === 'technical') {
-                const images = carousel.querySelectorAll('img');
-                images.forEach(img => {
-                    img.style.filter = 'grayscale(100%) contrast(30%) brightness(70%)';
-                });
-            }
-        }
-        
-        function showToast(message, type = 'info', duration = 5000) {
-            const toastContainer = document.getElementById('toastContainer');
-            
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            let icon = '';
-            switch(type) {
-                case 'success':
-                    icon = '<i class="fas fa-check-circle"></i>';
-                    break;
-                case 'error':
-                    icon = '<i class="fas fa-exclamation-circle"></i>';
-                    break;
-                case 'warning':
-                    icon = '<i class="fas fa-exclamation-triangle"></i>';
-                    break;
-                default:
-                    icon = '<i class="fas fa-info-circle"></i>';
-            }
-            
-            toast.innerHTML = `
-                ${icon}
-                <span>${message}</span>
-                <div class="toast-progress">
-                    <div class="toast-progress-bar"></div>
-                </div>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideOut 0.3s ease-out forwards';
-                setTimeout(() => {
-                    toastContainer.removeChild(toast);
-                }, 300);
-            }, duration);
-        }
-        
-        async function fetchWithRetry(url, retries = maxRetries, backoffDelay = retryDelay) {
-            const cacheKey = url;
-            const cachedData = cache.get(cacheKey);
-            
-            if (cachedData) {
-                return cachedData;
-            }
-            
-            for (let i = 0; i < retries; i++) {
-                try {
-                    const proxyUrl = `${corsProxyAPI}${encodeURIComponent(url)}`;
-                    updateStatus(`Fetching: ${url.split('/').pop()}... (Attempt ${i + 1}/${retries})`);
-                    
-                    const response = await fetch(proxyUrl);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const contentType = response.headers.get('Content-Type');
-                    let data;
-                    
-                    if (contentType && contentType.includes('application/json')) {
-                        data = await response.json();
-                    } else if (contentType && (contentType.includes('text/html') || contentType.includes('text/plain'))) {
-                        const text = await response.text();
-                        data = { contents: text };
-                    } else {
-                        throw new Error(`Unexpected content type: ${contentType}`);
-                    }
-                    
-                    cache.set(cacheKey, data);
-                    return data;
-                } catch (error) {
-                    console.error(`Error fetching URL (Attempt ${i + 1}/${retries}):`, url, error);
-                    
-                    if (i < retries - 1) {
-                        const waitTime = backoffDelay * Math.pow(2, i);
-                        updateStatus(`Retrying in ${waitTime/1000} seconds...`);
-                        await delay(waitTime);
-                    } else {
-                        showToast(`Failed to fetch ${url.split('/').pop()} after ${retries} attempts`, 'error');
-                        throw error;
-                    }
-                }
-            }
-        }
-        
-        async function fetchHTML(url) {
-            try {
-                await delay(delayBetweenRequests);
-                const data = await fetchWithRetry(url);
-                return data.contents;
-            } catch (error) {
-                console.error('Error fetching HTML:', error);
-                return '';
-            }
-        }
-        
-        async function displayUrl(url) {
-            const output = document.getElementById('pageUrls');
-            output.value += `${url}\n`;
-            await delay(50);
-        }
-        
-        function delay(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-        
-        function shouldExcludeLink(href) {
-            return excludeKeywords.some(keyword => href.includes(keyword));
-        }
-        
-        async function getSublinks(url, baseUrl) {
-            const html = await fetchHTML(url);
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const sublinks = [];
-            const mainContent = doc.querySelector('main') || doc.body;
-            
-            mainContent.querySelectorAll('a:not(nav a):not(footer a):not(.MegaMenu a):not(.btn)').forEach(a => {
-                const href = a.getAttribute('href');
-                if (href && href.startsWith('/') && !href.includes('#') && !visitedLinks.has(href) && !shouldExcludeLink(href)) {
-                    sublinks.push(new URL(href, baseUrl).href);
-                    visitedLinks.add(href);
-                }
-            });
-            
-            return sublinks;
-        }
-        
-        async function getProductLinks(url) {
-            const html = await fetchHTML(url);
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const productLinks = new Set();
-            const excludeUrls = [
-                '/Product/EnclosureParts',
-                '/Product/EnclosureSupport',
-                '/Product/AudioVisual'
-            ];
-            
-            doc.querySelectorAll('a').forEach(a => {
-                const href = a.getAttribute('href');
-                if (href && href.startsWith('/Product/') && !excludeUrls.some(excludeUrl => href.includes(excludeUrl))) {
-                    const fullUrl = new URL(href, url).href;
-                    if (/^\/Product\/Details\/[A-Z0-9-]+$/.test(href) || /^\/Product\/[A-Za-z]+$/.test(href)) {
-                        productLinks.add(fullUrl);
-                    }
-                }
-            });
-            
-            return Array.from(productLinks);
-        }
-        
-        function formatTitle(url) {
-            return url.split('/').pop().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/-/g, ' ').toUpperCase();
-        }
-        
-        function generateCoverTitle(urls) {
-            const titles = Array.from(new Set(urls.map(url => formatTitle(url))));
-            return `COVER - ${titles.length > 1 ? titles.slice(0, -1).join(', ') + ' & ' + titles.slice(-1) : titles[0]} GUIDE`;
-        }
-        
-        async function scrape(url, parentDiv, baseUrl) {
-            if (visitedLinks.has(url)) return;
-            visitedLinks.add(url);
-            
-            updateStatus(`Scraping: ${url.split('/').pop()}`);
-            
-            try {
-                const productLinks = await getProductLinks(url);
-                if (productLinks.length > 0) {
-                    const heading = document.createElement('div');
-                    heading.textContent = 'CONTENTS - ' + formatTitle(url);
-                    heading.dataset.url = url;
-                    parentDiv.appendChild(heading);
-                    
-                    for (const link of productLinks) {
-                        const linkElement = document.createElement('div');
-                        linkElement.textContent = link;
-                        linkElement.dataset.url = url;
-                        parentDiv.appendChild(linkElement);
-                        
-                        updateProgress((Array.from(parentDiv.children).length / (productLinks.length + 1)) * 100);
-                    }
-                    
-                    updatePageURLs();
-                    return;
-                }
-                
-                const sublinks = await getSublinks(url, baseUrl);
-                for (const sublink of sublinks) {
-                    await delay(delayBetweenRequests);
-                    await scrape(sublink, parentDiv, baseUrl);
-                }
-            } catch (error) {
-                console.error('Error scraping URL:', url, error);
-                showToast(`Error scraping ${url.split('/').pop()}`, 'error');
-            }
-        }
-        
-        async function scrapeMultipleWebsites(urls) {
-            const resultsDiv = document.getElementById('results');
-            const statusContainer = document.getElementById('statusContainer');
-            
-            statusContainer.style.display = 'flex';
-            resultsDiv.innerHTML = '';
-            
-            try {
-                removeBackCoverAndBlanks();
-                
-                const coverTitle = generateCoverTitle(urls);
-                const coverPage = document.createElement('div');
-                coverPage.textContent = coverTitle;
-                resultsDiv.insertBefore(coverPage, resultsDiv.firstChild);
-                
-                let completed = 0;
-                const totalUrls = urls.length;
-                
-                for (const url of urls) {
-                    if (!processedUrls.has(url)) {
-                        updateStatus(`Processing ${url.split('/').pop()} (${completed + 1}/${totalUrls})`);
-                        await scrape(url, resultsDiv, new URL(url).origin);
-                        processedUrls.add(url);
-                        completed++;
-                        updateProgress((completed / totalUrls) * 100);
-                    }
-                }
-                
-                addBackCoverAndBlanks();
-                updatePageURLs();
-                
-                showToast('List generation complete', 'success');
-            } catch (error) {
-                console.error('Error scraping websites:', error);
-                showToast('Error during list generation', 'error');
-            } finally {
-                updateStatus('List generation complete');
-                hideProgress();
-            }
-        }
-        
-        function removeBackCoverAndBlanks() {
-            const resultsDiv = document.getElementById('results');
-            Array.from(resultsDiv.children).filter(div => 
-                div.textContent === 'BACK COVER' || div.textContent === 'BLANK'
-            ).forEach(div => div.remove());
-        }
-        
-        function addBackCoverAndBlanks() {
-            const resultsDiv = document.getElementById('results');
-            const productLinksCount = resultsDiv.querySelectorAll('div').length;
-            const totalPages = Math.ceil((productLinksCount + 1) / 4) * 4;
-            const blankPagesNeeded = totalPages - (productLinksCount + 1);
-            
-            if (blankPagesNeeded === 3) {
-                const blankPage = document.createElement('div');
-                blankPage.textContent = 'BLANK';
-                resultsDiv.insertBefore(blankPage, resultsDiv.children[1]);
-                
-                for (let i = 0; i < 2; i++) {
-                    const blankPage = document.createElement('div');
-                    blankPage.textContent = 'BLANK';
-                    resultsDiv.appendChild(blankPage);
-                }
-            } else {
-                for (let i = 0; i < blankPagesNeeded; i++) {
-                    const blankPage = document.createElement('div');
-                    blankPage.textContent = 'BLANK';
-                    resultsDiv.appendChild(blankPage);
-                }
-            }
-            
-            const backCoverPage = document.createElement('div');
-            backCoverPage.textContent = 'BACK COVER';
-            resultsDiv.appendChild(backCoverPage);
-        }
-        
-        function startScraping() {
-            visitedLinks.clear();
-            processedUrls.clear();
-            document.getElementById('results').innerHTML = '';
-            document.getElementById('pageUrls').value = ''; 
-            
-            const urls = Array.from(new Set(
-                document.getElementById('urlInput').value
-                    .split('\n')
-                    .map(url => url.trim())
-                    .filter(url => url)
-            ));
-            
-            if (urls.length > 0) {
-                scrapeMultipleWebsites(urls);
-            } else {
-                showToast('Please enter one or more URLs', 'warning');
-            }
-        }
-        
-        function updatePageURLs() {
-            const resultsDiv = document.getElementById('results');
-            const pageURLs = document.getElementById('pageUrls');
-            const productLinks = Array.from(resultsDiv.querySelectorAll('div'))
-                .map(div => div.textContent)
-                .join('\n');
-            
-            pageURLs.value = productLinks;
-        }
-        
-        function updateResultsForRemovedUrls(urls) {
-            const resultsDiv = document.getElementById('results');
-            const allDivs = Array.from(resultsDiv.children);
-            
-            Array.from(processedUrls)
-                .filter(url => !urls.includes(url))
-                .forEach(url => {
-                    allDivs.forEach(div => {
-                        if (div.dataset.url === url) div.remove();
-                    });
-                    processedUrls.delete(url);
-                });
-        }
-        
-        function scaleTableText(table) {
-            const rows = table.querySelectorAll('tr');
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td, th');
-                cells.forEach(cell => {
-                    cell.style.fontSize = 'var(--table-font-size)';
-                });
-            });
-        }
-        
-        function createCoverPage(text) {
-            const coverPage = document.createElement('div');
-            coverPage.classList.add('a4-page');
-            coverPage.dataset.productName = 'Cover: ' + text;
-            
-            coverPage.style.position = 'relative';
-            coverPage.style.overflow = 'hidden'; 
-            coverPage.style.width = '210mm'; 
-            coverPage.style.height = '297mm'; 
-            coverPage.style.backgroundColor = '#ffffff';
-            
-            function generateGradient(text) {
-                const uniqueChars = Array.from(new Set(text.toUpperCase()));
-                const luxuryColors = ['#F6F6F6', '#f1f1f1', '#999999', '#FFFFFF', '#FFFFFF'];
-                const gradientColors = uniqueChars.map((char, index) => 
-                    luxuryColors[index % luxuryColors.length]
-                );
-                return gradientColors;
-            }
-            
-            function generateBokehGradient(text) {
-                const colors = generateGradient(text);
-                const bokeh = colors.map((color, index) => {
-                    const size = 100; 
-                    const x = (index + 1) * 20; 
-                    const y = (index + 1) * 20;
-                    return `radial-gradient(circle at ${x}% ${y}%, ${color}, transparent ${size}%)`;
-                });
-                return bokeh.join(', ');
-            }
-            
-            const gradientRect = document.createElement('div');
-            gradientRect.style.position = 'absolute';
-            gradientRect.style.top = '10mm';
-            gradientRect.style.left = '10mm';
-            gradientRect.style.width = 'calc(100% - 20mm)';
-            gradientRect.style.height = 'calc(100% - 20mm)';
-            gradientRect.style.background = generateBokehGradient(text);
-            coverPage.appendChild(gradientRect);
-            
-            const wavePattern = document.createElement('div');
-            wavePattern.style.position = 'absolute';
-            wavePattern.style.top = '10mm';
-            wavePattern.style.left = '10mm';
-            wavePattern.style.width = 'calc(100% - 20mm)';
-            wavePattern.style.height = 'calc(100% - 20mm)';
-            wavePattern.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/11/27/29/13/1000_F_1127291390_NOfDcoRWKNQNVpcgjt3VfiSTUCesuvOd.jpg")';
-            wavePattern.style.backgroundSize = '130%'; 
-            wavePattern.style.backgroundPosition = 'center'; 
-            wavePattern.style.opacity = '0.1'; 
-            coverPage.appendChild(wavePattern);
-            
-            const blackBox = document.createElement('div');
-            blackBox.style.position = 'absolute';
-            blackBox.style.left = '50%';
-            blackBox.style.top = '0'; 
-            blackBox.style.transform = 'translateX(-50%)';
-            blackBox.style.width = '50mm';
-            blackBox.style.height = '90mm';
-            blackBox.style.backgroundColor = '#000000';
-            coverPage.appendChild(blackBox);
-            
-            const logo = document.createElement('img');
-            logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
-            logo.height = 60;
-            logo.alt = 'Future Automation Logo';
-            logo.style.position = 'absolute';
-            logo.style.bottom = '10mm';
-            logo.style.left = '50%';
-            logo.style.transform = 'translateX(-50%)';
-            logo.style.filter = 'invert(100%)'; 
-            blackBox.appendChild(logo);
-            
-            const title = document.createElement('div');
-            title.style.position = 'absolute';
-            title.style.top = '60%'; 
-            title.style.left = '50%';
-            title.style.transform = 'translate(-50%, -50%)';
-            title.style.width = 'calc(100% - 40mm)'; 
-            title.style.fontSize = '60px'; 
-            title.style.color = '#000000';
-            title.style.fontWeight = '100'; 
-            title.style.textAlign = 'center';
-            title.style.whiteSpace = 'normal'; 
-            title.style.wordWrap = 'break-word'; 
-            title.style.padding = '20mm';
-            title.style.letterSpacing = '0.15rem';
-            title.textContent = text;
-            coverPage.appendChild(title);
-            
-            const url = document.createElement('div');
-            url.style.position = 'absolute';
-            url.style.bottom = '20mm';
-            url.style.left = '50%';
-            url.style.transform = 'translateX(-50%)';
-            url.style.fontSize = '12px';
-            url.style.color = '#000000';
-            url.style.letterSpacing = '0.15rem';
-            url.textContent = 'www.futureautomation.net';
-            coverPage.appendChild(url);
-            
-            addPageControls(coverPage);
-            
-            if (window.createCoverPageStyle === 'technical') {
-                title.style.fontWeight = 'bold';
-                title.style.letterSpacing = '0.1rem';
-                title.style.fontFamily = 'monospace';
-            } else if (window.createCoverPageStyle === 'minimal') {
-                blackBox.style.width = '100%';
-                blackBox.style.height = '30mm';
-                title.style.fontSize = '40px';
-                title.style.top = '50%';
-            }
-            
-            return coverPage;
-        }
-        
-        function createContentsPage(title, urls) {
-            const contentsPage = document.createElement('div');
-            contentsPage.classList.add('a4-page');
-            contentsPage.dataset.productName = 'Contents: ' + title;
-            
-            contentsPage.style.position = 'relative';
-            contentsPage.style.overflow = 'hidden'; 
-            contentsPage.style.width = '210mm'; 
-            contentsPage.style.height = '297mm'; 
-            contentsPage.style.backgroundColor = '#ffffff';
-            
-            const heading = document.createElement('div');
-            heading.style.fontSize = '60px';
-			heading.style.lineHeight = '1.2';			
-            heading.style.color = '#000000';
-            heading.style.fontWeight = '100'; 
-            heading.style.textAlign = 'center';
-            heading.style.whiteSpace = 'normal'; 
-            heading.style.wordWrap = 'break-word'; 
-            heading.style.padding = '15mm';
-            heading.style.letterSpacing = '0.15rem';
-            heading.style.marginBottom = '10px';
-            heading.style.marginTop = '10px';
-            heading.textContent = title;
-            contentsPage.appendChild(heading);
-            
-            const listContainer = document.createElement('div');
-            listContainer.style.textAlign = 'center';
-            listContainer.style.overflowY = 'auto';
-            listContainer.style.height = 'calc(100% - 200px)';
-            
-            const list = document.createElement('ul');
-            list.style.fontSize = '14px';
-            list.style.paddingLeft = '0';
-            list.style.letterSpacing = '0.1rem';
-            list.style.listStyleType = 'none';
-            list.style.margin = '0';
-            
-            urls.forEach(url => {
-                const productCode = url.split('/').pop();
-                const listItem = document.createElement('li');
-                listItem.textContent = productCode;
-                list.appendChild(listItem);
-            });
-            
-            listContainer.appendChild(list);
-            contentsPage.appendChild(listContainer);
-            
-            const wavePattern = document.createElement('div');
-            wavePattern.style.position = 'absolute';
-            wavePattern.style.bottom = '0';
-            wavePattern.style.left = '0';
-            wavePattern.style.width = '100%';
-            wavePattern.style.height = '100mm';
-            wavePattern.style.backgroundImage = 'url("https://as2.ftcdn.net/v2/jpg/11/27/29/13/1000_F_1127291390_NOfDcoRWKNQNVpcgjt3VfiSTUCesuvOd.jpg")';
-            wavePattern.style.backgroundSize = 'cover'; 
-            wavePattern.style.backgroundPosition = 'center'; 
-            wavePattern.style.opacity = '0.2'; 
-            wavePattern.style.backgroundSize = '120%'; 
-            wavePattern.style.transform = 'rotate(0deg)'; 
-            contentsPage.appendChild(wavePattern);
-            
-            addPageControls(contentsPage);
-            
-            return contentsPage;
-        }
-        
-        function createBackCoverPage() {
-            const backCoverPage = document.createElement('div');
-            backCoverPage.classList.add('a4-page');
-            backCoverPage.dataset.productName = 'Back Cover';
-            
-            const logo = document.createElement('img');
-            logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
-            logo.height = 60;
-            logo.alt = 'Future Automation Logo';
-            logo.style.position = 'absolute';
-            logo.style.top = '50%';
-            logo.style.left = '50%';
-            logo.style.transform = 'translate(-50%, -50%)';
-            backCoverPage.appendChild(logo);
-            
-            const url = document.createElement('div');
-            url.style.position = 'absolute';
-            url.style.bottom = '10mm';
-            url.style.left = '50%';
-            url.style.transform = 'translateX(-50%)';
-            url.style.letterSpacing = '0.1rem';
-            url.style.fontSize = '14px';
-            url.textContent = 'www.futureautomation.net';
-            backCoverPage.appendChild(url);
-            
-            addPageControls(backCoverPage);
-            
-            return backCoverPage;
-        }
-        
-        function addPageControls(page) {
-            const controlsDiv = document.createElement('div');
-            controlsDiv.className = 'page-controls';
-            
-            const deleteBtn = document.createElement('button');
-            deleteBtn.className = 'page-control-btn';
-            deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            deleteBtn.title = 'Delete page';
-            deleteBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                if (confirm('Delete this page?')) {
-                    page.remove();
-                    updatePageNavigator();
-                }
-            });
-            
-            controlsDiv.appendChild(deleteBtn);
-            page.appendChild(controlsDiv);
-        }
-        
-        async function fetchCdnUrls() {
-            const pageUrls = document.getElementById('pageUrls').value.split('\n');
-            const pagesContainer = document.getElementById('pagesContainer');
-            const statusContainer = document.getElementById('statusContainer');
-            const createButton = document.getElementById('createButton');
-            
-            if (pageUrls.length === 0 || pageUrls[0].trim() === '') {
-                showToast('No URLs provided', 'warning');
-                return;
-            }
-            
-            pagesContainer.innerHTML = '';
-            statusContainer.style.display = 'flex';
-            createButton.disabled = true;
-            
-            try {
-                const totalUrls = pageUrls.length;
-                const batchSize = 3;
-                let processedCount = 0;
-                
-                const coverPages = [];
-                const contentsPages = [];
-                const backCoverPages = [];
-                const pageOrder = [];
-                const carouselImages = [];
-                let currentContents = [];
-                let contentsTitle = '';
-                
-                updateStatus('Processing pages...');
-                
-                for (let i = 0; i < totalUrls; i++) {
-                    const url = pageUrls[i].trim();
-                    if (!url) continue;
-                    
-                    updateProgress((i / totalUrls) * 100);
-                    
-                    if (url.startsWith('COVER')) {
-                        const coverText = url.split(' - ')[1];
-                        const coverPage = createCoverPage(coverText);
-                        pageOrder.push({ type: 'cover', page: coverPage });
-                    } else if (url.startsWith('CONTENTS')) {
-                        if (currentContents.length > 0) {
-                            contentsPages.push({ index: i, title: contentsTitle, urls: currentContents });
-                            currentContents = [];
-                        }
-                        contentsTitle = url.split(' - ')[1];
-                        contentsPages.push({ index: i, title: contentsTitle, urls: [] });
-                    } else if (url.startsWith('BACK COVER')) {
-                        const backCoverPage = createBackCoverPage();
-                        pageOrder.push({ type: 'backCover', page: backCoverPage });
-                    } else if (url === 'BLANK') {
-                        const blankPage = document.createElement('div');
-                        blankPage.classList.add('a4-page');
-                        addPageControls(blankPage);
-                        pageOrder.push({ type: 'blank', page: blankPage });
-                    } else {
-                        if (contentsPages.length > 0) {
-                            const currentContentsPage = contentsPages[contentsPages.length - 1];
-                            currentContentsPage.urls.push(url);
-                        }
-                        
-                        try {
-                            updateStatus(`Processing ${i+1}/${totalUrls}: ${url.split('/').pop()}`);
-                            
-                            await fetchPage(url, carouselImages);
-                            await delay(500);
-                            
-                            if ((i + 1) % batchSize === 0) {
-                                await delay(1000);
-                            }
-                            
-                            pageOrder.push({ type: 'url', page: pagesContainer.lastChild });
-                        } catch (error) {
-                            console.error('Error fetching page:', url, error);
-                            showToast(`Error processing ${url.split('/').pop()}`, 'error');
-                        }
-                    }
-                }
-                
-                if (currentContents.length > 0) {
-                    contentsPages.push({ index: totalUrls, title: contentsTitle, urls: currentContents });
-                }
-                
-                pagesContainer.innerHTML = '';
-                
-                pageOrder.forEach(item => {
-                    pagesContainer.appendChild(item.page);
-                });
-                
-                contentsPages.forEach(contents => {
-                    const contentsPage = createContentsPage(contents.title, contents.urls);
-                    pagesContainer.insertBefore(contentsPage, pagesContainer.children[contents.index]);
-                });
-                
-                updatePageNavigator();
-                
-                showToast(`Brochure created with ${totalUrls} pages`, 'success');
-            } catch (error) {
-                console.error('Error creating brochure:', error);
-                showToast('Error creating brochure', 'error');
-            } finally {
-                statusContainer.style.display = 'none';
-                createButton.disabled = false;
-                updateStatus('Brochure creation complete!');
-            }
-        }
-        
-        async function fetchPage(pageUrl) {
-            if (!pageUrl) return;
-            
-            try {
-                const data = await fetchWithRetry(pageUrl);
-                const parser = new DOMParser();
-                let doc;
-                
-                if (typeof data === 'object' && data.contents) {
-                    doc = parser.parseFromString(data.contents, 'text/html');
-                } else if (typeof data === 'string') {
-                    doc = parser.parseFromString(data, 'text/html');
-                } else {
-                    throw new Error('Invalid data format received');
-                }
-                
-                processPageContent(doc, pageUrl);
-            } catch (error) {
-                console.error('Error fetching page:', pageUrl, error);
-                showToast(`Error fetching ${pageUrl.split('/').pop()}`, 'error');
-                throw error;
-            }
-        }
-        
-function processPageContent(doc, pageUrl) {
-    const productName = doc.querySelector('#PageProductID');
-    const h2 = doc.querySelector('h2');
-    const images = doc.querySelectorAll('img');
-    const mainImage = Array.from(images).find(img => img.src.includes(pageUrl.split('/').pop())) ||
-                      Array.from(images).find(img => img.src.includes('QA2-1.png'));
-    const carouselImages = doc.querySelectorAll('.owl-carousel img');
-    const description = doc.querySelector('.mt-1.mb-5.pb-5');
-
-    if (description) cleanDescription(description);
-
-    const a4Page = document.createElement('div');
-    a4Page.classList.add('a4-page');
-    a4Page.dataset.productName = productName ? productName.textContent : pageUrl.split('/').pop();
-
-    const carouselContainer = document.createElement('div');
-    carouselContainer.classList.add('carousel');
-    a4Page.appendChild(carouselContainer);
-
-    const overlay = document.createElement('div');
-    overlay.classList.add('overlay');
-    a4Page.appendChild(overlay);
-
-    const logo = document.createElement('img');
-    logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
-    logo.height = 60;
-    logo.alt = 'Future Automation Logo';
-    logo.classList.add('logo');
-    a4Page.appendChild(logo);
-
-    const productInfo = document.createElement('div');
-    productInfo.classList.add('product-info');
-
-    const productNameContainer = document.createElement('div');
-    productNameContainer.classList.add('product-name');
-    productInfo.appendChild(productNameContainer);
-
-    const subtitleContainer = document.createElement('div');
-    subtitleContainer.classList.add('subheading');
-    productInfo.appendChild(subtitleContainer);
-
-    a4Page.appendChild(productInfo);
-
-    const mainImageContainer = document.createElement('div');
-    mainImageContainer.classList.add('main-image');
-    a4Page.appendChild(mainImageContainer);
-
-    const descriptionContainer = document.createElement('div');
-    descriptionContainer.classList.add('description');
-    a4Page.appendChild(descriptionContainer);
-
-    const tagsContainer = document.createElement('div');
-    tagsContainer.id = 'tagsContainer';
-    a4Page.appendChild(tagsContainer);
-
-    const tableContainer = document.createElement('div');
-    tableContainer.id = 'tableContainer';
-    a4Page.appendChild(tableContainer);
-
-    const bottomBlackBox = document.createElement('div');
-    bottomBlackBox.id = 'bottomBlackBox';
-    a4Page.appendChild(bottomBlackBox);
-
-    if (carouselImages.length > 0) {
-        setupCarousel(carouselImages, carouselContainer, a4Page);
-    }
-
-    if (mainImage) {
-        const imageElement = document.createElement('img');
-        imageElement.src = mainImage.src;
-        imageElement.style.maxWidth = "100%";
-        imageElement.style.height = "auto";
-        mainImageContainer.appendChild(imageElement);
-    }
-
-    if (productName) {
-        productNameContainer.textContent = productName.textContent;
-    }
-
-    if (h2) {
-        subtitleContainer.textContent = h2.textContent;
-    }
-
-    if (description) {
-        descriptionContainer.innerHTML = description.innerHTML;
-    }
-
-    const tags = doc.querySelectorAll('.row .Tag');
-    tags.forEach(tag => {
-        const button = document.createElement('button');
-        button.classList.add('tag-button');
-        button.textContent = tag.title || tag.textContent;
-        tagsContainer.appendChild(button);
-    });
-
-    const heading = Array.from(doc.querySelectorAll('h2')).find(h2 => h2.textContent.includes('TECHNICAL SPECIFICATION'));
-    if (heading) {
-        const table = heading.nextElementSibling.querySelector('table');
-        if (table) {
-            cleanTechnicalSpecificationTable(table);
-            const rows = Array.from(table.querySelectorAll('tr'));
-            let currentHeaderRow = null;
-            let allTBC = true;
-            let hasSpecifications = false;
-
-            rows.forEach((row, index) => {
-                const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
-                if (cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
-                    row.remove();
-                } else {
-                    if (currentHeaderRow && allTBC) {
-                        currentHeaderRow.remove();
-                    }
-                    currentHeaderRow = row;
-                    allTBC = true;
-                }
-
-                if (!cells.some(cell => cell.includes('TBC') || cell.includes('VARIABLE') || cell.match(/https?:\/\/[^\s]+/) || row.querySelector('a'))) {
-                    allTBC = false;
-                    hasSpecifications = true;
-                }
-            });
-
-            const headers = table.querySelectorAll('th[colspan]');
-            headers.forEach(header => {
-                const rowsUnderHeader = Array.from(table.querySelectorAll('tr')).filter(row =>
-                    row.previousElementSibling === header
-                );
-                if (rowsUnderHeader.length === 0) {
-                    header.remove();
-                }
-            });
-
-            tableContainer.appendChild(table);
-            scaleTableText(table);
-
-            const tableRows = Array.from(table.querySelectorAll('tr'));
-            const nonEmptyRows = tableRows.filter(row => {
-                const cells = Array.from(row.cells).map(cell => cell.textContent.trim());
-                return cells.some(cell => cell !== '');
-            });
-
-            if (nonEmptyRows.length <= 1) {
-                table.remove();
-            } else {
-                tableContainer.style.border = '0px solid #000000';
-                tableContainer.style.backgroundColor = '#ffffff';
-            }
-        }
-    }
-
-    addPageControls(a4Page);
-
-    pagesContainer.appendChild(a4Page);
-
-    if (window.brochureSettings) {
-        applyTemplateToPage(a4Page, window.brochureSettings);
     }
 }
 
-        
-        function setupCarousel(carouselImages, carouselContainer, a4Page) {
-			let currentIndex = carouselImages.length - 1; 
-			
-			function updateCarousel() {
-				carouselContainer.innerHTML = '';
-				const img = document.createElement('img');
-				img.src = carouselImages[currentIndex].src;
-				img.alt = "Carousel Image";
-				carouselContainer.appendChild(img);
-				
-				addCarouselControls();
-			}
-			
-			function addCarouselControls() {
-				const prevArrow = document.createElement('span');
-				prevArrow.className = 'arrow prev';
-				prevArrow.innerHTML = '&#9664;';
-				prevArrow.style.position = 'absolute';
-				prevArrow.style.top = '10px';
-				prevArrow.style.right = '120px';
-				prevArrow.style.zIndex = '100';
-				prevArrow.style.color = 'white';
-				prevArrow.style.cursor = 'pointer';
-				prevArrow.style.fontSize = '16px';
-				prevArrow.style.backgroundColor = 'rgba(0,0,0,0.6)';
-				prevArrow.style.padding = '5px 10px';
-				prevArrow.style.borderRadius = '3px';
-				prevArrow.onclick = () => {
-					currentIndex = (currentIndex - 1 + carouselImages.length) % carouselImages.length;
-					updateCarousel();
-				};
-				
-				const nextArrow = document.createElement('span');
-				nextArrow.className = 'arrow next';
-				nextArrow.innerHTML = '&#9654;';
-				nextArrow.style.position = 'absolute';
-				nextArrow.style.top = '10px';
-				nextArrow.style.right = '80px';
-				nextArrow.style.zIndex = '100';
-				nextArrow.style.color = 'white';
-				nextArrow.style.cursor = 'pointer';
-				nextArrow.style.fontSize = '16px';
-				nextArrow.style.backgroundColor = 'rgba(0,0,0,0.6)';
-				nextArrow.style.padding = '5px 10px';
-				nextArrow.style.borderRadius = '3px';
-				nextArrow.onclick = () => {
-					currentIndex = (currentIndex + 1) % carouselImages.length;
-					updateCarousel();
-				};
-				
-				carouselContainer.appendChild(prevArrow);
-				carouselContainer.appendChild(nextArrow);
-			}
-			
-			updateCarousel();
-		}
+async function fetchHTML(url) {
+    try { await delay(delayBetweenRequests); return (await fetchWithRetry(url)).contents; }
+    catch { return ''; }
+}
 
-        function cleanDescription(description) {
-            const tables = description.querySelectorAll('table');
-            const buttons = description.querySelectorAll('button');
-            const links = description.querySelectorAll('a');
-            const images = description.querySelectorAll('img, video, iframe');
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+function shouldExclude(href) { return excludeKeywords.some(k => href.includes(k)); }
 
-            images.forEach(image => {
-                const parent = image.parentElement;
-                if (parent) parent.remove();
-                image.remove();
-            });
+async function getSublinks(url, baseUrl) {
+    const html = await fetchHTML(url);
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const sublinks = [];
+    const main = doc.querySelector('main') || doc.body;
+    main.querySelectorAll('a:not(nav a):not(footer a):not(.MegaMenu a):not(.btn)').forEach(a => {
+        const href = a.getAttribute('href');
+        if (href && href.startsWith('/') && !href.includes('#') && !visitedLinks.has(href) && !shouldExclude(href)) {
+            sublinks.push(new URL(href, baseUrl).href);
+            visitedLinks.add(href);
+        }
+    });
+    return sublinks;
+}
 
-            tables.forEach(table => table.remove());
-            buttons.forEach(button => button.remove());
-            links.forEach(link => {
-                const href = link.getAttribute('href');
-                if (!/^\/Product\/Details\/[A-Za-z0-9\-]+$/.test(href)) {
-                    link.remove();
-                }
-            });
-            const paragraphs = description.querySelectorAll('p');
-            paragraphs.forEach(paragraph => {
-                const nextElement = paragraph.nextElementSibling;
-                if (nextElement && (nextElement.querySelectorAll('img').length > 0 || nextElement.querySelectorAll('div').length > 0)) {
-                    paragraph.remove();
-                }
-            });
-
-            description.innerHTML = filterDescription(description.innerHTML);
-        }
-
-        function filterDescription(text) {
-            const productLinkPattern = /^\/Product\/Details\/[A-Za-z0-9\-]+$/;
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(text, 'text/html');
-            const links = doc.querySelectorAll('a');
-            links.forEach(link => {
-                const href = link.getAttribute('href');
-                const linkText = link.textContent.trim();
-                const isProductPage = productLinkPattern.test(href);
-                const isProductCode = /^[A-Za-z0-9\-]+$/.test(linkText);
-                if (isProductPage && isProductCode) {
-                    const textNode = document.createTextNode(linkText);
-                    link.replaceWith(textNode);
-                } else {
-                    link.remove();
-                }
-            });
-            const filteredText = doc.body.innerHTML;
-            const sentences = filteredText.split('. ');
-            const filteredSentences = sentences.filter(sentence => !(sentence.includes('see') && sentence.includes('for details')));
-            return filteredSentences.join('. ');
-        }
-
-        
-        function cleanTechnicalSpecificationTable(table) {
-            const rows = Array.from(table.querySelectorAll('tr'));
-            rows.forEach(row => {
-                const buttons = row.querySelectorAll('button');
-                if (buttons.length > 0) {
-                    row.remove();
-                    return;
-                }
-                const cells = Array.from(row.cells);
-                cells.forEach(cell => {
-                    const images = cell.querySelectorAll('img');
-                    if (images.length > 0) {
-                        images.forEach(image => image.remove());
-                        const strongTags = cell.querySelectorAll('strong');
-                        strongTags.forEach(tag => tag.remove());
-                        if (cell.textContent.trim() === '') {
-                            cell.remove();
-                        }
-                    }
-                });
-            });
-            rows.forEach(row => {
-                const cells = Array.from(row.cells);
-                if (cells.some(cell => cell.textContent.trim() === '')) {
-                    row.remove();
-                }
-            });
-        }
-        
-        function updateStatus(message) {
-            const statusText = document.getElementById('statusText');
-            statusText.textContent = message;
-        }
-        
-        function updateProgress(percent) {
-            const progressBar = document.getElementById('progressBar');
-            progressBar.style.width = `${percent}%`;
-        }
-        
-        function hideProgress() {
-            const progressBar = document.getElementById('progressBar');
-            progressBar.style.width = '0%';
-        }
-        
-        function updatePageNavigator() {
-            const pageNavigator = document.getElementById('pageNavigator');
-            const pages = Array.from(document.querySelectorAll('.a4-page'));
-            
-            if (pages.length === 0) {
-                pageNavigator.style.display = 'none';
-                return;
-            }
-            
-            pageNavigator.innerHTML = '';
-            pageNavigator.style.display = 'flex';
-            
-            if (pages.length > 30) {
-                const groupSize = Math.ceil(pages.length / 30);
-                const groups = [];
-                
-                for (let i = 0; i < pages.length; i += groupSize) {
-                    groups.push(pages.slice(i, i + groupSize));
-                }
-                
-                groups.forEach((group, groupIndex) => {
-                    const groupDiv = document.createElement('div');
-                    groupDiv.className = 'page-navigator-group';
-                    
-                    const groupHeader = document.createElement('div');
-                    groupHeader.className = 'page-navigator-group-header';
-                    groupHeader.textContent = `${groupIndex * groupSize + 1}-${Math.min((groupIndex + 1) * groupSize, pages.length)}`;
-                    groupDiv.appendChild(groupHeader);
-                    
-                    group.forEach((page, index) => {
-                        const pageIndex = groupIndex * groupSize + index;
-                        const dot = createPageDot(page, pageIndex);
-                        groupDiv.appendChild(dot);
-                    });
-                    
-                    pageNavigator.appendChild(groupDiv);
-                });
-            } else {
-                pages.forEach((page, index) => {
-                    const dot = createPageDot(page, index);
-                    pageNavigator.appendChild(dot);
-                });
-            }
-            
-            function createPageDot(page, index) {
-                const dot = document.createElement('div');
-                dot.className = 'page-navigator-dot';
-                
-                let pageTitle = '';
-                if (page.dataset.productName) {
-                    pageTitle = page.dataset.productName;
-                } else if (page.querySelector('.product-name')) {
-                    pageTitle = page.querySelector('.product-name').textContent;
-                } else if (page.querySelector('div[style*="font-size: 60px"]')) {
-                    const titleText = page.querySelector('div[style*="font-size: 60px"]').textContent;
-                    if (titleText.includes('GUIDE')) {
-                        pageTitle = 'Cover Page';
-                    } else {
-                        pageTitle = titleText;
-                    }
-                } else if (page.querySelector('img[src*="Logo+Centered"]') && !page.querySelector('.carousel')) {
-                    pageTitle = 'Back Cover';
-                } else {
-                    pageTitle = `Page ${index + 1}`;
-                }
-                
-                const tooltip = document.createElement('div');
-                tooltip.className = 'tooltip';
-                tooltip.textContent = pageTitle;
-                dot.appendChild(tooltip);
-                
-                dot.addEventListener('click', () => {
-                    page.scrollIntoView({ behavior: 'smooth' });
-                });
-                
-                return dot;
-            }
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const index = pages.indexOf(entry.target);
-                        const dots = pageNavigator.querySelectorAll('.page-navigator-dot');
-                        
-                        dots.forEach((dot, i) => {
-                            dot.classList.toggle('active', i === index);
-                        });
-                    }
-                });
-            }, { threshold: 0.5 });
-            
-            pages.forEach(page => {
-                observer.observe(page);
-            });
-        }
-        
-        function printPage() {
-            const pages = document.querySelectorAll('.a4-page');
-            if (pages.length > 0) {
-                const lastPage = pages[pages.length - 1];
-                const originalStyle = lastPage.style.pageBreakAfter;
-                lastPage.style.pageBreakAfter = 'auto';
-                
-                window.print();
-                
-                setTimeout(() => {
-                    lastPage.style.pageBreakAfter = originalStyle;
-                }, 1000);
-            } else {
-                window.print();
+async function getProductLinks(url) {
+    const html = await fetchHTML(url);
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const links = new Set();
+    const ex = ['/Product/EnclosureParts','/Product/EnclosureSupport','/Product/AudioVisual'];
+    doc.querySelectorAll('a').forEach(a => {
+        const href = a.getAttribute('href');
+        if (href && href.startsWith('/Product/') && !ex.some(e => href.includes(e))) {
+            if (/^\/Product\/Details\/[A-Z0-9-]+$/.test(href) || /^\/Product\/[A-Za-z]+$/.test(href)) {
+                links.add(new URL(href, url).href);
             }
         }
-        
-        function clearAll() {
-            if (confirm('Clear all data? This will reset the page list and remove all generated pages.')) {
-                document.getElementById('pageUrls').value = '';
-                document.getElementById('urlInput').value = '';
-                document.getElementById('pagesContainer').innerHTML = '';
-                document.getElementById('results').innerHTML = '';
-                visitedLinks.clear();
-                processedUrls.clear();
-                updatePageNavigator();
-                showToast('All data cleared', 'info');
+    });
+    return Array.from(links);
+}
+
+function formatTitle(url) { return url.split('/').pop().replace(/([a-z])([A-Z])/g,'$1 $2').replace(/-/g,' ').toUpperCase(); }
+
+async function scrape(url, parentDiv, baseUrl) {
+    if (visitedLinks.has(url)) return;
+    visitedLinks.add(url);
+    updateStatus(`Scraping: ${url.split('/').pop()}`);
+    try {
+        const productLinks = await getProductLinks(url);
+        if (productLinks.length > 0) {
+            const h = document.createElement('div');
+            h.textContent = 'CONTENTS - ' + formatTitle(url);
+            h.dataset.url = url;
+            parentDiv.appendChild(h);
+            for (const link of productLinks) {
+                const d = document.createElement('div');
+                d.textContent = link;
+                d.dataset.url = url;
+                parentDiv.appendChild(d);
+            }
+            updatePageURLs();
+            return;
+        }
+        const sublinks = await getSublinks(url, baseUrl);
+        for (const sub of sublinks) { await delay(delayBetweenRequests); await scrape(sub, parentDiv, baseUrl); }
+    } catch { showToast(`Error scraping ${url.split('/').pop()}`, 'error'); }
+}
+
+async function scrapeMultipleWebsites(urls) {
+    const resultsDiv = document.getElementById('results');
+    document.getElementById('statusContainer').style.display = 'flex';
+    resultsDiv.innerHTML = '';
+    try {
+        removeBackCoverAndBlanks();
+        const cover = document.createElement('div');
+        cover.textContent = `COVER - ${urls.map(u => formatTitle(u)).join(', ')} GUIDE`;
+        resultsDiv.insertBefore(cover, resultsDiv.firstChild);
+        let done = 0;
+        for (const url of urls) {
+            if (!processedUrls.has(url)) {
+                updateStatus(`Processing (${done+1}/${urls.length}): ${url.split('/').pop()}`);
+                await scrape(url, resultsDiv, new URL(url).origin);
+                processedUrls.add(url);
+                updateProgress((++done / urls.length) * 100);
             }
         }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('pageUrls').addEventListener('input', debounce(function() {
-                if (this.value.trim()) {
-                    document.getElementById('createButton').disabled = false;
-                } else {
-                    document.getElementById('createButton').disabled = true;
-                }
-            }, 300));
-            
-            document.getElementById('clearAllBtn').addEventListener('click', clearAll);
-            
-            updatePageNavigator();
-        });
-        
-        function debounce(func, wait) {
-            let timeout;
-            return function(...args) {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(this, args), wait);
+        addBackCoverAndBlanks();
+        updatePageURLs();
+        showToast('List generation complete', 'success');
+    } catch { showToast('Error during list generation', 'error'); }
+    finally { updateStatus('Done'); hideProgress(); }
+}
+
+function removeBackCoverAndBlanks() {
+    Array.from(document.getElementById('results').children)
+        .filter(d => d.textContent === 'BACK COVER' || d.textContent === 'BLANK')
+        .forEach(d => d.remove());
+}
+
+function addBackCoverAndBlanks() {
+    const r = document.getElementById('results');
+    const count = r.querySelectorAll('div').length;
+    const total = Math.ceil((count + 1) / 4) * 4;
+    const blanks = total - (count + 1);
+    for (let i = 0; i < blanks; i++) { const b = document.createElement('div'); b.textContent = 'BLANK'; r.appendChild(b); }
+    const bc = document.createElement('div'); bc.textContent = 'BACK COVER'; r.appendChild(bc);
+}
+
+function startScraping() {
+    visitedLinks.clear(); processedUrls.clear();
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('pageUrls').value = '';
+    const urls = [...new Set(document.getElementById('urlInput').value.split('\n').map(u => u.trim()).filter(Boolean))];
+    if (urls.length) scrapeMultipleWebsites(urls);
+    else showToast('Please enter one or more URLs', 'warning');
+}
+
+function updatePageURLs() {
+    document.getElementById('pageUrls').value = Array.from(document.getElementById('results').querySelectorAll('div')).map(d => d.textContent).join('\n');
+}
+
+/* ── COVER / BACK COVER / CONTENTS ── */
+function createCoverPage(text) {
+    const page = document.createElement('div');
+    page.classList.add('a4-page');
+    page.dataset.productName = 'Cover: ' + text;
+    page.style.cssText = 'position:relative;overflow:hidden;';
+
+    const bg = document.createElement('div');
+    bg.style.cssText = 'position:absolute;top:10mm;left:10mm;width:calc(100% - 20mm);height:calc(100% - 20mm);background:radial-gradient(circle at 20% 20%,#f6f6f6,transparent 100%),radial-gradient(circle at 80% 80%,#f1f1f1,transparent 100%);';
+    page.appendChild(bg);
+
+    const bar = document.createElement('div');
+    bar.style.cssText = 'position:absolute;left:50%;top:0;transform:translateX(-50%);width:50mm;height:90mm;background:#000;';
+    page.appendChild(bar);
+
+    const logo = document.createElement('img');
+    logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
+    logo.style.cssText = 'position:absolute;bottom:10mm;left:50%;transform:translateX(-50%);height:15mm;filter:invert(1);';
+    bar.appendChild(logo);
+
+    const title = document.createElement('div');
+    title.style.cssText = 'position:absolute;top:60%;left:50%;transform:translate(-50%,-50%);width:calc(100% - 40mm);font-size:60px;color:#000;font-weight:100;text-align:center;word-wrap:break-word;padding:20mm;letter-spacing:0.15rem;';
+    title.textContent = text;
+    page.appendChild(title);
+
+    const url = document.createElement('div');
+    url.style.cssText = 'position:absolute;bottom:20mm;left:50%;transform:translateX(-50%);font-size:12px;color:#000;letter-spacing:0.15rem;';
+    url.textContent = 'www.futureautomation.net';
+    page.appendChild(url);
+
+    addPageControls(page);
+    return page;
+}
+
+function createContentsPage(title, urls) {
+    const page = document.createElement('div');
+    page.classList.add('a4-page');
+    page.dataset.productName = 'Contents: ' + title;
+
+    const h = document.createElement('div');
+    h.style.cssText = 'font-size:60px;line-height:1.2;color:#000;font-weight:100;text-align:center;padding:15mm;letter-spacing:0.15rem;';
+    h.textContent = title;
+    page.appendChild(h);
+
+    const list = document.createElement('ul');
+    list.style.cssText = 'font-size:14px;padding:0 20mm;letter-spacing:0.1rem;list-style:none;';
+    urls.forEach(u => { const li = document.createElement('li'); li.textContent = u.split('/').pop(); list.appendChild(li); });
+    page.appendChild(list);
+
+    addPageControls(page);
+    return page;
+}
+
+function createBackCoverPage() {
+    const page = document.createElement('div');
+    page.classList.add('a4-page');
+    page.dataset.productName = 'Back Cover';
+
+    const logo = document.createElement('img');
+    logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
+    logo.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);height:18mm;';
+    page.appendChild(logo);
+
+    const url = document.createElement('div');
+    url.style.cssText = 'position:absolute;bottom:10mm;left:50%;transform:translateX(-50%);letter-spacing:0.1rem;font-size:14px;';
+    url.textContent = 'www.futureautomation.net';
+    page.appendChild(url);
+
+    addPageControls(page);
+    return page;
+}
+
+function addPageControls(page) {
+    const div = document.createElement('div');
+    div.className = 'page-controls';
+    const btn = document.createElement('button');
+    btn.className = 'page-control-btn';
+    btn.innerHTML = '<i class="fas fa-trash"></i>';
+    btn.title = 'Delete page';
+    btn.addEventListener('click', e => { e.stopPropagation(); if (confirm('Delete this page?')) { page.remove(); updatePageNavigator(); } });
+    div.appendChild(btn);
+    page.appendChild(div);
+}
+
+/* ── IMAGE CLASSIFICATION ── */
+function classifyImages(carouselImgs, productCode) {
+    const code = productCode.toLowerCase();
+    const lifestyle = [], product = [];
+    const seen = new Set();
+    carouselImgs.forEach(img => {
+        const src = img.src || '';
+        if (!src || seen.has(src)) return;
+        seen.add(src);
+        const srcLower = src.toLowerCase();
+        const filename = src.split('/').pop().split('?')[0].toLowerCase();
+        if (srcLower.includes('/product/video/')) {
+            return;
+        } else if (srcLower.includes('/product/gallery/')) {
+            lifestyle.push(src);
+        } else if (srcLower.includes('/product/main/') && filename.startsWith(code)) {
+            product.push(src);
+        } else if (filename.startsWith(code)) {
+            product.push(src);
+        } else {
+            lifestyle.push(src);
+        }
+    });
+    return { lifestyle, product };
+}
+
+/* ── SHARED ELEMENT BUILDERS ── */
+function el(tag, css, html) {
+    const e = document.createElement(tag);
+    if (css) e.style.cssText = css;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+}
+
+function makeImg(src) {
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;display:block;';
+    return img;
+}
+
+function makeNameBox(productCode, subtitle) {
+    const box = el('div', null);
+    box.className = 'fa-namebox';
+    box.innerHTML = `<div class="fa-pname">${productCode}</div>${subtitle ? `<div class="fa-psub">${subtitle}</div>` : ''}`;
+    return box;
+}
+
+function makeDescCol(productCode, subtitle, descHTML) {
+    const col = el('div', null);
+    col.className = 'fa-desccol';
+    col.appendChild(makeNameBox(productCode, subtitle));
+    const desc = el('div', null, descHTML);
+    desc.className = 'fa-desc';
+    col.appendChild(desc);
+    return col;
+}
+
+function makeSpecZone(specTable) {
+    if (!specTable) return null;
+    const zone = el('div', null);
+    zone.className = 'fa-speczone';
+    const label = el('div', null, 'Technical Specification');
+    label.className = 'fa-speclabel';
+    zone.appendChild(label);
+    const wrap = el('div', null);
+    wrap.className = 'fa-specwrap';
+    specTable.className = 'fa-spectable';
+    wrap.appendChild(specTable);
+    zone.appendChild(wrap);
+    return zone;
+}
+
+function makePage(productCode) {
+    const page = document.createElement('div');
+    page.classList.add('a4-page');
+    page.dataset.productName = productCode;
+    const inner = el('div', null);
+    inner.className = 'fa-inner';
+    page.appendChild(inner);
+    return { page, inner };
+}
+
+function makeHeader(productCode, subtitle, tags) {
+    const hdr = el('div', null);
+    hdr.className = 'pg-header';
+
+    const logo = el('img', null);
+    logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
+    logo.className = 'pg-logo';
+    logo.alt = 'Future Automation';
+    hdr.appendChild(logo);
+
+    const urlDiv = el('div', null, 'www.futureautomation.net');
+    urlDiv.className = 'pg-url';
+    hdr.appendChild(urlDiv);
+
+    return hdr;
+}
+
+function makeLifestyleZone(lifestyleImgs) {
+    if (!lifestyleImgs || !lifestyleImgs.length) return null;
+
+    const container = el('div', null);
+    container.className = 'fa-lifestyle-container';
+    container.style.cssText = 'flex-shrink:0;display:flex;flex-direction:column;gap:2mm;margin-bottom:3.5mm;';
+
+    const heights = { 1: '55mm', 2: '40mm', 3: '28mm' };
+    let visibleCount = 1;
+    const maxShow = Math.min(lifestyleImgs.length, 3);
+
+    function buildZones() {
+        container.innerHTML = '';
+        const h = heights[visibleCount] || '55mm';
+        for (let i = 0; i < visibleCount; i++) {
+            const zone = el('div', null);
+            zone.className = 'fa-lifestyle';
+            zone.style.height = h;
+            const img = el('img', 'width:100%;height:100%;object-fit:cover;display:block;');
+            img.src = lifestyleImgs[i];
+            zone.appendChild(img);
+
+            if (lifestyleImgs.length > 1) {
+                let curIdx = i;
+                const arrows = el('div', null);
+                arrows.className = 'fa-ls-arrows';
+                const counter = el('span', null, `${i + 1}/${lifestyleImgs.length}`);
+                counter.className = 'fa-ls-count';
+                const prev = el('button', null, '&#9664;');
+                prev.className = 'fa-ls-btn';
+                prev.onclick = () => { curIdx = (curIdx - 1 + lifestyleImgs.length) % lifestyleImgs.length; img.src = lifestyleImgs[curIdx]; counter.textContent = `${curIdx + 1}/${lifestyleImgs.length}`; };
+                const next = el('button', null, '&#9654;');
+                next.className = 'fa-ls-btn';
+                next.onclick = () => { curIdx = (curIdx + 1) % lifestyleImgs.length; img.src = lifestyleImgs[curIdx]; counter.textContent = `${curIdx + 1}/${lifestyleImgs.length}`; };
+                arrows.appendChild(prev); arrows.appendChild(counter); arrows.appendChild(next);
+                zone.appendChild(arrows);
+            }
+            container.appendChild(zone);
+        }
+    }
+
+    buildZones();
+    container._setVisibleCount = (n) => { visibleCount = n; buildZones(); };
+    container._maxShow = maxShow;
+    return container;
+}
+/* ── UNIFIED LAYOUT ── header / tile zone / spacer / lifestyle+spec */
+
+function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTable, tags, lifestyleImgs) {
+    inner.appendChild(makeHeader(productCode, subtitle, tags));
+
+    const n = productImgs.length;
+    const body = el('div', null);
+    body.className = 'pg-body';
+    if (n === 1) body.classList.add('single-img');
+
+    const imgCol = el('div', null);
+    imgCol.className = 'pg-imgcol';
+    if (n <= 2 && n > 0) imgCol.classList.add('natural-height');
+    const imgs = n > 4 ? productImgs.slice(0, 4) : productImgs;
+    const imgZones = [];
+    imgs.forEach(src => {
+        const zone = el('div', null);
+        zone.className = 'pg-img';
+        zone.appendChild(makeImg(src));
+        imgCol.appendChild(zone);
+        imgZones.push(zone);
+    });
+
+    const descCol = el('div', null);
+    descCol.className = 'pg-desccol';
+
+    const lsZone = makeLifestyleZone(lifestyleImgs);
+    if (lsZone) descCol.appendChild(lsZone);
+
+    descCol.appendChild(makeNameBox(productCode, subtitle));
+
+    const desc = el('div', null, descHTML);
+    desc.className = 'fa-desc';
+    descCol.appendChild(desc);
+
+    if (specTable) {
+        const spacer = el('div', null);
+        descCol.appendChild(spacer);
+        const specWrap = el('div', null);
+        specWrap.className = 'pg-specwrap';
+        specWrap.appendChild(makeSpecZone(specTable));
+        descCol.appendChild(specWrap);
+    }
+
+    if (n > 0) body.appendChild(imgCol);
+    body.appendChild(descCol);
+    inner.appendChild(body);
+
+    const editor = el('div', null);
+    editor.className = 'pg-editor';
+
+    if (lsZone && lsZone._maxShow > 1) {
+        const lsSection = el('div', null);
+        lsSection.className = 'pg-editor-section';
+        const lsLabel = el('span', null, 'Lifestyle');
+        lsLabel.className = 'pg-editor-label';
+        lsSection.appendChild(lsLabel);
+        for (let i = 1; i <= lsZone._maxShow; i++) {
+            const btn = el('button', null, `${i}`);
+            btn.className = 'pg-ed-btn' + (i === 1 ? ' active' : '');
+            btn.title = `Show ${i} lifestyle image${i > 1 ? 's' : ''}`;
+            btn.onclick = () => {
+                lsZone._setVisibleCount(i);
+                lsSection.querySelectorAll('.pg-ed-btn').forEach((b, j) => b.classList.toggle('active', j + 1 === i));
             };
+            lsSection.appendChild(btn);
         }
-    </script>
+        editor.appendChild(lsSection);
+    }
+
+    if (imgZones.length > 0) {
+        const imgSection = el('div', null);
+        imgSection.className = 'pg-editor-section';
+        const imgLabel = el('span', null, 'Images');
+        imgLabel.className = 'pg-editor-label';
+        imgSection.appendChild(imgLabel);
+        imgZones.forEach((zone, i) => {
+            const btn = el('button', null, `${i + 1}`);
+            btn.className = 'pg-ed-btn active';
+            btn.title = `Toggle image ${i + 1}`;
+            btn.onclick = () => {
+                const hidden = zone.style.display === 'none';
+                zone.style.display = hidden ? '' : 'none';
+                btn.classList.toggle('active', hidden);
+            };
+            imgSection.appendChild(btn);
+        });
+        editor.appendChild(imgSection);
+    }
+
+    const delSection = el('div', null);
+    delSection.className = 'pg-editor-section';
+    const delBtn = el('button', null, '✕ Delete page');
+    delBtn.className = 'pg-ed-btn del';
+    delBtn.onclick = () => { if (confirm('Delete this page?')) { inner.closest('.a4-page').remove(); updatePageNavigator(); } };
+    delSection.appendChild(delBtn);
+    editor.appendChild(delSection);
+
+    inner.appendChild(editor);
+}
+
+/* ── MAIN PAGE PROCESSOR ── */
+function processPageContent(doc, pageUrl) {
+    const productNameEl = doc.querySelector('#PageProductID');
+    const h2El = doc.querySelector('h2');
+    const productCode = productNameEl ? productNameEl.textContent.trim() : pageUrl.split('/').pop();
+    const subtitle = h2El ? h2El.textContent.trim() : '';
+
+    const descEl = doc.querySelector('.mt-1.mb-5.pb-5');
+    if (descEl) cleanDescription(descEl);
+    const descHTML = descEl ? descEl.innerHTML : '';
+
+    const carouselImages = doc.querySelectorAll('.owl-carousel img');
+    const allImages = Array.from(doc.querySelectorAll('img'));
+    const mainImage = allImages.find(img => img.src.includes(pageUrl.split('/').pop())) ||
+                      allImages.find(img => img.src.includes('QA2-1.png'));
+
+    const carouselImgs = Array.from(carouselImages);
+    let { lifestyle, product } = classifyImages(carouselImgs, productCode);
+
+    if (product.length === 0 && mainImage) product.push(mainImage.src);
+
+    const tags = Array.from(doc.querySelectorAll('.row .Tag')).map(t => (t.title || t.textContent).trim()).filter(Boolean);
+
+    let specTable = null;
+    const specHeading = Array.from(doc.querySelectorAll('h2')).find(h => h.textContent.includes('TECHNICAL SPECIFICATION'));
+    if (specHeading && specHeading.nextElementSibling) {
+        const tbl = specHeading.nextElementSibling.querySelector('table');
+        if (tbl) {
+            cleanTechnicalSpecificationTable(tbl);
+
+            const rows = Array.from(tbl.querySelectorAll('tr'));
+            let currentHeaderRow = null;
+            let allTBC = true;
+
+            rows.forEach(row => {
+                const cells = Array.from(row.cells).map(c => c.textContent.trim());
+                const isShipping = cells.some(c => c.toUpperCase().includes('SHIPPING'));
+                const isDownloads = cells.some(c => c.toUpperCase().includes('DOWNLOADS'));
+                if (isShipping || isDownloads) { row.remove(); return; }
+                if (cells.some(c => c === 'TBC' || c === 'VARIABLE' || /https?:\/\//.test(c)) || row.querySelector('a')) {
+                    row.remove();
+                } else {
+                    if (currentHeaderRow && allTBC) currentHeaderRow.remove();
+                    currentHeaderRow = row;
+                    allTBC = true;
+                    if (!cells.some(c => c === 'TBC' || c === 'VARIABLE')) allTBC = false;
+                }
+            });
+
+            const nonEmpty = Array.from(tbl.querySelectorAll('tr')).filter(r => Array.from(r.cells).some(c => c.textContent.trim()));
+            if (nonEmpty.length > 1) specTable = tbl;
+        }
+    }
+
+    const { page, inner } = makePage(productCode);
+    buildLayout(inner, productCode, subtitle, descHTML, product, specTable, tags, lifestyle);
+
+    document.getElementById('pagesContainer').appendChild(page);
+
+    requestAnimationFrame(() => debugLayout(page, productCode));
+}
+
+function debugLayout(page, productCode) {
+    const PX_TO_MM = 25.4 / 96;
+    const pageRect = page.getBoundingClientRect();
+    const pageW = pageRect.width * PX_TO_MM;
+    const pageH = pageRect.height * PX_TO_MM;
+
+    function measure(el, label) {
+        if (!el) return `  ${label}: NOT FOUND`;
+        const r = el.getBoundingClientRect();
+        const top = (r.top - pageRect.top) * PX_TO_MM;
+        const h = r.height * PX_TO_MM;
+        const bottom = top + h;
+        const overflow = bottom > pageH ? ` ⚠ OVERFLOWS BY ${(bottom - pageH).toFixed(1)}mm` : '';
+        return `  ${label.padEnd(22)} top:${top.toFixed(1).padStart(6)}mm  h:${h.toFixed(1).padStart(6)}mm  bottom:${bottom.toFixed(1).padStart(6)}mm${overflow}`;
+    }
+
+    const inner = page.querySelector('.fa-inner');
+    const header = page.querySelector('.pg-header');
+    const body = page.querySelector('.pg-body');
+    const imgCol = page.querySelector('.pg-imgcol');
+    const imgZones = page.querySelectorAll('.pg-img');
+    const descCol = page.querySelector('.pg-desccol');
+    const lifestyle = page.querySelector('.fa-lifestyle');
+    const speczone = page.querySelector('.fa-speczone');
+
+    const lines = [
+        `\n── ${productCode} layout debug (page: ${pageW.toFixed(1)}×${pageH.toFixed(1)}mm) ──`,
+        measure(inner,    'fa-inner'),
+        measure(header,   'pg-header'),
+        measure(body,     'pg-body'),
+        measure(imgCol,   'pg-imgcol'),
+    ];
+
+    imgZones.forEach((z, i) => lines.push(measure(z, `pg-img[${i}]`)));
+    lines.push(measure(descCol,   'pg-desccol'));
+    lines.push(measure(lifestyle, 'fa-lifestyle'));
+    lines.push(measure(speczone,  'fa-speczone'));
+
+    const innerRect = inner ? inner.getBoundingClientRect() : pageRect;
+    const innerH = innerRect.height * PX_TO_MM;
+    const usedH = [header, body, lifestyle, speczone]
+        .filter(Boolean)
+        .reduce((sum, el) => sum + el.getBoundingClientRect().height * PX_TO_MM, 0);
+    const gapCount = [header, body, lifestyle, speczone].filter(Boolean).length - 1;
+    const gapTotal = gapCount * 3.5;
+    lines.push(`  ${'total used'.padEnd(22)} ${(usedH + gapTotal).toFixed(1)}mm / ${innerH.toFixed(1)}mm available`);
+
+    console.log(lines.join('\n'));
+}
+
+function cleanDescription(desc) {
+    desc.querySelectorAll('table,button').forEach(e => e.remove());
+    desc.querySelectorAll('img,video,iframe').forEach(e => { if (e.parentElement) e.parentElement.remove(); else e.remove(); });
+    desc.querySelectorAll('.row, .alert, .LidTypes, .clearfix').forEach(e => e.remove());
+    desc.querySelectorAll('a').forEach(a => { if (!/^\/Product\/Details\/[A-Za-z0-9\-]+$/.test(a.getAttribute('href'))) a.remove(); });
+    const parser = new DOMParser();
+    const d = parser.parseFromString(desc.innerHTML, 'text/html');
+    d.querySelectorAll('a').forEach(a => {
+        const href = a.getAttribute('href') || '';
+        const txt = a.textContent.trim();
+        if (/^\/Product\/Details\/[A-Za-z0-9\-]+$/.test(href) && /^[A-Za-z0-9\-]+$/.test(txt)) a.replaceWith(document.createTextNode(txt));
+        else a.remove();
+    });
+    desc.innerHTML = d.body.innerHTML.split('. ').filter(s => !(s.includes('see') && s.includes('for details'))).join('. ');
+}
+
+function cleanTechnicalSpecificationTable(table) {
+    Array.from(table.querySelectorAll('tr')).forEach(row => {
+        if (row.querySelectorAll('button').length) { row.remove(); return; }
+        row.querySelectorAll('img').forEach(img => { img.querySelectorAll && row.querySelectorAll('strong').forEach(s => s.remove()); img.remove(); });
+        if (Array.from(row.cells).some(c => c.textContent.trim() === '')) row.remove();
+    });
+}
+
+async function fetchPage(url) {
+    const data = await fetchWithRetry(url);
+    const html = (typeof data === 'object' && data.contents) ? data.contents : data;
+    processPageContent(new DOMParser().parseFromString(html, 'text/html'), url);
+}
+
+async function fetchCdnUrls() {
+    const lines = document.getElementById('pageUrls').value.split('\n');
+    const pagesContainer = document.getElementById('pagesContainer');
+    const statusContainer = document.getElementById('statusContainer');
+    const createButton = document.getElementById('createButton');
+    if (!lines[0] || !lines[0].trim()) { showToast('No URLs provided', 'warning'); return; }
+
+    pagesContainer.innerHTML = '';
+    statusContainer.style.display = 'flex';
+    createButton.disabled = true;
+
+    try {
+        const pageOrder = [];
+        const contentPages = [];
+        let contentsTitle = '';
+
+        for (let i = 0; i < lines.length; i++) {
+            const url = lines[i].trim();
+            if (!url) continue;
+            updateProgress((i / lines.length) * 100);
+
+            if (url.startsWith('COVER')) {
+                pageOrder.push({ type:'cover', page: createCoverPage(url.split(' - ')[1] || url) });
+            } else if (url.startsWith('CONTENTS')) {
+                contentsTitle = url.split(' - ')[1] || url;
+                contentPages.push({ index: i, title: contentsTitle, urls: [] });
+            } else if (url.startsWith('BACK COVER')) {
+                pageOrder.push({ type:'backCover', page: createBackCoverPage() });
+            } else if (url === 'BLANK') {
+                const bp = document.createElement('div');
+                bp.classList.add('a4-page');
+                addPageControls(bp);
+                pageOrder.push({ type:'blank', page: bp });
+            } else {
+                if (contentPages.length) contentPages[contentPages.length-1].urls.push(url);
+                try {
+                    updateStatus(`Processing ${i+1}/${lines.length}: ${url.split('/').pop()}`);
+                    await fetchPage(url);
+                    await delay(500);
+                    if ((i+1) % 3 === 0) await delay(1000);
+                    pageOrder.push({ type:'url', page: pagesContainer.lastChild });
+                } catch { showToast(`Error: ${url.split('/').pop()}`, 'error'); }
+            }
+        }
+
+        pagesContainer.innerHTML = '';
+        pageOrder.forEach(item => pagesContainer.appendChild(item.page));
+        contentPages.forEach(cp => {
+            const cpPage = createContentsPage(cp.title, cp.urls);
+            if (pagesContainer.children[cp.index]) pagesContainer.insertBefore(cpPage, pagesContainer.children[cp.index]);
+            else pagesContainer.appendChild(cpPage);
+        });
+
+        updatePageNavigator();
+        showToast('Brochure created', 'success');
+    } catch { showToast('Error creating brochure', 'error'); }
+    finally { statusContainer.style.display = 'none'; createButton.disabled = false; updateStatus('Done'); }
+}
+
+function updateStatus(msg) { document.getElementById('statusText').textContent = msg; }
+function updateProgress(pct) { document.getElementById('progressBar').style.width = `${pct}%`; }
+function hideProgress() { document.getElementById('progressBar').style.width = '0%'; }
+
+function updatePageNavigator() {
+    const nav = document.getElementById('pageNavigator');
+    const pages = Array.from(document.querySelectorAll('.a4-page'));
+    if (!pages.length) { nav.style.display = 'none'; return; }
+    nav.innerHTML = '';
+    nav.style.display = 'flex';
+    pages.forEach((page, i) => {
+        const dot = document.createElement('div');
+        dot.className = 'page-navigator-dot';
+        const tip = document.createElement('div');
+        tip.className = 'tooltip';
+        tip.textContent = page.dataset.productName || `Page ${i+1}`;
+        dot.appendChild(tip);
+        dot.addEventListener('click', () => page.scrollIntoView({ behavior:'smooth' }));
+        nav.appendChild(dot);
+    });
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                const idx = pages.indexOf(e.target);
+                nav.querySelectorAll('.page-navigator-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+            }
+        });
+    }, { threshold: 0.5 });
+    pages.forEach(p => obs.observe(p));
+}
+
+function printPage() {
+    const pages = document.querySelectorAll('.a4-page');
+    if (pages.length) {
+        const last = pages[pages.length-1];
+        const orig = last.style.pageBreakAfter;
+        last.style.pageBreakAfter = 'auto';
+        window.print();
+        setTimeout(() => { last.style.pageBreakAfter = orig; }, 1000);
+    } else { window.print(); }
+}
+
+function clearAll() {
+    if (!confirm('Clear all data?')) return;
+    document.getElementById('pageUrls').value = '';
+    document.getElementById('urlInput').value = '';
+    document.getElementById('pagesContainer').innerHTML = '';
+    document.getElementById('results').innerHTML = '';
+    visitedLinks.clear(); processedUrls.clear();
+    updatePageNavigator();
+    showToast('All data cleared', 'info');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('pageUrls').addEventListener('input', function() {
+        document.getElementById('createButton').disabled = !this.value.trim();
+    });
+    updatePageNavigator();
+});
+</script>
 </body>
 </html>
