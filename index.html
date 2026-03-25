@@ -95,6 +95,8 @@
         .fa-inner {
             position: absolute;
             inset: 7mm;
+            bottom: 0;
+            padding-bottom: 9mm;
             display: flex;
             flex-direction: column;
             font-family: 'Open Sans', sans-serif;
@@ -140,7 +142,7 @@
         .pg-img {
             flex: 1;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
             overflow: hidden;
             min-height: 0;
@@ -168,6 +170,19 @@
             max-height: 90mm;
             width: auto;
         }
+        .pg-body.single-img.wide-spec-mode .pg-imgcol.natural-height .pg-img img {
+            max-height: 140mm;
+            width: auto;
+        }
+        /* when lifestyle hidden, product images expand to fill the body height */
+        .pg-imgcol.natural-height.ls-hidden .pg-img {
+            flex: 1;
+        }
+        .pg-imgcol.natural-height.ls-hidden .pg-img img {
+            max-height: 100%;
+            max-width: 100%;
+            width: auto;
+        }
 
         /* Full-width spec table below the body row */
         .pg-specwrap-fullwidth {
@@ -176,33 +191,157 @@
             border-top: 0.2mm solid #ddd;
         }
         .pg-body.single-img {
-            flex-direction: column;
+            flex-direction: row;
         }
         .pg-body.single-img .pg-imgcol {
-            width: 100%;
-            align-self: auto;
+            width: 45%;
+            align-self: stretch;
             flex-shrink: 0;
-            border-right: none;
-            border-bottom: 0.2mm solid #e8e8e8;
-            padding-right: 0;
-            padding-bottom: 5mm;
-            margin-right: 0;
-            margin-bottom: 5mm;
-            height: 90mm;
+            border-right: 0.2mm solid #e8e8e8;
+            border-bottom: none;
+            padding-right: 6mm;
+            padding-bottom: 0;
+            margin-right: 7mm;
+            margin-bottom: 0;
+            height: auto;
         }
-        .pg-body.single-img .pg-img {
-            flex: none;
+        .pg-body.single-img .pg-imgcol .pg-img {
+            flex: 1;
             height: 100%;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
         }
-        .pg-body.single-img .pg-img img {
+        .pg-body.single-img .pg-imgcol .pg-img img {
             max-height: 100%;
-            max-width: 55%;
+            max-width: 100%;
         }
         .pg-body.single-img .pg-desccol {
             border-left: none;
             padding-left: 0;
+        }
+
+        /* ── SPLIT-TOP LAYOUT (2 product imgs + lifestyle) ── */
+        .pg-split-top {
+            display: flex;
+            flex-direction: row;
+            gap: 0;
+            flex-shrink: 0;
+            height: 108mm;
+            margin-bottom: 5mm;
+        }
+        .pg-split-top .pg-imgcol {
+            width: 38%;
+            flex-shrink: 0;
+            border-right: 0.2mm solid #e8e8e8;
+            padding-right: 6mm;
+            margin-right: 7mm;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            height: 100%;
+        }
+        .pg-split-top .pg-img {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            min-height: 0;
+            position: relative;
+        }
+        .pg-split-top .pg-img + .pg-img {
+            border-top: 0.2mm solid #e8e8e8;
+            padding-top: 4mm;
+            margin-top: 4mm;
+        }
+        .pg-split-top .pg-img img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+        .pg-split-top .pg-lscol {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 2mm;
+            height: 100%;
+        }
+        .pg-split-top .pg-lscol .ls-row {
+            display: flex;
+            flex-direction: row;
+            gap: 2mm;
+            overflow: hidden;
+        }
+        .pg-split-top .pg-lscol .ls-row.ls-row-main { flex: 2; min-height: 0; }
+        .pg-split-top .pg-lscol .ls-row.ls-row-sub  { flex: 1; min-height: 0; }
+        .pg-split-top .pg-lscol .fa-lifestyle {
+            flex: 1;
+            min-height: 0;
+            border-radius: 2mm;
+            overflow: hidden;
+            background: #0a0a0a;
+            position: relative;
+            aspect-ratio: 16 / 9;
+            width: 100%;
+        }
+        .pg-split-top .pg-lscol .fa-lifestyle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .pg-split-desc {
+            flex-shrink: 1;
+            overflow: hidden;
+            margin-bottom: 4mm;
+        }
+        .pg-split-desc .fa-namebox {
+            padding-bottom: 3mm;
+            margin-bottom: 3.5mm;
+            border-bottom: 0.2mm solid #ddd;
+        }
+        .pg-split-desc .fa-desc {
+            overflow: hidden;
+        }
+        .pg-split-wide-spec {
+            flex-shrink: 0;
+            padding-top: 5mm;
+            border-top: 0.2mm solid #ddd;
+        }
+
+        .pg-lower {
+            flex-shrink: 0;
+        }
+        .pg-lower .fa-lifestyle {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            border-radius: 2mm;
+            overflow: hidden;
+            background: #0a0a0a;
+            margin-bottom: 0;
+        }
+        .pg-lower .fa-lifestyle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .pg-lower-spec {
+            margin-top: 5mm;
+            padding-top: 5mm;
+            border-top: 0.2mm solid #ddd;
+        }
+
+        .pg-body.wide-spec-mode {
+            flex: none;
+        }
+        .pg-wide-spec {
+            flex-shrink: 0;
+            padding-top: 5mm;
+            border-top: 0.2mm solid #ddd;
+            margin-top: 5mm;
         }
 
         /* Right column: full height flex column, spacer pushes spec to bottom */
@@ -271,8 +410,7 @@
             background: #0a0a0a;
             position: relative;
             aspect-ratio: 16 / 9;
-            max-height: 75mm;
-            min-height: 30mm;
+            width: 100%;
             border-radius: 2mm;
             margin-bottom: 4mm;
         }
@@ -360,7 +498,7 @@
         @media print {
             @page { size: A4 portrait !important; margin: 0 !important; }
             .container, .button-container, .status-container, .toast-container,
-            .page-navigator, .page-controls, .fa-ls-arrows, .pg-editor { display: none !important; }
+            .page-navigator, .page-controls, .fa-ls-arrows, .pg-editor, .pg-img-nav { display: none !important; }
             .pg-img.hidden-img, .fa-lifestyle.hidden-ls { display: none !important; }
             .a4-page {
                 position: relative !important;
@@ -372,6 +510,29 @@
             }
             .a4-page:last-child { page-break-after: auto !important; }
         }
+
+        .pg-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 7mm;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 1.8mm;
+            color: #aaa;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0 7mm;
+            pointer-events: none;
+            background: #fff;
+        }
+        .pg-footer-left { text-align: left; }
+        .pg-footer-right { text-align: right; }
+        .pg-footer-center { flex: 1; text-align: center; font-size: 1.6mm; color: #bbb; }
+
     </style>
 </head>
 <body>
@@ -619,20 +780,71 @@ function createCoverPage(text) {
     return page;
 }
 
-function createContentsPage(title, urls) {
+function createContentsPage(title, urls, sectionStartPages) {
     const page = document.createElement('div');
     page.classList.add('a4-page');
     page.dataset.productName = 'Contents: ' + title;
+    page.dataset.pageType = 'contents';
+    page.style.cssText = 'position:relative;overflow:hidden;';
 
-    const h = document.createElement('div');
-    h.style.cssText = 'font-size:60px;line-height:1.2;color:#000;font-weight:100;text-align:center;padding:15mm;letter-spacing:0.15rem;';
-    h.textContent = title;
-    page.appendChild(h);
+    const stripe = el('div', null);
+    stripe.style.cssText = 'position:absolute;left:0;top:0;width:28mm;height:100%;background:#000;';
 
-    const list = document.createElement('ul');
-    list.style.cssText = 'font-size:14px;padding:0 20mm;letter-spacing:0.1rem;list-style:none;';
-    urls.forEach(u => { const li = document.createElement('li'); li.textContent = u.split('/').pop(); list.appendChild(li); });
-    page.appendChild(list);
+    const stripeLabel = el('div', null, 'CONTENTS');
+    stripeLabel.style.cssText = 'position:absolute;bottom:18mm;left:0;width:28mm;text-align:center;color:rgba(255,255,255,0.18);font-family:Open Sans,sans-serif;font-size:2mm;letter-spacing:0.3em;font-weight:400;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;transform-origin:center center;left:50%;transform:translateX(-50%) rotate(180deg);';
+
+    const logoWrap = el('div', null);
+    logoWrap.style.cssText = 'position:absolute;top:10mm;left:0;width:28mm;display:flex;justify-content:center;';
+    const logo = el('img', null);
+    logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
+    logo.style.cssText = 'height:7mm;filter:invert(1);';
+    logoWrap.appendChild(logo);
+
+    stripe.appendChild(stripeLabel);
+    stripe.appendChild(logoWrap);
+    page.appendChild(stripe);
+
+    const content = el('div', null);
+    content.style.cssText = 'position:absolute;left:36mm;top:0;right:0;bottom:0;display:flex;flex-direction:column;padding:14mm 12mm 12mm 0;font-family:Open Sans,sans-serif;';
+
+    const titleEl = el('div', null, title);
+    titleEl.style.cssText = 'font-size:9mm;font-weight:100;color:#000;letter-spacing:0.08em;line-height:1.1;margin-bottom:2mm;flex-shrink:0;';
+
+    const subtitle = el('div', null, 'www.futureautomation.net');
+    subtitle.style.cssText = 'font-size:2mm;color:#bbb;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:8mm;flex-shrink:0;';
+
+    const rule = el('div', null);
+    rule.style.cssText = 'width:100%;height:0.3mm;background:#000;margin-bottom:8mm;flex-shrink:0;';
+
+    content.appendChild(titleEl);
+    content.appendChild(subtitle);
+    content.appendChild(rule);
+
+    const list = el('div', null);
+    list.style.cssText = 'flex:1;overflow:hidden;';
+
+    urls.forEach((u, i) => {
+        const name = u.split('/').pop().replace(/([a-z])([A-Z])/g,'$1 $2').replace(/-/g,' ');
+        const pageNum = sectionStartPages ? sectionStartPages[i] : null;
+        const row = el('div', null);
+        row.style.cssText = 'display:flex;align-items:baseline;padding:2.2mm 0;border-bottom:0.15mm solid #f0f0f0;';
+        const numEl = el('span', null, String(i + 1).padStart(2, '0'));
+        numEl.style.cssText = 'font-size:2mm;color:#ccc;font-weight:400;letter-spacing:0.06em;margin-right:3mm;flex-shrink:0;';
+        const nameEl = el('span', null, name.toUpperCase());
+        nameEl.style.cssText = 'font-size:2.6mm;font-weight:300;letter-spacing:0.08em;color:#111;flex:1;';
+        const dots = el('span', null);
+        dots.style.cssText = 'flex:1;min-width:5mm;max-width:20mm;margin:0 3mm;border-bottom:0.15mm dotted #ddd;height:1px;align-self:center;';
+        const pgEl = el('span', null, pageNum !== null ? pageNum : '');
+        pgEl.style.cssText = 'font-size:2.6mm;color:#999;font-weight:300;flex-shrink:0;min-width:5mm;text-align:right;';
+        row.appendChild(numEl);
+        row.appendChild(nameEl);
+        row.appendChild(dots);
+        row.appendChild(pgEl);
+        list.appendChild(row);
+    });
+
+    content.appendChild(list);
+    page.appendChild(content);
 
     addPageControls(page);
     return page;
@@ -769,6 +981,9 @@ function makeHeader(productCode, subtitle, tags) {
     return hdr;
 }
 
+const MM_PER_PX = 25.4 / 96;
+const BASE_LS_HEIGHT_MM = 55;
+
 function makeLifestyleZone(lifestyleImgs) {
     if (!lifestyleImgs || !lifestyleImgs.length) return null;
 
@@ -776,37 +991,59 @@ function makeLifestyleZone(lifestyleImgs) {
     container.className = 'fa-lifestyle-container';
     container.style.cssText = 'flex-shrink:0;display:flex;flex-direction:column;gap:2mm;margin-bottom:3.5mm;';
 
-    const heights = { 1: '55mm', 2: '40mm', 3: '28mm' };
-    let visibleCount = 1;
     const maxShow = Math.min(lifestyleImgs.length, 3);
+    let visibleCount = maxShow;
+
+    function makeLsSlotZone(src, slotIdx) {
+        const zone = el('div', null);
+        zone.className = 'fa-lifestyle';
+        const img = el('img', 'width:100%;height:100%;object-fit:cover;display:block;');
+        img.src = src;
+        zone.appendChild(img);
+        if (lifestyleImgs.length > 1) {
+            let curIdx = slotIdx;
+            const arrows = el('div', null);
+            arrows.className = 'fa-ls-arrows';
+            const counter = el('span', null, (slotIdx + 1) + '/' + lifestyleImgs.length);
+            counter.className = 'fa-ls-count';
+            const prev = el('button', null, '&#9664;');
+            prev.className = 'fa-ls-btn';
+            prev.onclick = () => { curIdx = (curIdx - 1 + lifestyleImgs.length) % lifestyleImgs.length; img.src = lifestyleImgs[curIdx]; counter.textContent = (curIdx + 1) + '/' + lifestyleImgs.length; };
+            const next = el('button', null, '&#9654;');
+            next.className = 'fa-ls-btn';
+            next.onclick = () => { curIdx = (curIdx + 1) % lifestyleImgs.length; img.src = lifestyleImgs[curIdx]; counter.textContent = (curIdx + 1) + '/' + lifestyleImgs.length; };
+            arrows.appendChild(prev); arrows.appendChild(counter); arrows.appendChild(next);
+            zone.appendChild(arrows);
+        }
+        return zone;
+    }
 
     function buildZones() {
         container.innerHTML = '';
-        const h = heights[visibleCount] || '55mm';
-        for (let i = 0; i < visibleCount; i++) {
-            const zone = el('div', null);
-            zone.className = 'fa-lifestyle';
-            zone.style.height = h;
-            const img = el('img', 'width:100%;height:100%;object-fit:cover;display:block;');
-            img.src = lifestyleImgs[i];
-            zone.appendChild(img);
-
-            if (lifestyleImgs.length > 1) {
-                let curIdx = i;
-                const arrows = el('div', null);
-                arrows.className = 'fa-ls-arrows';
-                const counter = el('span', null, `${i + 1}/${lifestyleImgs.length}`);
-                counter.className = 'fa-ls-count';
-                const prev = el('button', null, '&#9664;');
-                prev.className = 'fa-ls-btn';
-                prev.onclick = () => { curIdx = (curIdx - 1 + lifestyleImgs.length) % lifestyleImgs.length; img.src = lifestyleImgs[curIdx]; counter.textContent = `${curIdx + 1}/${lifestyleImgs.length}`; };
-                const next = el('button', null, '&#9654;');
-                next.className = 'fa-ls-btn';
-                next.onclick = () => { curIdx = (curIdx + 1) % lifestyleImgs.length; img.src = lifestyleImgs[curIdx]; counter.textContent = `${curIdx + 1}/${lifestyleImgs.length}`; };
-                arrows.appendChild(prev); arrows.appendChild(counter); arrows.appendChild(next);
-                zone.appendChild(arrows);
-            }
+        if (visibleCount === 1) {
+            const zone = makeLsSlotZone(lifestyleImgs[0], 0);
+            zone.style.cssText = 'aspect-ratio:16/9;width:100%;flex-shrink:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
             container.appendChild(zone);
+        } else if (visibleCount === 2) {
+            const z1 = makeLsSlotZone(lifestyleImgs[0], 0);
+            z1.style.cssText = 'aspect-ratio:16/9;width:100%;flex-shrink:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
+            container.appendChild(z1);
+            const z2 = makeLsSlotZone(lifestyleImgs[1], 1);
+            z2.style.cssText = 'aspect-ratio:16/9;width:100%;flex-shrink:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
+            container.appendChild(z2);
+        } else {
+            const z1 = makeLsSlotZone(lifestyleImgs[0], 0);
+            z1.style.cssText = 'aspect-ratio:16/9;width:100%;flex-shrink:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
+            container.appendChild(z1);
+            const subRow = el('div', null);
+            subRow.style.cssText = 'display:flex;flex-direction:row;gap:2mm;flex-shrink:0;';
+            const z2 = makeLsSlotZone(lifestyleImgs[1], 1);
+            z2.style.cssText = 'aspect-ratio:16/9;flex:1;min-width:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
+            const z3 = makeLsSlotZone(lifestyleImgs[2], 2);
+            z3.style.cssText = 'aspect-ratio:16/9;flex:1;min-width:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
+            subRow.appendChild(z2);
+            subRow.appendChild(z3);
+            container.appendChild(subRow);
         }
     }
 
@@ -817,70 +1054,268 @@ function makeLifestyleZone(lifestyleImgs) {
 }
 /* ── UNIFIED LAYOUT ── header / tile zone / spacer / lifestyle+spec */
 
+function makeImgSlots(productImgs, targetCol, extraClass) {
+    const n = productImgs.length;
+    const SLOTS = Math.min(n, 4);
+    const displayImgs = productImgs.slice(0, SLOTS);
+    const imgZones = [];
+    const slotCurrentIdx = [];
+
+    displayImgs.forEach((src, slotIdx) => {
+        slotCurrentIdx.push(slotIdx);
+        const zone = el('div', null);
+        zone.className = 'pg-img' + (extraClass ? ' ' + extraClass : '');
+        zone.style.cssText = 'position:relative;overflow:hidden;';
+        const imgEl = makeImg(src);
+        zone.appendChild(imgEl);
+
+        if (n > SLOTS) {
+            const nav = el('div', null);
+            nav.className = 'pg-img-nav';
+            nav.style.cssText = 'position:absolute;top:1.5mm;right:1.5mm;display:flex;gap:1mm;align-items:center;z-index:2;';
+            const cnt = el('span', null, (slotIdx + 1) + '/' + n);
+            cnt.style.cssText = 'font-size:1.6mm;color:rgba(0,0,0,0.35);letter-spacing:0.05em;font-family:Open Sans,sans-serif;';
+            const prevBtn = el('button', null, '&#9664;');
+            prevBtn.style.cssText = 'background:rgba(0,0,0,0.08);color:#333;border:none;border-radius:1mm;width:4mm;height:4mm;font-size:1.6mm;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+            const nextBtn = el('button', null, '&#9654;');
+            nextBtn.style.cssText = prevBtn.style.cssText;
+            prevBtn.onclick = () => {
+                slotCurrentIdx[slotIdx] = (slotCurrentIdx[slotIdx] - SLOTS + n) % n;
+                if (slotCurrentIdx[slotIdx] < 0) slotCurrentIdx[slotIdx] += n;
+                imgEl.src = productImgs[slotCurrentIdx[slotIdx]];
+                cnt.textContent = (slotCurrentIdx[slotIdx] + 1) + '/' + n;
+            };
+            nextBtn.onclick = () => {
+                slotCurrentIdx[slotIdx] = (slotCurrentIdx[slotIdx] + SLOTS) % n;
+                imgEl.src = productImgs[slotCurrentIdx[slotIdx]];
+                cnt.textContent = (slotCurrentIdx[slotIdx] + 1) + '/' + n;
+            };
+            nav.appendChild(prevBtn); nav.appendChild(cnt); nav.appendChild(nextBtn);
+            zone.appendChild(nav);
+        }
+
+        targetCol.appendChild(zone);
+        imgZones.push(zone);
+    });
+    return imgZones;
+}
+
 function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTable, tags, lifestyleImgs) {
     inner.appendChild(makeHeader(productCode, subtitle, tags));
 
     const n = productImgs.length;
-    const body = el('div', null);
-    body.className = 'pg-body';
-    if (n === 1) body.classList.add('single-img');
+    const hasLifestyle = lifestyleImgs && lifestyleImgs.length > 0;
+    const lsCount = hasLifestyle ? lifestyleImgs.length : 0;
+    const specColCount = specTable ? (specTable.querySelector('thead tr') ? specTable.querySelector('thead tr').cells.length : 1) : 0;
+    const useWideSpec = (n <= 2 && specColCount >= 4) || (n === 1 && !hasLifestyle);
+    const useSplitLifestyle = n === 1 && hasLifestyle;
+    const useSplitTop = n === 2 && hasLifestyle;
 
-    const imgCol = el('div', null);
-    imgCol.className = 'pg-imgcol';
-    if (n <= 2 && n > 0) imgCol.classList.add('natural-height');
-    const imgs = n > 4 ? productImgs.slice(0, 4) : productImgs;
-    const imgZones = [];
-    imgs.forEach(src => {
-        const zone = el('div', null);
-        zone.className = 'pg-img';
-        zone.appendChild(makeImg(src));
-        imgCol.appendChild(zone);
-        imgZones.push(zone);
-    });
+    let imgZones = [];
+    let lsZone = null;
 
-    const descCol = el('div', null);
-    descCol.className = 'pg-desccol';
+    if (useSplitTop) {
+        const splitTop = el('div', null);
+        splitTop.className = 'pg-split-top';
 
-    const lsZone = makeLifestyleZone(lifestyleImgs);
-    if (lsZone) descCol.appendChild(lsZone);
+        const imgCol = el('div', null);
+        imgCol.className = 'pg-imgcol';
+        imgZones = makeImgSlots(productImgs, imgCol);
 
-    descCol.appendChild(makeNameBox(productCode, subtitle));
+        const lsCol = el('div', null);
+        lsCol.className = 'pg-lscol';
+        const maxShow = Math.min(lsCount, 3);
+        let visibleCount = maxShow;
 
-    const desc = el('div', null, descHTML);
-    desc.className = 'fa-desc';
-    descCol.appendChild(desc);
+        function makeLsSlotST(imgSrc, slotIdx) {
+            const lsDiv = el('div', null);
+            lsDiv.className = 'fa-lifestyle';
+            lsDiv.style.cssText = 'border:0.2mm solid #e8e8e8;border-radius:2mm;overflow:hidden;position:relative;';
+            const lsImg = el('img', 'width:100%;height:100%;object-fit:cover;display:block;');
+            lsImg.src = imgSrc;
+            lsDiv.appendChild(lsImg);
+            if (lsCount > 1) {
+                let curIdx = slotIdx;
+                const arrows = el('div', null);
+                arrows.className = 'fa-ls-arrows';
+                const counter = el('span', null, (curIdx + 1) + '/' + lsCount);
+                counter.className = 'fa-ls-count';
+                const prev = el('button', null, '&#9664;');
+                prev.className = 'fa-ls-btn';
+                prev.onclick = () => { curIdx = (curIdx - 1 + lsCount) % lsCount; lsImg.src = lifestyleImgs[curIdx]; counter.textContent = (curIdx + 1) + '/' + lsCount; };
+                const next = el('button', null, '&#9654;');
+                next.className = 'fa-ls-btn';
+                next.onclick = () => { curIdx = (curIdx + 1) % lsCount; lsImg.src = lifestyleImgs[curIdx]; counter.textContent = (curIdx + 1) + '/' + lsCount; };
+                arrows.appendChild(prev); arrows.appendChild(counter); arrows.appendChild(next);
+                lsDiv.appendChild(arrows);
+            }
+            return lsDiv;
+        }
 
-    if (specTable) {
-        const spacer = el('div', null);
-        descCol.appendChild(spacer);
-        const specWrap = el('div', null);
-        specWrap.className = 'pg-specwrap';
-        specWrap.appendChild(makeSpecZone(specTable));
-        descCol.appendChild(specWrap);
+        function buildLsMosaic(count) {
+            lsCol.innerHTML = '';
+            if (count === 1) {
+                const z = makeLsSlotST(lifestyleImgs[0], 0);
+                z.style.cssText += 'flex:1;min-height:0;';
+                lsCol.appendChild(z);
+            } else if (count === 2) {
+                const mainRow = el('div', null);
+                mainRow.className = 'ls-row ls-row-main';
+                mainRow.appendChild(makeLsSlotST(lifestyleImgs[0], 0));
+                lsCol.appendChild(mainRow);
+                const subRow = el('div', null);
+                subRow.className = 'ls-row ls-row-sub';
+                subRow.appendChild(makeLsSlotST(lifestyleImgs[1], 1));
+                lsCol.appendChild(subRow);
+            } else {
+                const mainRow = el('div', null);
+                mainRow.className = 'ls-row ls-row-main';
+                mainRow.appendChild(makeLsSlotST(lifestyleImgs[0], 0));
+                lsCol.appendChild(mainRow);
+                const subRow = el('div', null);
+                subRow.className = 'ls-row ls-row-sub';
+                subRow.appendChild(makeLsSlotST(lifestyleImgs[1], 1));
+                subRow.appendChild(makeLsSlotST(lifestyleImgs[2], 2));
+                lsCol.appendChild(subRow);
+            }
+        }
+
+        buildLsMosaic(visibleCount);
+
+        lsZone = lsCol;
+        lsZone._maxShow = maxShow;
+        lsZone._setVisibleCount = (n) => { visibleCount = n; buildLsMosaic(n); };
+
+        splitTop.appendChild(imgCol);
+        splitTop.appendChild(lsCol);
+        inner.appendChild(splitTop);
+
+        const splitDesc = el('div', null);
+        splitDesc.className = 'pg-split-desc';
+        splitDesc.appendChild(makeNameBox(productCode, subtitle));
+        const desc = el('div', null, descHTML);
+        desc.className = 'fa-desc';
+        splitDesc.appendChild(desc);
+        inner.appendChild(splitDesc);
+
+        if (specTable) {
+            const wideSpec = el('div', null);
+            wideSpec.className = 'pg-split-wide-spec';
+            wideSpec.appendChild(makeSpecZone(specTable));
+            inner.appendChild(wideSpec);
+        }
+
+    } else {
+        const body = el('div', null);
+        body.className = 'pg-body';
+        if (n === 1) body.classList.add('single-img');
+        if (useWideSpec) body.classList.add('wide-spec-mode');
+
+        const imgCol = el('div', null);
+        imgCol.className = 'pg-imgcol';
+        if (n <= 2 && n > 0) imgCol.classList.add('natural-height');
+        imgZones = makeImgSlots(productImgs, imgCol);
+
+        const descCol = el('div', null);
+        descCol.className = 'pg-desccol';
+
+        if (!useSplitLifestyle && hasLifestyle) {
+            lsZone = makeLifestyleZone(lifestyleImgs);
+            if (lsZone) {
+                lsZone._imgCol = imgCol;
+                descCol.appendChild(lsZone);
+            }
+        }
+
+        descCol.appendChild(makeNameBox(productCode, subtitle));
+
+        const desc = el('div', null, descHTML);
+        desc.className = 'fa-desc';
+        descCol.appendChild(desc);
+
+        if (specTable && !useWideSpec && !useSplitLifestyle) {
+            const spacer = el('div', null);
+            descCol.appendChild(spacer);
+            const specWrap = el('div', null);
+            specWrap.className = 'pg-specwrap';
+            specWrap.appendChild(makeSpecZone(specTable));
+            descCol.appendChild(specWrap);
+        }
+
+        if (n > 0) body.appendChild(imgCol);
+        body.appendChild(descCol);
+        inner.appendChild(body);
+
+        if (useSplitLifestyle) {
+            lsZone = makeLifestyleZone(lifestyleImgs);
+            if (lsZone || specTable) {
+                const lower = el('div', null);
+                lower.style.cssText = 'flex-shrink:0;margin-top:5mm;';
+                if (lsZone) {
+                    lower.appendChild(lsZone);
+                }
+                if (specTable) {
+                    const specWrap = el('div', null);
+                    specWrap.style.cssText = 'margin-top:5mm;padding-top:5mm;border-top:0.2mm solid #ddd;';
+                    specWrap.appendChild(makeSpecZone(specTable));
+                    lower.appendChild(specWrap);
+                }
+                inner.appendChild(lower);
+            }
+        }
+
+        if (useWideSpec && specTable && !useSplitLifestyle) {
+            const wideSpec = el('div', null);
+            wideSpec.className = 'pg-wide-spec';
+            wideSpec.appendChild(makeSpecZone(specTable));
+            inner.appendChild(wideSpec);
+        }
     }
-
-    if (n > 0) body.appendChild(imgCol);
-    body.appendChild(descCol);
-    inner.appendChild(body);
 
     const editor = el('div', null);
     editor.className = 'pg-editor';
 
-    if (lsZone && lsZone._maxShow > 1) {
+    if (lsZone) {
         const lsSection = el('div', null);
         lsSection.className = 'pg-editor-section';
         const lsLabel = el('span', null, 'Lifestyle');
         lsLabel.className = 'pg-editor-label';
         lsSection.appendChild(lsLabel);
-        for (let i = 1; i <= lsZone._maxShow; i++) {
-            const btn = el('button', null, `${i}`);
-            btn.className = 'pg-ed-btn' + (i === 1 ? ' active' : '');
-            btn.title = `Show ${i} lifestyle image${i > 1 ? 's' : ''}`;
-            btn.onclick = () => {
-                lsZone._setVisibleCount(i);
-                lsSection.querySelectorAll('.pg-ed-btn').forEach((b, j) => b.classList.toggle('active', j + 1 === i));
+
+        const btn0 = el('button', null, '0');
+        btn0.className = 'pg-ed-btn';
+        btn0.title = 'Hide lifestyle images';
+        btn0.onclick = () => {
+            lsZone.style.display = 'none';
+            if (lsZone._imgCol) lsZone._imgCol.classList.add('ls-hidden');
+            lsSection.querySelectorAll('.pg-ed-btn').forEach(b => b.classList.remove('active'));
+            btn0.classList.add('active');
+        };
+        lsSection.appendChild(btn0);
+
+        if (lsZone._maxShow) {
+            for (let i = 1; i <= lsZone._maxShow; i++) {
+                const btn = el('button', null, `${i}`);
+                btn.className = 'pg-ed-btn' + (i === lsZone._maxShow ? ' active' : '');
+                btn.title = `Show ${i} lifestyle image${i > 1 ? 's' : ''}`;
+                btn.onclick = () => {
+                    lsZone.style.display = '';
+                    if (lsZone._imgCol) lsZone._imgCol.classList.remove('ls-hidden');
+                    lsZone._setVisibleCount(i);
+                    lsSection.querySelectorAll('.pg-ed-btn').forEach((b, j) => b.classList.toggle('active', j === i));
+                };
+                lsSection.appendChild(btn);
+            }
+        } else {
+            const btn1 = el('button', null, '1');
+            btn1.className = 'pg-ed-btn active';
+            btn1.title = 'Show lifestyle image';
+            btn1.onclick = () => {
+                lsZone.style.display = '';
+                if (lsZone._imgCol) lsZone._imgCol.classList.remove('ls-hidden');
+                lsSection.querySelectorAll('.pg-ed-btn').forEach((b, j) => b.classList.toggle('active', j === 1));
             };
-            lsSection.appendChild(btn);
+            lsSection.appendChild(btn1);
         }
         editor.appendChild(lsSection);
     }
@@ -888,13 +1323,13 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
     if (imgZones.length > 0) {
         const imgSection = el('div', null);
         imgSection.className = 'pg-editor-section';
-        const imgLabel = el('span', null, 'Images');
+        const imgLabel = el('span', null, n > imgZones.length ? 'Slots (' + n + ' imgs)' : 'Images');
         imgLabel.className = 'pg-editor-label';
         imgSection.appendChild(imgLabel);
         imgZones.forEach((zone, i) => {
             const btn = el('button', null, `${i + 1}`);
             btn.className = 'pg-ed-btn active';
-            btn.title = `Toggle image ${i + 1}`;
+            btn.title = `Toggle slot ${i + 1}`;
             btn.onclick = () => {
                 const hidden = zone.style.display === 'none';
                 zone.style.display = hidden ? '' : 'none';
@@ -1058,6 +1493,78 @@ async function fetchPage(url) {
     processPageContent(new DOMParser().parseFromString(html, 'text/html'), url);
 }
 
+function createMasterContentsPage(sections, pageOrder) {
+    const page = document.createElement('div');
+    page.classList.add('a4-page');
+    page.dataset.productName = 'Contents';
+
+    const inner = el('div', null);
+    inner.style.cssText = 'position:absolute;inset:12mm;display:flex;flex-direction:column;font-family:Open Sans,sans-serif;';
+
+    const heading = el('div', null);
+    heading.style.cssText = 'flex-shrink:0;margin-bottom:7mm;padding-bottom:4mm;border-bottom:0.4mm solid #000;display:flex;align-items:baseline;justify-content:space-between;';
+    const headTitle = el('span', null, 'CONTENTS');
+    headTitle.style.cssText = 'font-size:6mm;font-weight:300;letter-spacing:0.3em;color:#000;';
+    heading.appendChild(headTitle);
+    inner.appendChild(heading);
+
+    const cols = el('div', null);
+    cols.style.cssText = 'flex:1;overflow:hidden;display:flex;flex-direction:row;gap:10mm;';
+
+    const totalItems = sections.reduce((s, sec) => s + sec.urls.length, 0);
+    const numCols = totalItems > 30 ? 2 : 1;
+
+    const flatItems = [];
+    sections.forEach(sec => {
+        flatItems.push({ isSectionHeader: true, title: sec.title, startPageNum: sec.startPageNum });
+        sec.urls.forEach((u, ui) => {
+            let pgNum = null;
+            let count = 0;
+            for (const item of pageOrder) {
+                if (item.type === 'url' && item.section === sec.title) {
+                    if (count === ui) { pgNum = item._pageNum; break; }
+                    count++;
+                }
+            }
+            flatItems.push({ isSectionHeader: false, name: u.split('/').pop().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/-/g, ' ').toUpperCase(), pageNum: pgNum });
+        });
+    });
+
+    const itemsPerCol = Math.ceil(flatItems.length / numCols);
+    for (let c = 0; c < numCols; c++) {
+        const col = el('div', null);
+        col.style.cssText = 'flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;';
+        const slice = flatItems.slice(c * itemsPerCol, (c + 1) * itemsPerCol);
+        slice.forEach(item => {
+            if (item.isSectionHeader) {
+                const sec = el('div', null);
+                sec.style.cssText = 'display:flex;align-items:baseline;justify-content:space-between;padding:3.5mm 0 1.5mm 0;margin-top:2mm;border-bottom:0.25mm solid #000;flex-shrink:0;';
+                const t = el('span', null, item.title.toUpperCase());
+                t.style.cssText = 'font-size:2.6mm;font-weight:700;letter-spacing:0.15em;color:#000;';
+                const p = el('span', null, item.startPageNum !== null ? String(item.startPageNum) : '');
+                p.style.cssText = 'font-size:2.4mm;color:#555;font-weight:600;';
+                sec.appendChild(t); sec.appendChild(p);
+                col.appendChild(sec);
+            } else {
+                const row = el('div', null);
+                row.style.cssText = 'display:flex;align-items:center;padding:1.6mm 0;border-bottom:0.1mm solid #f0f0f0;flex-shrink:0;';
+                const name = el('span', null, item.name);
+                name.style.cssText = 'font-size:2.3mm;font-weight:300;letter-spacing:0.04em;color:#222;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:3mm;';
+                const pgEl = el('span', null, item.pageNum !== null ? String(item.pageNum) : '');
+                pgEl.style.cssText = 'font-size:2.2mm;color:#999;flex-shrink:0;min-width:4mm;text-align:right;';
+                row.appendChild(name); row.appendChild(pgEl);
+                col.appendChild(row);
+            }
+        });
+        cols.appendChild(col);
+    }
+
+    inner.appendChild(cols);
+    page.appendChild(inner);
+    addPageControls(page);
+    return page;
+}
+
 async function fetchCdnUrls() {
     const lines = document.getElementById('pageUrls').value.split('\n');
     const pagesContainer = document.getElementById('pagesContainer');
@@ -1071,8 +1578,9 @@ async function fetchCdnUrls() {
 
     try {
         const pageOrder = [];
-        const contentPages = [];
-        let contentsTitle = '';
+        const sections = [];
+        let currentSection = '';
+        let hasCover = false;
 
         for (let i = 0; i < lines.length; i++) {
             const url = lines[i].trim();
@@ -1080,40 +1588,103 @@ async function fetchCdnUrls() {
             updateProgress((i / lines.length) * 100);
 
             if (url.startsWith('COVER')) {
-                pageOrder.push({ type:'cover', page: createCoverPage(url.split(' - ')[1] || url) });
+                hasCover = true;
+                pageOrder.push({ type: 'cover', page: createCoverPage(url.split(' - ')[1] || url), section: '' });
             } else if (url.startsWith('CONTENTS')) {
-                contentsTitle = url.split(' - ')[1] || url;
-                contentPages.push({ index: i, title: contentsTitle, urls: [] });
+                currentSection = url.split(' - ')[1] || url.replace(/^CONTENTS\s*-?\s*/i, '').trim() || url;
+                sections.push({ title: currentSection, urls: [], startPageNum: null });
+                /* SECTION-SEPARATOR: hidden placeholder — to restore section divider pages between sections,
+                   find all elements with data-section-separator and set their style.display to '' */
+                const sep = createContentsPage(currentSection, [], []);
+                sep.dataset.sectionSeparator = 'true';
+                sep.dataset.sectionTitle = currentSection;
+                sep.style.display = 'none';
+                pageOrder.push({ type: 'sectionSeparator', page: sep, section: currentSection });
             } else if (url.startsWith('BACK COVER')) {
-                pageOrder.push({ type:'backCover', page: createBackCoverPage() });
+                pageOrder.push({ type: 'backCover', page: createBackCoverPage(), section: '' });
             } else if (url === 'BLANK') {
                 const bp = document.createElement('div');
                 bp.classList.add('a4-page');
                 addPageControls(bp);
-                pageOrder.push({ type:'blank', page: bp });
+                pageOrder.push({ type: 'blank', page: bp, section: '' });
             } else {
-                if (contentPages.length) contentPages[contentPages.length-1].urls.push(url);
+                if (sections.length) sections[sections.length - 1].urls.push(url);
                 try {
-                    updateStatus(`Processing ${i+1}/${lines.length}: ${url.split('/').pop()}`);
+                    updateStatus(`Processing ${i + 1}/${lines.length}: ${url.split('/').pop()}`);
                     await fetchPage(url);
                     await delay(500);
-                    if ((i+1) % 3 === 0) await delay(1000);
-                    pageOrder.push({ type:'url', page: pagesContainer.lastChild });
+                    if ((i + 1) % 3 === 0) await delay(1000);
+                    pageOrder.push({ type: 'url', page: pagesContainer.lastChild, section: currentSection });
                 } catch { showToast(`Error: ${url.split('/').pop()}`, 'error'); }
             }
         }
 
         pagesContainer.innerHTML = '';
-        pageOrder.forEach(item => pagesContainer.appendChild(item.page));
-        contentPages.forEach(cp => {
-            const cpPage = createContentsPage(cp.title, cp.urls);
-            if (pagesContainer.children[cp.index]) pagesContainer.insertBefore(cpPage, pagesContainer.children[cp.index]);
-            else pagesContainer.appendChild(cpPage);
+
+        let insidePageNum = 1;
+        pageOrder.forEach(item => {
+            item._pageNum = (item.type === 'url') ? insidePageNum++ : null;
         });
+
+        sections.forEach(sec => {
+            let first = true;
+            pageOrder.forEach(item => {
+                if (item.type === 'url' && item.section === sec.title && first) {
+                    sec.startPageNum = item._pageNum;
+                    first = false;
+                }
+            });
+        });
+
+        if (hasCover && sections.length > 0) {
+            const masterContents = createMasterContentsPage(sections, pageOrder);
+            masterContents.dataset.pageType = 'contents';
+
+            pageOrder.forEach(item => {
+                if (!item.page) return;
+                pagesContainer.appendChild(item.page);
+                if (item.type === 'cover') pagesContainer.appendChild(masterContents);
+            });
+        } else {
+            pageOrder.forEach(item => {
+                if (!item.page) return;
+                pagesContainer.appendChild(item.page);
+            });
+        }
+
+        if (hasCover) {
+            const allPages = Array.from(pagesContainer.querySelectorAll('.a4-page:not([data-section-separator])'));
+            let visibleIdx = 0;
+            allPages.forEach(page => {
+                const matchingItem = pageOrder.find(it => it.page === page);
+                if (!matchingItem || matchingItem.type === 'cover' || matchingItem.type === 'backCover' || matchingItem.type === 'blank') {
+                    visibleIdx++;
+                    return;
+                }
+                const pgNum = matchingItem._pageNum;
+                const section = matchingItem.section || '';
+                if (!pgNum) { visibleIdx++; return; }
+
+                const isRight = (visibleIdx % 2 === 0);
+                const footer = el('div', null);
+                footer.className = 'pg-footer';
+                const leftEl = el('span', null, isRight ? '' : section);
+                leftEl.className = 'pg-footer-left';
+                const centerEl = el('span', null, String(pgNum));
+                centerEl.className = 'pg-footer-center';
+                const rightEl = el('span', null, isRight ? section : '');
+                rightEl.className = 'pg-footer-right';
+                footer.appendChild(leftEl);
+                footer.appendChild(centerEl);
+                footer.appendChild(rightEl);
+                page.appendChild(footer);
+                visibleIdx++;
+            });
+        }
 
         updatePageNavigator();
         showToast('Brochure created', 'success');
-    } catch { showToast('Error creating brochure', 'error'); }
+    } catch (e) { console.error(e); showToast('Error creating brochure', 'error'); }
     finally { statusContainer.style.display = 'none'; createButton.disabled = false; updateStatus('Done'); }
 }
 
