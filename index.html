@@ -1,539 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BROCHURE MAKER</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
-        :root {
-            --primary-color: #333;
-            --secondary-color: #f9f9f9;
-            --border-color: #ddd;
-            --bg-color: #ffffff;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #000; background: #fff; line-height: 1.5; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; margin-bottom: 55px; }
-        .top-container { background: #fff; padding: 30px; width: 100%; margin-bottom: 30px; }
-        h1 { color: #000; text-align: center; margin: 0 0 5px 0; font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: bold; padding-bottom: 15px; }
-        .left { display: flex; flex-direction: column; width: 100%; }
-        textarea, input, select { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; }
-        .input-section { margin-bottom: 30px; width: 100%; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #000; font-size: 1rem; }
-        #pageUrls, #urlInput { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #000; border-radius: 8px; resize: vertical; background: #fff; color: #000; font-family: monospace; }
-        #pageUrls:focus, #urlInput:focus { outline: none; box-shadow: inset 0 0 0 2px #000; }
-        .button-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; width: 100%; }
-        button { flex: 1; min-width: 60px; padding: 15px 20px; border: 1px solid #000; border-radius: 25px; font-size: 14px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; background: #fff; color: #000; transition: all 0.2s ease; }
-        button:hover:not(:disabled) { background: #f5f5f5; }
-        button:active { transform: scale(0.98); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
-        #createButton { background: #000; color: #fff; }
-        #createButton:hover:not(:disabled) { background: #333; }
-        .status-container { display: flex; align-items: center; margin-top: 20px; margin-bottom: 20px; padding: 15px; border-radius: 15px; border: 2px solid #000; background: #f0f0f0; font-weight: 500; width: 100%; }
-        .progress-container { flex-grow: 1; height: 8px; background: #f0f0f0; border: 1px solid #000; overflow: hidden; margin: 0 10px; }
-        .progress-bar { height: 100%; width: 0; background: #000; transition: width 0.3s ease; }
-        .spinner { border: 4px solid rgba(0,0,0,0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #000; animation: spin 1s linear infinite; margin-right: 10px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .status-text { font-size: 1em; color: #000; }
-        .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
-        .toast { background: #000; color: white; padding: 12px 20px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; animation: slideIn 0.3s ease-out forwards; max-width: 300px; position: relative; border: 2px solid #000; }
-        .toast.success { background: #fff; color: #000; }
-        .toast i { margin-right: 10px; font-size: 18px; }
-        .toast-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background: rgba(255,255,255,0.3); }
-        .toast-progress-bar { height: 100%; width: 100%; background: rgba(255,255,255,0.7); animation: progress 5s linear forwards; }
-        @keyframes progress { to { width: 0%; } }
-        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
-        @media (max-width: 768px) {
-            .container { padding: 10px; }
-            .top-container { padding: 20px; }
-            .button-container { flex-direction: column; }
-            button { flex: none; width: 100%; }
-        }
-
-        /* A4 PAGE — fixed mm dimensions, scaled with transform */
-        .a4-page {
-            width: 210mm;
-            height: 297mm;
-            margin: 2rem auto;
-            background: #fff;
-            position: relative;
-            page-break-after: always;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-            overflow: hidden;
-            transform-origin: top center;
-        }
-        @media screen and (max-width: 1200px) { .a4-page { transform: scale(0.9); } }
-        @media screen and (max-width: 992px)  { .a4-page { transform: scale(0.7); } }
-        @media screen and (max-width: 768px)  { .a4-page { transform: translateX(-10%) scale(0.5); } }
-        @media screen and (max-width: 576px)  { .a4-page { transform: translateX(-30%) scale(0.5); margin-left: 120px; } }
-        @media screen and (max-width: 470px)  { .a4-page { transform: translateX(-25%) scale(0.5); margin-left: 15px; } }
-
-        /* delete button — not printed */
-        .page-controls { position: absolute; top: 5mm; right: 5mm; z-index: 100; }
-        .page-control-btn { background: rgba(180,0,0,0.55); color: white; border: none; border-radius: 2mm; width: 6mm; height: 6mm; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 3mm; transition: background 0.2s; }
-        .page-control-btn:hover { background: rgba(180,0,0,0.85); }
-
-        /* page navigator sidebar */
-        .page-navigator { position: fixed; top: 50%; left: 15px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 4px; z-index: 100; background: rgba(255,255,255,0.85); padding: 8px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; }
-        .page-navigator-dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; cursor: pointer; transition: transform 0.2s, background 0.2s; position: relative; }
-        .page-navigator-dot:hover { transform: scale(1.2); }
-        .page-navigator-dot.active { background: #000; }
-        .page-navigator-dot .tooltip { position: absolute; right: 20px; top: 0; background: rgba(0,0,0,0.8); color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap; visibility: hidden; opacity: 0; transition: opacity 0.2s; transform: translateY(-50%); z-index: 1000; }
-        .page-navigator-dot:hover .tooltip { visibility: visible; opacity: 1; }
-
-        /* ── PRODUCT PAGE ── clean editorial, content-aware ──
-           7mm safe print margins all sides.
-           Row 1: header bar
-           Row 2: image + text side by side — flex row, image natural width, text fills rest
-           Row 3: lifestyle image if present — spans description column width
-           Row 4: spec table — spans full width, anchored to bottom
-           Everything sizes to content. Spacer between text and spec absorbs whitespace. */
-
-        .fa-inner {
-            position: absolute;
-            inset: 7mm;
-            bottom: 0;
-            padding-bottom: 9mm;
-            display: flex;
-            flex-direction: column;
-            font-family: 'Open Sans', sans-serif;
-            overflow: hidden;
-        }
-
-        /* ── HEADER ── */
-        .pg-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #000;
-            border-radius: 2mm;
-            padding: 2.5mm 4mm;
-            flex-shrink: 0;
-            margin-bottom: 5mm;
-        }
-        .pg-logo { height: 9mm; filter: invert(1); flex-shrink: 0; }
-        .pg-url  { font-size: 1.5mm; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; text-transform: uppercase; }
-
-        /* ── CONTENT ROW ── */
-        .pg-body {
-            display: flex;
-            flex-direction: row;
-            gap: 0;
-            flex: 1;
-            min-height: 0;
-            overflow: hidden;
-        }
-
-        /* Multi-image: column stretches to body height, images share it equally */
-        .pg-imgcol {
-            flex-shrink: 0;
-            width: 38%;
-            display: flex;
-            flex-direction: column;
-            align-self: stretch;
-            overflow: hidden;
-            border-right: 0.2mm solid #e8e8e8;
-            padding-right: 6mm;
-            margin-right: 7mm;
-        }
-        .pg-img {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            min-height: 0;
-        }
-        .pg-img + .pg-img {
-            border-top: 0.2mm solid #e8e8e8;
-            padding-top: 4mm;
-            margin-top: 4mm;
-        }
-        .pg-img img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-
-        /* 1-2 images: images size to content, column stretches via border */
-        .pg-imgcol.natural-height {
-            align-self: stretch;
-        }
-        .pg-imgcol.natural-height .pg-img {
-            flex: none;
-        }
-        .pg-imgcol.natural-height .pg-img img {
-            max-height: 90mm;
-            width: auto;
-        }
-        .pg-body.single-img.wide-spec-mode .pg-imgcol.natural-height .pg-img img {
-            max-height: 140mm;
-            width: auto;
-        }
-        /* when lifestyle hidden, product images expand to fill the body height */
-        .pg-imgcol.natural-height.ls-hidden .pg-img {
-            flex: 1;
-        }
-        .pg-imgcol.natural-height.ls-hidden .pg-img img {
-            max-height: 100%;
-            max-width: 100%;
-            width: auto;
-        }
-
-        /* Full-width spec table below the body row */
-        .pg-specwrap-fullwidth {
-            margin-top: 10mm;
-            padding-top: 10mm;
-            border-top: 0.2mm solid #ddd;
-        }
-        .pg-body.single-img {
-            flex-direction: row;
-        }
-        .pg-body.single-img .pg-imgcol {
-            width: 45%;
-            align-self: stretch;
-            flex-shrink: 0;
-            border-right: 0.2mm solid #e8e8e8;
-            border-bottom: none;
-            padding-right: 6mm;
-            padding-bottom: 0;
-            margin-right: 7mm;
-            margin-bottom: 0;
-            height: auto;
-        }
-        .pg-body.single-img .pg-imgcol .pg-img {
-            flex: 1;
-            height: 100%;
-            align-items: center;
-            justify-content: center;
-        }
-        .pg-body.single-img .pg-imgcol .pg-img img {
-            max-height: 100%;
-            max-width: 100%;
-        }
-        .pg-body.single-img .pg-desccol {
-            border-left: none;
-            padding-left: 0;
-        }
-
-        /* ── SPLIT-TOP LAYOUT (2 product imgs + lifestyle) ── */
-        .pg-split-top {
-            display: flex;
-            flex-direction: row;
-            gap: 0;
-            flex-shrink: 0;
-            height: 108mm;
-            margin-bottom: 5mm;
-        }
-        .pg-split-top .pg-imgcol {
-            width: 38%;
-            flex-shrink: 0;
-            border-right: 0.2mm solid #e8e8e8;
-            padding-right: 6mm;
-            margin-right: 7mm;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            height: 100%;
-        }
-        .pg-split-top .pg-img {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            min-height: 0;
-            position: relative;
-        }
-        .pg-split-top .pg-img + .pg-img {
-            border-top: 0.2mm solid #e8e8e8;
-            padding-top: 4mm;
-            margin-top: 4mm;
-        }
-        .pg-split-top .pg-img img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            display: block;
-        }
-        .pg-split-top .pg-lscol {
-            flex: 1;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            gap: 2mm;
-            height: 100%;
-        }
-        .pg-split-top .pg-lscol .ls-row {
-            display: flex;
-            flex-direction: row;
-            gap: 2mm;
-            overflow: hidden;
-        }
-        .pg-split-top .pg-lscol .ls-row.ls-row-main { flex: 2; min-height: 0; }
-        .pg-split-top .pg-lscol .ls-row.ls-row-sub  { flex: 1; min-height: 0; }
-        .pg-split-top .pg-lscol .fa-lifestyle {
-            flex: 1;
-            min-height: 0;
-            border-radius: 2mm;
-            overflow: hidden;
-            background: #0a0a0a;
-            position: relative;
-            aspect-ratio: 16 / 9;
-            width: 100%;
-        }
-        .pg-split-top .pg-lscol .fa-lifestyle img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .pg-split-desc {
-            flex-shrink: 1;
-            overflow: hidden;
-            margin-bottom: 4mm;
-        }
-        .pg-split-desc .fa-namebox {
-            padding-bottom: 3mm;
-            margin-bottom: 3.5mm;
-            border-bottom: 0.2mm solid #ddd;
-        }
-        .pg-split-desc .fa-desc {
-            overflow: hidden;
-        }
-        .pg-split-wide-spec {
-            flex-shrink: 0;
-            padding-top: 5mm;
-            border-top: 0.2mm solid #ddd;
-        }
-
-        .pg-lower {
-            flex-shrink: 0;
-        }
-        .pg-lower .fa-lifestyle {
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            border-radius: 2mm;
-            overflow: hidden;
-            background: #0a0a0a;
-            margin-bottom: 0;
-        }
-        .pg-lower .fa-lifestyle img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .pg-lower-spec {
-            margin-top: 5mm;
-            padding-top: 5mm;
-            border-top: 0.2mm solid #ddd;
-        }
-
-        .pg-body.wide-spec-mode {
-            flex: none;
-        }
-        .pg-wide-spec {
-            flex-shrink: 0;
-            padding-top: 5mm;
-            border-top: 0.2mm solid #ddd;
-            margin-top: 5mm;
-        }
-
-        /* Right column: full height flex column, spacer pushes spec to bottom */
-        .pg-desccol {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            min-height: 0;
-        }
-
-        /* product name */
-        .fa-namebox {
-            flex-shrink: 0;
-            padding-bottom: 3mm;
-            margin-bottom: 3.5mm;
-            border-bottom: 0.2mm solid #ddd;
-        }
-        .fa-pname {
-            font-size: 9mm;
-            font-weight: 300;
-            letter-spacing: 0.06em;
-            color: #000;
-            line-height: 1;
-        }
-        .fa-psub {
-            font-size: 2mm;
-            color: #999;
-            font-weight: 300;
-            letter-spacing: 0.14em;
-            margin-top: 1.2mm;
-            text-transform: uppercase;
-        }
-
-        /* description */
-        .fa-desc {
-            font-size: 2.3mm;
-            color: #444;
-            line-height: 1.75;
-            flex-shrink: 0;
-        }
-        .fa-desc p { margin: 0 0 1.8mm; }
-        .fa-desc p:first-child {
-            font-size: 2.5mm;
-            color: #111;
-            font-weight: 300;
-            line-height: 1.7;
-            margin-bottom: 3mm;
-        }
-        .fa-desc ul { margin: 0; padding: 0; list-style: none; }
-        .fa-desc li {
-            margin-bottom: 3mm;
-            padding-left: 3mm;
-            position: relative;
-            color: #555;
-            font-size: 2.2mm;
-        }
-        .fa-desc li::before { content: '—'; position: absolute; left: 0; color: #ccc; }
-        .fa-desc .alert { display: none; }
-        .fa-desc .row   { display: none; }
-
-        /* lifestyle: spans description column width */
-        .fa-lifestyle {
-            flex-shrink: 0;
-            overflow: hidden;
-            background: #0a0a0a;
-            position: relative;
-            aspect-ratio: 16 / 9;
-            width: 100%;
-            border-radius: 2mm;
-            margin-bottom: 4mm;
-        }
-        .fa-lifestyle img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .fa-lifestyle-container + .fa-namebox { margin-top: 3.5mm; }
-        .fa-lifestyle-container .fa-lifestyle { margin-bottom: 0; }
-        .fa-ls-arrows { position: absolute; bottom: 2mm; right: 2mm; display: flex; gap: 1.5mm; align-items: center; }
-        .fa-ls-btn { background: rgba(255,255,255,0.15); color: white; border: none; border-radius: 1mm; width: 4.5mm; height: 4.5mm; font-size: 1.8mm; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .fa-ls-count { color: rgba(255,255,255,0.35); font-size: 1.6mm; letter-spacing: 0.05em; }
-
-        /* spec table */
-        .pg-specwrap {
-            flex-shrink: 0;
-            padding-top: 5mm;
-            border-top: 0.2mm solid #ddd;
-        }
-        .fa-speczone { }
-        .fa-speclabel {
-            font-size: 1.6mm;
-            font-weight: 400;
-            letter-spacing: 0.14em;
-            color: #aaa;
-            text-transform: uppercase;
-            margin-bottom: 3mm;
-        }
-        .fa-specwrap { border-radius: 2mm; overflow: hidden; border: 0.2mm solid #e8e8e8; }
-        .fa-spectable { width: 100%; border-collapse: collapse; font-size: 1.85mm; table-layout: fixed; }
-        .fa-spectable thead tr { background: #000; }
-        .fa-spectable thead th { padding: 1.2mm 2.5mm; color: white; font-weight: 400; text-align: center; letter-spacing: 0.04em; }
-        .fa-spectable thead th:first-child { text-align: left; width: 28%; }
-        .fa-spectable tbody tr:nth-child(odd)  { background: #fff; }
-        .fa-spectable tbody tr:nth-child(even) { background: #fafafa; }
-        .fa-spectable tbody td { padding: 0.85mm 2.5mm; color: #333; text-align: center; border-bottom: 0.2mm solid #f0f0f0; }
-        .fa-spectable tbody tr:last-child td { border-bottom: none; }
-        .fa-spectable tbody td:first-child { text-align: left; color: #666; font-weight: 400; letter-spacing: 0.02em; }
-
-        /* ── PAGE EDITOR PANEL (screen only, never printed) ── */
-        .pg-editor {
-            position: absolute;
-            bottom: 5mm;
-            right: 5mm;
-            z-index: 200;
-            display: flex;
-            flex-direction: column;
-            gap: 2mm;
-            align-items: flex-end;
-        }
-        .pg-editor-section {
-            background: rgba(0,0,0,0.72);
-            border-radius: 2mm;
-            padding: 1.5mm 2mm;
-            display: flex;
-            flex-direction: row;
-            gap: 1.5mm;
-            align-items: center;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            max-width: 70mm;
-        }
-        .pg-editor-label {
-            font-size: 1.6mm;
-            color: rgba(255,255,255,0.45);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-right: 1mm;
-            white-space: nowrap;
-        }
-        .pg-ed-btn {
-            background: rgba(255,255,255,0.12);
-            color: white;
-            border: 0.2mm solid rgba(255,255,255,0.2);
-            border-radius: 1.5mm;
-            padding: 0.8mm 1.8mm;
-            font-size: 1.6mm;
-            cursor: pointer;
-            white-space: nowrap;
-            font-family: 'Open Sans', sans-serif;
-            transition: background 0.15s;
-        }
-        .pg-ed-btn:hover { background: rgba(255,255,255,0.25); }
-        .pg-ed-btn.active { background: white; color: #000; }
-        .pg-ed-btn.del { background: rgba(180,0,0,0.5); border-color: rgba(180,0,0,0.6); }
-        .pg-ed-btn.del:hover { background: rgba(180,0,0,0.8); }
-
-        @media print {
-            @page { size: A4 portrait !important; margin: 0 !important; }
-            .container, .button-container, .status-container, .toast-container,
-            .page-navigator, .page-controls, .fa-ls-arrows, .pg-editor, .pg-img-nav { display: none !important; }
-            .pg-img.hidden-img, .fa-lifestyle.hidden-ls { display: none !important; }
-            .a4-page {
-                position: relative !important;
-                width: 210mm !important; height: 297mm !important;
-                page-break-after: always !important;
-                margin: 0 !important; padding: 0 !important;
-                border: 0 !important; transform: none !important;
-                box-shadow: none !important;
-            }
-            .a4-page:last-child { page-break-after: auto !important; }
-        }
-
-        .pg-footer {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 7mm;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-family: 'Open Sans', sans-serif;
-            font-size: 1.8mm;
-            color: #aaa;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            padding: 0 7mm;
-            pointer-events: none;
-            background: #fff;
-        }
-        .pg-footer-left { text-align: left; }
-        .pg-footer-right { text-align: right; }
-        .pg-footer-center { flex: 1; text-align: center; font-size: 1.6mm; color: #bbb; }
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BROCHURE MAKER</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;700&display=swap');
+:root {
+    --primary-color: #333;
+    --secondary-color: #f9f9f9;
+    --border-color: #ddd;
+    --bg-color: #ffffff;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #000; background: #fff; line-height: 1.5; }
+.container { max-width: 1200px; margin: 0 auto; padding: 20px; margin-bottom: 55px; }
+.top-container { background: #fff; padding: 30px; width: 100%; margin-bottom: 30px; }
+h1 { color: #000; text-align: center; margin: 0 0 5px 0; font-size: clamp(1.5rem, 4vw, 2.5rem); font-weight: bold; padding-bottom: 15px; }
+.left { display: flex; flex-direction: column; width: 100%; }
+textarea, input, select { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 14px; }
+.input-section { margin-bottom: 30px; width: 100%; }
+label { display: block; margin-bottom: 8px; font-weight: 600; color: #000; font-size: 1rem; }
+#pageUrls, #urlInput { width: 100%; min-height: 120px; padding: 15px; border: 1px solid #000; border-radius: 8px; resize: vertical; background: #fff; color: #000; font-family: monospace; }
+#pageUrls:focus, #urlInput:focus { outline: none; box-shadow: inset 0 0 0 2px #000; }
+.button-container { display: flex; flex-wrap: wrap; gap: 15px; margin-top: 20px; width: 100%; }
+button { flex: 1; min-width: 60px; padding: 15px 20px; border: 1px solid #000; border-radius: 25px; font-size: 14px; font-weight: 600; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; background: #fff; color: #000; transition: all 0.2s ease; }
+button:hover:not(:disabled) { background: #f5f5f5; }
+button:active { transform: scale(0.98); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+#createButton { background: #000; color: #fff; }
+#createButton:hover:not(:disabled) { background: #333; }
+.status-container { display: flex; align-items: center; margin-top: 20px; margin-bottom: 20px; padding: 15px; border-radius: 15px; border: 2px solid #000; background: #f0f0f0; font-weight: 500; width: 100%; }
+.progress-container { flex-grow: 1; height: 8px; background: #f0f0f0; border: 1px solid #000; overflow: hidden; margin: 0 10px; }
+.progress-bar { height: 100%; width: 0; background: #000; transition: width 0.3s ease; }
+.spinner { border: 4px solid rgba(0,0,0,0.1); width: 24px; height: 24px; border-radius: 50%; border-left-color: #000; animation: spin 1s linear infinite; margin-right: 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.status-text { font-size: 1em; color: #000; }
+.toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+.toast { background: #000; color: white; padding: 12px 20px; margin-bottom: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); display: flex; align-items: center; animation: slideIn 0.3s ease-out forwards; max-width: 300px; position: relative; border: 2px solid #000; }
+.toast.success { background: #fff; color: #000; }
+.toast i { margin-right: 10px; font-size: 18px; }
+.toast-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background: rgba(255,255,255,0.3); }
+.toast-progress-bar { height: 100%; width: 100%; background: rgba(255,255,255,0.7); animation: progress 5s linear forwards; }
+@keyframes progress { to { width: 0%; } }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+@media (max-width: 768px) {
+    .container { padding: 10px; }
+    .top-container { padding: 20px; }
+    .button-container { flex-direction: column; }
+    button { flex: none; width: 100%; }
+}
+.a4-page {
+    width: 210mm;
+    height: 297mm;
+    margin: 2rem auto;
+    background: #fff;
+    position: relative;
+    page-break-after: always;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+    overflow: hidden;
+    transform-origin: top center;
+}
+@media screen and (max-width: 1200px) { .a4-page { transform: scale(0.9); } }
+@media screen and (max-width: 992px)  { .a4-page { transform: scale(0.7); } }
+@media screen and (max-width: 768px)  { .a4-page { transform: translateX(-10%) scale(0.5); } }
+@media screen and (max-width: 576px)  { .a4-page { transform: translateX(-30%) scale(0.5); margin-left: 120px; } }
+@media screen and (max-width: 470px)  { .a4-page { transform: translateX(-25%) scale(0.5); margin-left: 15px; } }
+.page-controls { position: absolute; top: 5mm; right: 5mm; z-index: 100; }
+.page-control-btn { background: rgba(180,0,0,0.55); color: white; border: none; border-radius: 2mm; width: 6mm; height: 6mm; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 3mm; transition: background 0.2s; }
+.page-control-btn:hover { background: rgba(180,0,0,0.85); }
+.page-navigator { position: fixed; top: 50%; left: 15px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 4px; z-index: 100; background: rgba(255,255,255,0.85); padding: 8px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-height: 80vh; overflow-y: auto; }
+.page-navigator-dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; cursor: pointer; transition: transform 0.2s, background 0.2s; position: relative; }
+.page-navigator-dot:hover { transform: scale(1.2); }
+.page-navigator-dot.active { background: #000; }
+.page-navigator-dot .tooltip { position: absolute; right: 20px; top: 0; background: rgba(0,0,0,0.8); color: white; padding: 5px 10px; border-radius: 4px; font-size: 12px; white-space: nowrap; visibility: hidden; opacity: 0; transition: opacity 0.2s; transform: translateY(-50%); z-index: 1000; }
+.page-navigator-dot:hover .tooltip { visibility: visible; opacity: 1; }
+.fa-inner {
+    position: absolute;
+    inset: 7mm;
+    bottom: 0;
+    padding-bottom: 9mm;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Open Sans', sans-serif;
+    overflow: hidden;
+}
+.pg-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #000;
+    border-radius: 2mm;
+    padding: 2.5mm 4mm;
+}
+.pg-logo { height: 9mm; filter: invert(1); flex-shrink: 0; }
+.pg-url  { font-size: 1.5mm; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; text-transform: uppercase; }
+.fa-namebox {
+    flex-shrink: 0;
+    padding-bottom: 2mm;
+    margin-bottom: 2mm;
+    border-bottom: 0.2mm solid #ddd;
+}
+.fa-pname {
+    font-size: 8mm;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: #000;
+    line-height: 1;
+}
+.fa-psub {
+    font-size: 2mm;
+    color: #999;
+    font-weight: 300;
+    letter-spacing: 0.14em;
+    margin-top: 1mm;
+    text-transform: uppercase;
+}
+.fa-desc {
+    font-size: 2.3mm;
+    color: #444;
+    line-height: 1.6;
+    overflow-y: hidden;
+    flex: 1;
+    min-height: 0;
+}
+.fa-desc p { margin: 0 0 1.5mm; }
+.fa-desc p:first-child {
+    font-size: 2.5mm;
+    color: #111;
+    font-weight: 300;
+    line-height: 1.6;
+    margin-bottom: 2mm;
+}
+.fa-desc ul { margin: 0; padding: 0; list-style: none; }
+.fa-desc li { margin-bottom: 2mm; padding-left: 3mm; position: relative; color: #555; font-size: 2.2mm; }
+.fa-desc li::before { content: '—'; position: absolute; left: 0; color: #ccc; }
+.fa-desc .alert, .fa-desc .row { display: none; }
+.fa-speczone { display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; }
+.fa-speclabel { font-size: 1.6mm; font-weight: 400; letter-spacing: 0.14em; color: #aaa; text-transform: uppercase; margin-bottom: 1.5mm; }
+.fa-specwrap { border-radius: 2mm; overflow: hidden; border: 0.2mm solid #e8e8e8; }
+.fa-spectable { width: 100%; border-collapse: collapse; font-size: 1.7mm; table-layout: fixed; }
+.fa-spectable thead tr { background: #000; }
+.fa-spectable thead th { padding: 1mm 2mm; color: white; font-weight: 400; text-align: center; letter-spacing: 0.04em; }
+.fa-spectable thead th:first-child { text-align: left; width: 28%; }
+.fa-spectable tbody tr:nth-child(odd)  { background: #fff; }
+.fa-spectable tbody tr:nth-child(even) { background: #fafafa; }
+.fa-spectable tbody td { padding: 0.7mm 2mm; color: #333; text-align: center; border-bottom: 0.2mm solid #f0f0f0; }
+.fa-spectable tbody tr:last-child td { border-bottom: none; }
+.fa-spectable tbody td:first-child { text-align: left; color: #666; font-weight: 400; letter-spacing: 0.02em; }
+.pg-editor { position: absolute; bottom: 5mm; right: 5mm; z-index: 200; display: flex; flex-direction: column; gap: 2mm; align-items: flex-end; }
+.pg-editor-section { background: rgba(0,0,0,0.72); border-radius: 2mm; padding: 1.5mm 2mm; display: flex; flex-direction: row; gap: 1.5mm; align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 70mm; backdrop-filter: blur(4px); }
+.pg-editor-label { font-size: 1.6mm; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; text-transform: uppercase; margin-right: 1mm; white-space: nowrap; }
+.pg-ed-btn { background: rgba(255,255,255,0.12); color: white; border: 0.2mm solid rgba(255,255,255,0.2); border-radius: 1.5mm; padding: 0.8mm 1.8mm; font-size: 1.6mm; cursor: pointer; white-space: nowrap; font-family: 'Open Sans', sans-serif; transition: background 0.15s; }
+.pg-ed-btn:hover { background: rgba(255,255,255,0.25); }
+.pg-ed-btn.active { background: white; color: #000; }
+.pg-ed-btn.del { background: rgba(180,0,0,0.5); border-color: rgba(180,0,0,0.6); }
+.pg-ed-btn.del:hover { background: rgba(180,0,0,0.8); }
+@media print {
+    @page { size: A4 portrait !important; margin: 0 !important; }
+    .container, .button-container, .status-container, .toast-container,
+    .page-navigator, .page-controls, .fa-ls-arrows, .pg-editor, .pg-img-nav { display: none !important; }
+    .a4-page { position: relative !important; width: 210mm !important; height: 297mm !important; page-break-after: always !important; margin: 0 !important; padding: 0 !important; border: 0 !important; transform: none !important; box-shadow: none !important; }
+    .a4-page:last-child { page-break-after: auto !important; }
+}
+.pg-footer { position: absolute; bottom: 0; left: 0; right: 0; height: 7mm; display: flex; align-items: center; justify-content: space-between; font-family: 'Open Sans', sans-serif; font-size: 1.8mm; color: #aaa; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 7mm; pointer-events: none; background: #fff; }
+.pg-footer-left { text-align: left; }
+.pg-footer-right { text-align: right; }
+.pg-footer-center { flex: 1; text-align: center; font-size: 1.6mm; color: #bbb; }
+</style>
 </head>
 <body>
 <div class="container">
@@ -542,14 +178,11 @@
         <div class="left">
             <div class="input-section">
                 <label for="pageUrls">PAGES:</label>
-                <textarea id="pageUrls" placeholder="Current page list will appear here">https://www.futureautomation.co.uk/Product/Details/FSE90</textarea>
+                <textarea id="pageUrls" placeholder="Current page list will appear here">https://www.futureautomation.co.uk/Product/Details/AM</textarea>
             </div>
             <div class="input-section">
                 <label for="urlInput">PASTE URLS HERE TO GENERATE BROCHURE:</label>
-                <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST'
-Eg.
-https://www.futureautomation.co.uk/Projector
-https://www.futureautomation.co.uk/TV"></textarea>
+                <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST'"></textarea>
             </div>
             <div class="button-container">
                 <button type="button" id="createButton" onclick="fetchCdnUrls()"><i class="fas fa-file-pdf"></i> Create Brochure</button>
@@ -746,36 +379,29 @@ function updatePageURLs() {
     document.getElementById('pageUrls').value = Array.from(document.getElementById('results').querySelectorAll('div')).map(d => d.textContent).join('\n');
 }
 
-/* ── COVER / BACK COVER / CONTENTS ── */
 function createCoverPage(text) {
     const page = document.createElement('div');
     page.classList.add('a4-page');
     page.dataset.productName = 'Cover: ' + text;
     page.style.cssText = 'position:relative;overflow:hidden;';
-
     const bg = document.createElement('div');
     bg.style.cssText = 'position:absolute;top:10mm;left:10mm;width:calc(100% - 20mm);height:calc(100% - 20mm);background:radial-gradient(circle at 20% 20%,#f6f6f6,transparent 100%),radial-gradient(circle at 80% 80%,#f1f1f1,transparent 100%);';
     page.appendChild(bg);
-
     const bar = document.createElement('div');
     bar.style.cssText = 'position:absolute;left:50%;top:0;transform:translateX(-50%);width:50mm;height:90mm;background:#000;';
     page.appendChild(bar);
-
     const logo = document.createElement('img');
     logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
     logo.style.cssText = 'position:absolute;bottom:10mm;left:50%;transform:translateX(-50%);height:15mm;filter:invert(1);';
     bar.appendChild(logo);
-
     const title = document.createElement('div');
     title.style.cssText = 'position:absolute;top:60%;left:50%;transform:translate(-50%,-50%);width:calc(100% - 40mm);font-size:60px;color:#000;font-weight:100;text-align:center;word-wrap:break-word;padding:20mm;letter-spacing:0.15rem;';
     title.textContent = text;
     page.appendChild(title);
-
     const url = document.createElement('div');
     url.style.cssText = 'position:absolute;bottom:20mm;left:50%;transform:translateX(-50%);font-size:12px;color:#000;letter-spacing:0.15rem;';
     url.textContent = 'www.futureautomation.net';
     page.appendChild(url);
-
     addPageControls(page);
     return page;
 }
@@ -786,54 +412,46 @@ function createContentsPage(title, urls, sectionStartPages) {
     page.dataset.productName = 'Contents: ' + title;
     page.dataset.pageType = 'contents';
     page.style.cssText = 'position:relative;overflow:hidden;';
-
     const stripe = el('div', null);
     stripe.style.cssText = 'position:absolute;left:0;top:0;width:28mm;height:100%;background:#000;';
-
     const stripeLabel = el('div', null, 'CONTENTS');
     stripeLabel.style.cssText = 'position:absolute;bottom:18mm;left:0;width:28mm;text-align:center;color:rgba(255,255,255,0.18);font-family:Open Sans,sans-serif;font-size:2mm;letter-spacing:0.3em;font-weight:400;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;transform-origin:center center;left:50%;transform:translateX(-50%) rotate(180deg);';
-
     const logoWrap = el('div', null);
     logoWrap.style.cssText = 'position:absolute;top:10mm;left:0;width:28mm;display:flex;justify-content:center;';
     const logo = el('img', null);
     logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
     logo.style.cssText = 'height:7mm;filter:invert(1);';
     logoWrap.appendChild(logo);
-
     stripe.appendChild(stripeLabel);
     stripe.appendChild(logoWrap);
     page.appendChild(stripe);
-
     const content = el('div', null);
     content.style.cssText = 'position:absolute;left:36mm;top:0;right:0;bottom:0;display:flex;flex-direction:column;padding:14mm 12mm 12mm 0;font-family:Open Sans,sans-serif;';
-
     const titleEl = el('div', null, title);
     titleEl.style.cssText = 'font-size:9mm;font-weight:100;color:#000;letter-spacing:0.08em;line-height:1.1;margin-bottom:2mm;flex-shrink:0;';
-
     const subtitle = el('div', null, 'www.futureautomation.net');
     subtitle.style.cssText = 'font-size:2mm;color:#bbb;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:8mm;flex-shrink:0;';
-
     const rule = el('div', null);
     rule.style.cssText = 'width:100%;height:0.3mm;background:#000;margin-bottom:8mm;flex-shrink:0;';
-
     content.appendChild(titleEl);
     content.appendChild(subtitle);
     content.appendChild(rule);
-
     const list = el('div', null);
-    list.style.cssText = 'flex:1;overflow:hidden;';
-
+    const urlCount = urls.length;
+    const cols = urlCount > 40 ? 3 : urlCount > 20 ? 2 : 1;
+    const scale = urlCount > 60 ? 0.75 : urlCount > 40 ? 0.85 : 1;
+    list.style.cssText = `flex:1;overflow:hidden;column-count:${cols};column-gap:8mm;font-size:${scale}em;`;
     urls.forEach((u, i) => {
         const name = u.split('/').pop().replace(/([a-z])([A-Z])/g,'$1 $2').replace(/-/g,' ');
         const pageNum = sectionStartPages ? sectionStartPages[i] : null;
         const row = el('div', null);
-        row.style.cssText = 'display:flex;align-items:baseline;padding:2.2mm 0;border-bottom:0.15mm solid #f0f0f0;';
+        row.style.cssText = 'display:flex;align-items:baseline;padding:2.2mm 0;border-bottom:0.15mm solid #f0f0f0;break-inside:avoid;';
         const numEl = el('span', null, String(i + 1).padStart(2, '0'));
         numEl.style.cssText = 'font-size:2mm;color:#ccc;font-weight:400;letter-spacing:0.06em;margin-right:3mm;flex-shrink:0;';
         const nameEl = el('span', null, name.toUpperCase());
-        nameEl.style.cssText = 'font-size:2.6mm;font-weight:300;letter-spacing:0.08em;color:#111;flex:1;';
+        nameEl.style.cssText = 'font-size:2.6mm;font-weight:300;letter-spacing:0.08em;color:#111;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
         const dots = el('span', null);
-        dots.style.cssText = 'flex:1;min-width:5mm;max-width:20mm;margin:0 3mm;border-bottom:0.15mm dotted #ddd;height:1px;align-self:center;';
+        dots.style.cssText = 'flex:1;min-width:3mm;max-width:20mm;margin:0 2mm;border-bottom:0.15mm dotted #ddd;height:1px;align-self:center;';
         const pgEl = el('span', null, pageNum !== null ? pageNum : '');
         pgEl.style.cssText = 'font-size:2.6mm;color:#999;font-weight:300;flex-shrink:0;min-width:5mm;text-align:right;';
         row.appendChild(numEl);
@@ -842,10 +460,8 @@ function createContentsPage(title, urls, sectionStartPages) {
         row.appendChild(pgEl);
         list.appendChild(row);
     });
-
     content.appendChild(list);
     page.appendChild(content);
-
     addPageControls(page);
     return page;
 }
@@ -854,17 +470,14 @@ function createBackCoverPage() {
     const page = document.createElement('div');
     page.classList.add('a4-page');
     page.dataset.productName = 'Back Cover';
-
     const logo = document.createElement('img');
     logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
     logo.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);height:18mm;';
     page.appendChild(logo);
-
     const url = document.createElement('div');
     url.style.cssText = 'position:absolute;bottom:10mm;left:50%;transform:translateX(-50%);letter-spacing:0.1rem;font-size:14px;';
     url.textContent = 'www.futureautomation.net';
     page.appendChild(url);
-
     addPageControls(page);
     return page;
 }
@@ -881,7 +494,6 @@ function addPageControls(page) {
     page.appendChild(div);
 }
 
-/* ── IMAGE CLASSIFICATION ── */
 function classifyImages(carouselImgs, productCode) {
     const code = productCode.toLowerCase();
     const lifestyle = [], product = [];
@@ -892,22 +504,15 @@ function classifyImages(carouselImgs, productCode) {
         seen.add(src);
         const srcLower = src.toLowerCase();
         const filename = src.split('/').pop().split('?')[0].toLowerCase();
-        if (srcLower.includes('/product/video/')) {
-            return;
-        } else if (srcLower.includes('/product/gallery/')) {
-            lifestyle.push(src);
-        } else if (srcLower.includes('/product/main/') && filename.startsWith(code)) {
-            product.push(src);
-        } else if (filename.startsWith(code)) {
-            product.push(src);
-        } else {
-            lifestyle.push(src);
-        }
+        if (srcLower.includes('/product/video/')) { return; }
+        else if (srcLower.includes('/product/gallery/')) { lifestyle.push(src); }
+        else if (srcLower.includes('/product/main/') && filename.startsWith(code)) { product.push(src); }
+        else if (filename.startsWith(code)) { product.push(src); }
+        else { lifestyle.push(src); }
     });
     return { lifestyle, product };
 }
 
-/* ── SHARED ELEMENT BUILDERS ── */
 function el(tag, css, html) {
     const e = document.createElement(tag);
     if (css) e.style.cssText = css;
@@ -915,32 +520,20 @@ function el(tag, css, html) {
     return e;
 }
 
-function makeImg(src) {
-    const img = document.createElement('img');
-    img.src = src;
-    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;display:block;';
-    return img;
-}
-
-function makeNameBox(productCode, subtitle) {
-    const box = el('div', null);
-    box.className = 'fa-namebox';
-    box.innerHTML = `<div class="fa-pname">${productCode}</div>${subtitle ? `<div class="fa-psub">${subtitle}</div>` : ''}`;
-    return box;
-}
-
-function makeDescCol(productCode, subtitle, descHTML) {
-    const col = el('div', null);
-    col.className = 'fa-desccol';
-    col.appendChild(makeNameBox(productCode, subtitle));
-    const desc = el('div', null, descHTML);
-    desc.className = 'fa-desc';
-    col.appendChild(desc);
-    return col;
+function makeHeader(productCode, subtitle, tags) {
+    const hdr = el('div', null);
+    hdr.className = 'pg-header';
+    const logo = el('img', null);
+    logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
+    logo.className = 'pg-logo';
+    hdr.appendChild(logo);
+    const urlDiv = el('div', null, 'www.futureautomation.net');
+    urlDiv.className = 'pg-url';
+    hdr.appendChild(urlDiv);
+    return hdr;
 }
 
 function makeSpecZone(specTable) {
-    if (!specTable) return null;
     const zone = el('div', null);
     zone.className = 'fa-speczone';
     const label = el('div', null, 'Technical Specification');
@@ -954,390 +547,289 @@ function makeSpecZone(specTable) {
     return zone;
 }
 
-function makePage(productCode) {
-    const page = document.createElement('div');
-    page.classList.add('a4-page');
-    page.dataset.productName = productCode;
-    const inner = el('div', null);
-    inner.className = 'fa-inner';
-    page.appendChild(inner);
-    return { page, inner };
-}
+function makeSlot(imgArray, initialIdx, totalSlots, type) {
+    const wrap = el('div', 'position:relative;overflow:hidden;min-height:0;display:flex;align-items:center;justify-content:center;');
+    const isProduct = type === 'product';
+    wrap.className = isProduct ? 'pg-img' : 'fa-lifestyle';
 
-function makeHeader(productCode, subtitle, tags) {
-    const hdr = el('div', null);
-    hdr.className = 'pg-header';
-
-    const logo = el('img', null);
-    logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
-    logo.className = 'pg-logo';
-    logo.alt = 'Future Automation';
-    hdr.appendChild(logo);
-
-    const urlDiv = el('div', null, 'www.futureautomation.net');
-    urlDiv.className = 'pg-url';
-    hdr.appendChild(urlDiv);
-
-    return hdr;
-}
-
-const MM_PER_PX = 25.4 / 96;
-const BASE_LS_HEIGHT_MM = 55;
-
-function makeLifestyleZone(lifestyleImgs) {
-    if (!lifestyleImgs || !lifestyleImgs.length) return null;
-
-    const container = el('div', null);
-    container.className = 'fa-lifestyle-container';
-    container.style.cssText = 'flex-shrink:0;display:flex;flex-direction:column;gap:2mm;margin-bottom:3.5mm;';
-
-    const maxShow = Math.min(lifestyleImgs.length, 3);
-    let visibleCount = maxShow;
-
-    function makeLsSlotZone(src, slotIdx) {
-        const zone = el('div', null);
-        zone.className = 'fa-lifestyle';
-        const img = el('img', 'width:100%;height:100%;object-fit:cover;display:block;');
-        img.src = src;
-        zone.appendChild(img);
-        if (lifestyleImgs.length > 1) {
-            let curIdx = slotIdx;
-            const arrows = el('div', null);
-            arrows.className = 'fa-ls-arrows';
-            const counter = el('span', null, (slotIdx + 1) + '/' + lifestyleImgs.length);
-            counter.className = 'fa-ls-count';
-            const prev = el('button', null, '&#9664;');
-            prev.className = 'fa-ls-btn';
-            prev.onclick = () => { curIdx = (curIdx - 1 + lifestyleImgs.length) % lifestyleImgs.length; img.src = lifestyleImgs[curIdx]; counter.textContent = (curIdx + 1) + '/' + lifestyleImgs.length; };
-            const next = el('button', null, '&#9654;');
-            next.className = 'fa-ls-btn';
-            next.onclick = () => { curIdx = (curIdx + 1) % lifestyleImgs.length; img.src = lifestyleImgs[curIdx]; counter.textContent = (curIdx + 1) + '/' + lifestyleImgs.length; };
-            arrows.appendChild(prev); arrows.appendChild(counter); arrows.appendChild(next);
-            zone.appendChild(arrows);
-        }
-        return zone;
+    if (!isProduct) {
+        wrap.style.cssText += 'background:#0a0a0a;border-radius:2mm;border:0.2mm solid #e8e8e8; aspect-ratio: 16/9; width: 100%; flex-shrink: 0;';
     }
 
-    function buildZones() {
-        container.innerHTML = '';
-        if (visibleCount === 1) {
-            const zone = makeLsSlotZone(lifestyleImgs[0], 0);
-            zone.style.cssText = 'aspect-ratio:16/9;width:100%;flex-shrink:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
-            container.appendChild(zone);
-        } else if (visibleCount === 2) {
-            const z1 = makeLsSlotZone(lifestyleImgs[0], 0);
-            z1.style.cssText = 'aspect-ratio:16/9;width:100%;flex-shrink:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
-            container.appendChild(z1);
-            const z2 = makeLsSlotZone(lifestyleImgs[1], 1);
-            z2.style.cssText = 'aspect-ratio:16/9;width:100%;flex-shrink:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
-            container.appendChild(z2);
-        } else {
-            const z1 = makeLsSlotZone(lifestyleImgs[0], 0);
-            z1.style.cssText = 'aspect-ratio:16/9;width:100%;flex-shrink:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
-            container.appendChild(z1);
-            const subRow = el('div', null);
-            subRow.style.cssText = 'display:flex;flex-direction:row;gap:2mm;flex-shrink:0;';
-            const z2 = makeLsSlotZone(lifestyleImgs[1], 1);
-            z2.style.cssText = 'aspect-ratio:16/9;flex:1;min-width:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
-            const z3 = makeLsSlotZone(lifestyleImgs[2], 2);
-            z3.style.cssText = 'aspect-ratio:16/9;flex:1;min-width:0;overflow:hidden;border:0.2mm solid #e8e8e8;border-radius:2mm;position:relative;background:#0a0a0a;';
-            subRow.appendChild(z2);
-            subRow.appendChild(z3);
-            container.appendChild(subRow);
-        }
+    const img = el('img', !isProduct ? 'width:100%;height:100%;object-fit:cover;display:block;' : 'max-width:100%;max-height:100%;object-fit:contain;display:block;');
+    let currentIdx = initialIdx;
+    img.src = imgArray[currentIdx];
+    wrap.appendChild(img);
+
+    if (imgArray.length > totalSlots) {
+        const nav = el('div', null);
+        nav.style.cssText = 'position:absolute;display:flex;gap:1.5mm;align-items:center;z-index:2;' + (isProduct ? 'top:2mm;right:2mm;' : 'bottom:2mm;right:2mm;');
+
+        const cnt = el('span', null, `${currentIdx + 1}/${imgArray.length}`);
+        cnt.style.cssText = 'color:#fff;background:rgba(0,0,0,0.75);padding:0 1.5mm;border-radius:1mm;height:5mm;display:flex;align-items:center;font-size:1.8mm;letter-spacing:0.05em;font-family:Open Sans,sans-serif;margin:0;border:1px solid rgba(255,255,255,0.4);box-shadow:0 2px 5px rgba(0,0,0,0.5); backdrop-filter: blur(2px);';
+
+        const btnCss = 'background:rgba(0,0,0,0.75);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:1mm;width:5mm;height:5mm;font-size:2mm;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.5); backdrop-filter: blur(2px);';
+
+        const prev = el('button', null, '◀');
+        const next = el('button', null, '▶');
+        prev.style.cssText = btnCss; next.style.cssText = btnCss;
+
+        prev.onclick = () => {
+            currentIdx = (currentIdx - totalSlots + imgArray.length) % imgArray.length;
+            img.src = imgArray[currentIdx];
+            cnt.textContent = `${currentIdx + 1}/${imgArray.length}`;
+        };
+        next.onclick = () => {
+            currentIdx = (currentIdx + totalSlots) % imgArray.length;
+            img.src = imgArray[currentIdx];
+            cnt.textContent = `${currentIdx + 1}/${imgArray.length}`;
+        };
+
+        nav.appendChild(prev); nav.appendChild(cnt); nav.appendChild(next);
+        wrap.appendChild(nav);
     }
-
-    buildZones();
-    container._setVisibleCount = (n) => { visibleCount = n; buildZones(); };
-    container._maxShow = maxShow;
-    return container;
-}
-/* ── UNIFIED LAYOUT ── header / tile zone / spacer / lifestyle+spec */
-
-function makeImgSlots(productImgs, targetCol, extraClass) {
-    const n = productImgs.length;
-    const SLOTS = Math.min(n, 4);
-    const displayImgs = productImgs.slice(0, SLOTS);
-    const imgZones = [];
-    const slotCurrentIdx = [];
-
-    displayImgs.forEach((src, slotIdx) => {
-        slotCurrentIdx.push(slotIdx);
-        const zone = el('div', null);
-        zone.className = 'pg-img' + (extraClass ? ' ' + extraClass : '');
-        zone.style.cssText = 'position:relative;overflow:hidden;';
-        const imgEl = makeImg(src);
-        zone.appendChild(imgEl);
-
-        if (n > SLOTS) {
-            const nav = el('div', null);
-            nav.className = 'pg-img-nav';
-            nav.style.cssText = 'position:absolute;top:1.5mm;right:1.5mm;display:flex;gap:1mm;align-items:center;z-index:2;';
-            const cnt = el('span', null, (slotIdx + 1) + '/' + n);
-            cnt.style.cssText = 'font-size:1.6mm;color:rgba(0,0,0,0.35);letter-spacing:0.05em;font-family:Open Sans,sans-serif;';
-            const prevBtn = el('button', null, '&#9664;');
-            prevBtn.style.cssText = 'background:rgba(0,0,0,0.08);color:#333;border:none;border-radius:1mm;width:4mm;height:4mm;font-size:1.6mm;cursor:pointer;display:flex;align-items:center;justify-content:center;';
-            const nextBtn = el('button', null, '&#9654;');
-            nextBtn.style.cssText = prevBtn.style.cssText;
-            prevBtn.onclick = () => {
-                slotCurrentIdx[slotIdx] = (slotCurrentIdx[slotIdx] - SLOTS + n) % n;
-                if (slotCurrentIdx[slotIdx] < 0) slotCurrentIdx[slotIdx] += n;
-                imgEl.src = productImgs[slotCurrentIdx[slotIdx]];
-                cnt.textContent = (slotCurrentIdx[slotIdx] + 1) + '/' + n;
-            };
-            nextBtn.onclick = () => {
-                slotCurrentIdx[slotIdx] = (slotCurrentIdx[slotIdx] + SLOTS) % n;
-                imgEl.src = productImgs[slotCurrentIdx[slotIdx]];
-                cnt.textContent = (slotCurrentIdx[slotIdx] + 1) + '/' + n;
-            };
-            nav.appendChild(prevBtn); nav.appendChild(cnt); nav.appendChild(nextBtn);
-            zone.appendChild(nav);
-        }
-
-        targetCol.appendChild(zone);
-        imgZones.push(zone);
-    });
-    return imgZones;
+    return wrap;
 }
 
 function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTable, tags, lifestyleImgs) {
-    inner.appendChild(makeHeader(productCode, subtitle, tags));
+    const layoutContainer = el('div', 'display: grid; gap: 4mm; height: 100%; width: 100%; min-height: 0;');
+    inner.appendChild(layoutContainer);
 
-    const n = productImgs.length;
-    const hasLifestyle = lifestyleImgs && lifestyleImgs.length > 0;
-    const lsCount = hasLifestyle ? lifestyleImgs.length : 0;
-    const specColCount = specTable ? (specTable.querySelector('thead tr') ? specTable.querySelector('thead tr').cells.length : 1) : 0;
-    const useWideSpec = (n <= 2 && specColCount >= 4) || (n === 1 && !hasLifestyle);
-    const useSplitLifestyle = n === 1 && hasLifestyle;
-    const useSplitTop = n === 2 && hasLifestyle;
+    const hdr = makeHeader(productCode, subtitle, tags);
+    hdr.style.gridArea = 'hd';
+    layoutContainer.appendChild(hdr);
 
-    let imgZones = [];
-    let lsZone = null;
+    const imgCol = el('div', 'grid-area: im; display: flex; flex-direction: column; gap: 4mm; overflow: hidden; min-height: 0;');
+    layoutContainer.appendChild(imgCol);
 
-    if (useSplitTop) {
-        const splitTop = el('div', null);
-        splitTop.className = 'pg-split-top';
+    const textCol = el('div', 'grid-area: tx; display: flex; flex-direction: column; overflow: hidden; min-height: 0;');
+    const nameBox = el('div', null);
+    nameBox.className = 'fa-namebox';
+    nameBox.innerHTML = `<div class="fa-pname">${productCode}</div>${subtitle ? `<div class="fa-psub">${subtitle}</div>` : ''}`;
+    textCol.appendChild(nameBox);
+    const desc = el('div', null, descHTML);
+    desc.className = 'fa-desc';
+    textCol.appendChild(desc);
+    layoutContainer.appendChild(textCol);
 
-        const imgCol = el('div', null);
-        imgCol.className = 'pg-imgcol';
-        imgZones = makeImgSlots(productImgs, imgCol);
+    const lsCol = el('div', 'grid-area: ls; display: flex; flex-direction: column; gap: 2mm; overflow: hidden; min-height: 0;');
+    layoutContainer.appendChild(lsCol);
 
-        const lsCol = el('div', null);
-        lsCol.className = 'pg-lscol';
-        const maxShow = Math.min(lsCount, 3);
-        let visibleCount = maxShow;
+    const specCol = el('div', 'grid-area: sp; overflow: hidden; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0;');
+    if(specTable) {
+        specCol.appendChild(makeSpecZone(specTable));
+    }
+    layoutContainer.appendChild(specCol);
 
-        function makeLsSlotST(imgSrc, slotIdx) {
-            const lsDiv = el('div', null);
-            lsDiv.className = 'fa-lifestyle';
-            lsDiv.style.cssText = 'border:0.2mm solid #e8e8e8;border-radius:2mm;overflow:hidden;position:relative;';
-            const lsImg = el('img', 'width:100%;height:100%;object-fit:cover;display:block;');
-            lsImg.src = imgSrc;
-            lsDiv.appendChild(lsImg);
-            if (lsCount > 1) {
-                let curIdx = slotIdx;
-                const arrows = el('div', null);
-                arrows.className = 'fa-ls-arrows';
-                const counter = el('span', null, (curIdx + 1) + '/' + lsCount);
-                counter.className = 'fa-ls-count';
-                const prev = el('button', null, '&#9664;');
-                prev.className = 'fa-ls-btn';
-                prev.onclick = () => { curIdx = (curIdx - 1 + lsCount) % lsCount; lsImg.src = lifestyleImgs[curIdx]; counter.textContent = (curIdx + 1) + '/' + lsCount; };
-                const next = el('button', null, '&#9654;');
-                next.className = 'fa-ls-btn';
-                next.onclick = () => { curIdx = (curIdx + 1) % lsCount; lsImg.src = lifestyleImgs[curIdx]; counter.textContent = (curIdx + 1) + '/' + lsCount; };
-                arrows.appendChild(prev); arrows.appendChild(counter); arrows.appendChild(next);
-                lsDiv.appendChild(arrows);
-            }
-            return lsDiv;
-        }
+    let state = {
+        lsVisible: lifestyleImgs ? Math.min(lifestyleImgs.length, 3) : 0,
+        imgVisible: productImgs ? Math.min(productImgs.length, 4) : 0,
+        hasSpec: !!specTable
+    };
 
-        function buildLsMosaic(count) {
-            lsCol.innerHTML = '';
-            if (count === 1) {
-                const z = makeLsSlotST(lifestyleImgs[0], 0);
-                z.style.cssText += 'flex:1;min-height:0;';
-                lsCol.appendChild(z);
-            } else if (count === 2) {
-                const mainRow = el('div', null);
-                mainRow.className = 'ls-row ls-row-main';
-                mainRow.appendChild(makeLsSlotST(lifestyleImgs[0], 0));
-                lsCol.appendChild(mainRow);
-                const subRow = el('div', null);
-                subRow.className = 'ls-row ls-row-sub';
-                subRow.appendChild(makeLsSlotST(lifestyleImgs[1], 1));
-                lsCol.appendChild(subRow);
+    function renderGrid() {
+        imgCol.innerHTML = '';
+        lsCol.innerHTML = '';
+        
+        imgCol.style.justifyContent = 'flex-start';
+        textCol.style.justifyContent = 'flex-start';
+
+        if(state.imgVisible > 0) {
+            const isGrid = (state.imgVisible === 4 || state.imgVisible === 2) && state.lsVisible === 0;
+            imgCol.style.display = isGrid ? 'grid' : 'flex';
+            if (isGrid) {
+                imgCol.style.gridTemplateColumns = '1fr 1fr';
+                imgCol.style.gridTemplateRows = state.imgVisible === 4 ? '1fr 1fr' : '1fr';
             } else {
-                const mainRow = el('div', null);
-                mainRow.className = 'ls-row ls-row-main';
-                mainRow.appendChild(makeLsSlotST(lifestyleImgs[0], 0));
-                lsCol.appendChild(mainRow);
-                const subRow = el('div', null);
-                subRow.className = 'ls-row ls-row-sub';
-                subRow.appendChild(makeLsSlotST(lifestyleImgs[1], 1));
-                subRow.appendChild(makeLsSlotST(lifestyleImgs[2], 2));
-                lsCol.appendChild(subRow);
+                imgCol.style.gridTemplateColumns = '';
+                imgCol.style.gridTemplateRows = '';
             }
-        }
 
-        buildLsMosaic(visibleCount);
-
-        lsZone = lsCol;
-        lsZone._maxShow = maxShow;
-        lsZone._setVisibleCount = (n) => { visibleCount = n; buildLsMosaic(n); };
-
-        splitTop.appendChild(imgCol);
-        splitTop.appendChild(lsCol);
-        inner.appendChild(splitTop);
-
-        const splitDesc = el('div', null);
-        splitDesc.className = 'pg-split-desc';
-        splitDesc.appendChild(makeNameBox(productCode, subtitle));
-        const desc = el('div', null, descHTML);
-        desc.className = 'fa-desc';
-        splitDesc.appendChild(desc);
-        inner.appendChild(splitDesc);
-
-        if (specTable) {
-            const wideSpec = el('div', null);
-            wideSpec.className = 'pg-split-wide-spec';
-            wideSpec.appendChild(makeSpecZone(specTable));
-            inner.appendChild(wideSpec);
-        }
-
-    } else {
-        const body = el('div', null);
-        body.className = 'pg-body';
-        if (n === 1) body.classList.add('single-img');
-        if (useWideSpec) body.classList.add('wide-spec-mode');
-
-        const imgCol = el('div', null);
-        imgCol.className = 'pg-imgcol';
-        if (n <= 2 && n > 0) imgCol.classList.add('natural-height');
-        imgZones = makeImgSlots(productImgs, imgCol);
-
-        const descCol = el('div', null);
-        descCol.className = 'pg-desccol';
-
-        if (!useSplitLifestyle && hasLifestyle) {
-            lsZone = makeLifestyleZone(lifestyleImgs);
-            if (lsZone) {
-                lsZone._imgCol = imgCol;
-                descCol.appendChild(lsZone);
-            }
-        }
-
-        descCol.appendChild(makeNameBox(productCode, subtitle));
-
-        const desc = el('div', null, descHTML);
-        desc.className = 'fa-desc';
-        descCol.appendChild(desc);
-
-        if (specTable && !useWideSpec && !useSplitLifestyle) {
-            const spacer = el('div', null);
-            descCol.appendChild(spacer);
-            const specWrap = el('div', null);
-            specWrap.className = 'pg-specwrap';
-            specWrap.appendChild(makeSpecZone(specTable));
-            descCol.appendChild(specWrap);
-        }
-
-        if (n > 0) body.appendChild(imgCol);
-        body.appendChild(descCol);
-        inner.appendChild(body);
-
-        if (useSplitLifestyle) {
-            lsZone = makeLifestyleZone(lifestyleImgs);
-            if (lsZone || specTable) {
-                const lower = el('div', null);
-                lower.style.cssText = 'flex-shrink:0;margin-top:5mm;';
-                if (lsZone) {
-                    lower.appendChild(lsZone);
+            for (let i = 0; i < state.imgVisible; i++) {
+                if (i < productImgs.length) {
+                    const z = makeSlot(productImgs, i, state.imgVisible, 'product');
+                    if (!isGrid) {
+                         z.style.flex = '1';
+                         if (i > 0) z.style.borderTop = '0.2mm solid #e8e8e8';
+                         if (i > 0) z.style.paddingTop = '2mm';
+                    } else {
+                         z.style.borderTop = 'none';
+                         z.style.paddingTop = '0';
+                    }
+                    imgCol.appendChild(z);
                 }
-                if (specTable) {
-                    const specWrap = el('div', null);
-                    specWrap.style.cssText = 'margin-top:5mm;padding-top:5mm;border-top:0.2mm solid #ddd;';
-                    specWrap.appendChild(makeSpecZone(specTable));
-                    lower.appendChild(specWrap);
+            }
+        } else { 
+            imgCol.style.display = 'none'; 
+        }
+
+        let isBannerLS = (state.imgVisible === 1 && state.lsVisible === 3 && !state.hasSpec) || (state.imgVisible === 1 && state.lsVisible === 1);
+
+        if(state.lsVisible > 0) {
+            lsCol.style.display = 'flex';
+            
+            if(state.lsVisible === 1 || state.lsVisible === 2) {
+                lsCol.style.flexDirection = 'column'; 
+                if (isBannerLS) lsCol.style.flexDirection = 'row';
+                
+                for (let i = 0; i < state.lsVisible; i++) {
+                    if (i < lifestyleImgs.length) {
+                        const z = makeSlot(lifestyleImgs, i, state.lsVisible, 'lifestyle');
+                        z.style.flex = '1';
+                        lsCol.appendChild(z);
+                    }
                 }
-                inner.appendChild(lower);
+            } else {
+                lsCol.style.flexDirection = (state.imgVisible === 0 || isBannerLS) ? 'row' : 'column';
+                const z1 = makeSlot(lifestyleImgs, 0, state.lsVisible, 'lifestyle');
+                z1.style.flex = '2';
+                lsCol.appendChild(z1);
+
+                const sub = el('div', 'display:flex;gap:2mm;flex-shrink:0;flex:1;min-height:0;');
+                sub.style.flexDirection = (state.imgVisible === 0 || isBannerLS) ? 'column' : 'row';
+
+                for(let n=1; n<3; n++) {
+                    if (n < lifestyleImgs.length) {
+                        const z = makeSlot(lifestyleImgs, n, state.lsVisible, 'lifestyle');
+                        z.style.flex = '1';
+                        sub.appendChild(z);
+                    }
+                }
+                lsCol.appendChild(sub);
+            }
+        } else { 
+            lsCol.style.display = 'none'; 
+        }
+
+        specCol.style.display = state.hasSpec ? 'flex' : 'none';
+
+        let gridCols = '1fr';
+        let gridAreas = '';
+        let gridRows = '';
+
+        if (state.imgVisible === 0) {
+            gridCols = '1fr';
+            if (state.lsVisible === 0) {
+                gridAreas = state.hasSpec ? '"hd" "tx" "sp"' : '"hd" "tx"';
+                gridRows = state.hasSpec ? 'auto 1fr auto' : 'auto 1fr';
+            } else {
+                gridAreas = state.hasSpec ? '"hd" "ls" "tx" "sp"' : '"hd" "ls" "tx"';
+                gridRows = state.hasSpec ? 'auto auto 1fr auto' : 'auto auto 1fr';
+            }
+        }
+        else if (state.imgVisible === 1) {
+            if (state.lsVisible === 0) {
+                gridCols = '1fr';
+                gridAreas = state.hasSpec ? '"hd" "im" "tx" "sp"' : '"hd" "im" "tx" "."';
+                gridRows = state.hasSpec ? 'auto fit-content(45%) 1fr auto' : 'auto fit-content(45%) 1fr 12%';
+            } else if (state.lsVisible === 1) {
+                gridCols = '40% 1fr';
+                gridAreas = state.hasSpec ? '"hd hd" "ls ls" "im tx" "sp sp"' : '"hd hd" "ls ls" "im tx"';
+                gridRows = state.hasSpec ? 'auto auto 1fr auto' : 'auto auto 1fr';
+                
+                imgCol.style.justifyContent = 'flex-start';
+                textCol.style.justifyContent = 'flex-start';
+                if (imgCol.firstElementChild) imgCol.firstElementChild.style.alignItems = 'flex-start';
+
+            } else if (state.lsVisible === 3 && !state.hasSpec) {
+                gridCols = '40% 1fr';
+                gridAreas = '"hd hd" "ls ls" "im tx"';
+                gridRows = 'auto auto 1fr';
+                imgCol.style.justifyContent = 'flex-start';
+                textCol.style.justifyContent = 'flex-start';
+            } else {
+                gridCols = '40% 1fr';
+                gridAreas = state.hasSpec ? '"hd hd" "im ls" "tx tx" "sp sp"' : '"hd hd" "im ls" "tx tx"';
+                gridRows = state.hasSpec ? 'auto 1fr fit-content(35%) auto' : 'auto 1fr fit-content(45%)';
+            }
+        }
+        else if (state.imgVisible === 2 && state.lsVisible === 0) {
+            gridCols = '1fr';
+            gridAreas = state.hasSpec ? '"hd" "im" "tx" "sp"' : '"hd" "im" "tx"';
+            gridRows = state.hasSpec ? 'auto fit-content(40%) 1fr auto' : 'auto fit-content(40%) 1fr';
+        }
+        else if (state.imgVisible === 3 && state.lsVisible === 0 && state.hasSpec) {
+            gridCols = '38% 1fr';
+            gridAreas = '"hd hd" "im tx" "im sp" "im ."';
+            gridRows = 'auto max-content max-content 1fr';
+        }
+        else if (state.imgVisible === 4 && state.lsVisible === 0) {
+            gridCols = '1fr';
+            gridAreas = state.hasSpec ? '"hd" "im" "tx" "sp"' : '"hd" "im" "tx"';
+            gridRows = state.hasSpec ? 'auto fit-content(45%) 1fr auto' : 'auto fit-content(45%) 1fr';
+        }
+        else {
+            gridCols = '38% 1fr';
+            if (state.lsVisible === 0) {
+                gridAreas = state.hasSpec ? '"hd hd" "im tx" "sp sp"' : '"hd hd" "im tx"';
+                gridRows = state.hasSpec ? 'auto 1fr auto' : 'auto 1fr';
+            } else {
+                if (!state.hasSpec && state.imgVisible === 2) {
+                    gridAreas = '"hd hd" "im tx" "im ls" "im ."';
+                    gridRows = 'auto max-content max-content 1fr';
+                } else {
+                    gridAreas = state.hasSpec ? '"hd hd" "im tx" "im ls" "sp sp"' : '"hd hd" "im tx" "im ls"';
+                    gridRows = state.hasSpec ? 'auto fit-content(35%) 1fr auto' : 'auto fit-content(45%) 1fr';
+                }
             }
         }
 
-        if (useWideSpec && specTable && !useSplitLifestyle) {
-            const wideSpec = el('div', null);
-            wideSpec.className = 'pg-wide-spec';
-            wideSpec.appendChild(makeSpecZone(specTable));
-            inner.appendChild(wideSpec);
+        layoutContainer.style.gridTemplateColumns = gridCols;
+        layoutContainer.style.gridTemplateRows = gridRows;
+        layoutContainer.style.gridTemplateAreas = gridAreas;
+
+        if (state.imgVisible === 0 && state.lsVisible === 2 && state.hasSpec) {
+            if (textCol.scrollHeight > textCol.clientHeight + 5 || layoutContainer.scrollHeight > layoutContainer.clientHeight + 5) {
+                lsCol.style.flexDirection = 'row';
+                layoutContainer.style.gridTemplateRows = 'auto min-content 1fr auto'; 
+            }
+        }
+
+        if (state.imgVisible === 1 && state.lsVisible === 0) {
+            imgCol.style.alignItems = 'center';
+            if (imgCol.firstElementChild) imgCol.firstElementChild.style.width = '60%';
         }
     }
 
     const editor = el('div', null);
     editor.className = 'pg-editor';
 
-    if (lsZone) {
-        const lsSection = el('div', null);
-        lsSection.className = 'pg-editor-section';
-        const lsLabel = el('span', null, 'Lifestyle');
-        lsLabel.className = 'pg-editor-label';
-        lsSection.appendChild(lsLabel);
-
-        const btn0 = el('button', null, '0');
-        btn0.className = 'pg-ed-btn';
-        btn0.title = 'Hide lifestyle images';
-        btn0.onclick = () => {
-            lsZone.style.display = 'none';
-            if (lsZone._imgCol) lsZone._imgCol.classList.add('ls-hidden');
-            lsSection.querySelectorAll('.pg-ed-btn').forEach(b => b.classList.remove('active'));
-            btn0.classList.add('active');
-        };
-        lsSection.appendChild(btn0);
-
-        if (lsZone._maxShow) {
-            for (let i = 1; i <= lsZone._maxShow; i++) {
-                const btn = el('button', null, `${i}`);
-                btn.className = 'pg-ed-btn' + (i === lsZone._maxShow ? ' active' : '');
-                btn.title = `Show ${i} lifestyle image${i > 1 ? 's' : ''}`;
-                btn.onclick = () => {
-                    lsZone.style.display = '';
-                    if (lsZone._imgCol) lsZone._imgCol.classList.remove('ls-hidden');
-                    lsZone._setVisibleCount(i);
-                    lsSection.querySelectorAll('.pg-ed-btn').forEach((b, j) => b.classList.toggle('active', j === i));
-                };
-                lsSection.appendChild(btn);
-            }
-        } else {
-            const btn1 = el('button', null, '1');
-            btn1.className = 'pg-ed-btn active';
-            btn1.title = 'Show lifestyle image';
-            btn1.onclick = () => {
-                lsZone.style.display = '';
-                if (lsZone._imgCol) lsZone._imgCol.classList.remove('ls-hidden');
-                lsSection.querySelectorAll('.pg-ed-btn').forEach((b, j) => b.classList.toggle('active', j === 1));
+    if (lifestyleImgs && lifestyleImgs.length > 0) {
+        const maxL = Math.min(lifestyleImgs.length, 3);
+        const lsSec = el('div', null);
+        lsSec.className = 'pg-editor-section';
+        lsSec.appendChild(el('span', 'font-size:1.6mm;color:rgba(255,255,255,0.45);letter-spacing:0.08em;text-transform:uppercase;margin-right:1mm;', 'Lifestyle'));
+        for(let i = 0; i <= maxL; i++) {
+            const btn = el('button', null, String(i));
+            btn.className = 'pg-ed-btn' + (i === state.lsVisible ? ' active' : '');
+            btn.onclick = () => {
+                state.lsVisible = i;
+                lsSec.querySelectorAll('.pg-ed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderGrid();
             };
-            lsSection.appendChild(btn1);
+            lsSec.appendChild(btn);
         }
-        editor.appendChild(lsSection);
+        editor.appendChild(lsSec);
     }
 
-    if (imgZones.length > 0) {
-        const imgSection = el('div', null);
-        imgSection.className = 'pg-editor-section';
-        const imgLabel = el('span', null, n > imgZones.length ? 'Slots (' + n + ' imgs)' : 'Images');
-        imgLabel.className = 'pg-editor-label';
-        imgSection.appendChild(imgLabel);
-        imgZones.forEach((zone, i) => {
-            const btn = el('button', null, `${i + 1}`);
-            btn.className = 'pg-ed-btn active';
-            btn.title = `Toggle slot ${i + 1}`;
+    if (productImgs && productImgs.length > 0) {
+        const maxI = Math.min(productImgs.length, 4);
+        const imgSec = el('div', null);
+        imgSec.className = 'pg-editor-section';
+        imgSec.appendChild(el('span', 'font-size:1.6mm;color:rgba(255,255,255,0.45);letter-spacing:0.08em;text-transform:uppercase;margin-right:1mm;', 'Images'));
+        for(let i = 0; i <= maxI; i++) {
+            const btn = el('button', null, String(i));
+            btn.className = 'pg-ed-btn' + (i === state.imgVisible ? ' active' : '');
             btn.onclick = () => {
-                const hidden = zone.style.display === 'none';
-                zone.style.display = hidden ? '' : 'none';
-                btn.classList.toggle('active', hidden);
+                state.imgVisible = i;
+                imgSec.querySelectorAll('.pg-ed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderGrid();
             };
-            imgSection.appendChild(btn);
-        });
-        editor.appendChild(imgSection);
+            imgSec.appendChild(btn);
+        }
+        editor.appendChild(imgSec);
     }
 
     const delSection = el('div', null);
@@ -1349,9 +841,9 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
     editor.appendChild(delSection);
 
     inner.appendChild(editor);
+    renderGrid();
 }
 
-/* ── MAIN PAGE PROCESSOR ── */
 function processPageContent(doc, pageUrl) {
     const productNameEl = doc.querySelector('#PageProductID');
     const h2El = doc.querySelector('h2');
@@ -1364,8 +856,7 @@ function processPageContent(doc, pageUrl) {
 
     const carouselImages = doc.querySelectorAll('.owl-carousel img');
     const allImages = Array.from(doc.querySelectorAll('img'));
-    const mainImage = allImages.find(img => img.src.includes(pageUrl.split('/').pop())) ||
-                      allImages.find(img => img.src.includes('QA2-1.png'));
+    const mainImage = allImages.find(img => img.src.includes(pageUrl.split('/').pop())) || allImages.find(img => img.src.includes('QA2-1.png'));
 
     const carouselImgs = Array.from(carouselImages);
     let { lifestyle, product } = classifyImages(carouselImgs, productCode);
@@ -1380,11 +871,9 @@ function processPageContent(doc, pageUrl) {
         const tbl = specHeading.nextElementSibling.querySelector('table');
         if (tbl) {
             cleanTechnicalSpecificationTable(tbl);
-
             const rows = Array.from(tbl.querySelectorAll('tr'));
             let currentHeaderRow = null;
             let allTBC = true;
-
             rows.forEach(row => {
                 const cells = Array.from(row.cells).map(c => c.textContent.trim());
                 const isShipping = cells.some(c => c.toUpperCase().includes('SHIPPING'));
@@ -1399,68 +888,20 @@ function processPageContent(doc, pageUrl) {
                     if (!cells.some(c => c === 'TBC' || c === 'VARIABLE')) allTBC = false;
                 }
             });
-
             const nonEmpty = Array.from(tbl.querySelectorAll('tr')).filter(r => Array.from(r.cells).some(c => c.textContent.trim()));
             if (nonEmpty.length > 1) specTable = tbl;
         }
     }
 
-    const { page, inner } = makePage(productCode);
+    const page = document.createElement('div');
+    page.classList.add('a4-page');
+    page.dataset.productName = productCode;
+    const inner = el('div', null);
+    inner.className = 'fa-inner';
+    page.appendChild(inner);
+
     buildLayout(inner, productCode, subtitle, descHTML, product, specTable, tags, lifestyle);
-
     document.getElementById('pagesContainer').appendChild(page);
-
-    requestAnimationFrame(() => debugLayout(page, productCode));
-}
-
-function debugLayout(page, productCode) {
-    const PX_TO_MM = 25.4 / 96;
-    const pageRect = page.getBoundingClientRect();
-    const pageW = pageRect.width * PX_TO_MM;
-    const pageH = pageRect.height * PX_TO_MM;
-
-    function measure(el, label) {
-        if (!el) return `  ${label}: NOT FOUND`;
-        const r = el.getBoundingClientRect();
-        const top = (r.top - pageRect.top) * PX_TO_MM;
-        const h = r.height * PX_TO_MM;
-        const bottom = top + h;
-        const overflow = bottom > pageH ? ` ⚠ OVERFLOWS BY ${(bottom - pageH).toFixed(1)}mm` : '';
-        return `  ${label.padEnd(22)} top:${top.toFixed(1).padStart(6)}mm  h:${h.toFixed(1).padStart(6)}mm  bottom:${bottom.toFixed(1).padStart(6)}mm${overflow}`;
-    }
-
-    const inner = page.querySelector('.fa-inner');
-    const header = page.querySelector('.pg-header');
-    const body = page.querySelector('.pg-body');
-    const imgCol = page.querySelector('.pg-imgcol');
-    const imgZones = page.querySelectorAll('.pg-img');
-    const descCol = page.querySelector('.pg-desccol');
-    const lifestyle = page.querySelector('.fa-lifestyle');
-    const speczone = page.querySelector('.fa-speczone');
-
-    const lines = [
-        `\n── ${productCode} layout debug (page: ${pageW.toFixed(1)}×${pageH.toFixed(1)}mm) ──`,
-        measure(inner,    'fa-inner'),
-        measure(header,   'pg-header'),
-        measure(body,     'pg-body'),
-        measure(imgCol,   'pg-imgcol'),
-    ];
-
-    imgZones.forEach((z, i) => lines.push(measure(z, `pg-img[${i}]`)));
-    lines.push(measure(descCol,   'pg-desccol'));
-    lines.push(measure(lifestyle, 'fa-lifestyle'));
-    lines.push(measure(speczone,  'fa-speczone'));
-
-    const innerRect = inner ? inner.getBoundingClientRect() : pageRect;
-    const innerH = innerRect.height * PX_TO_MM;
-    const usedH = [header, body, lifestyle, speczone]
-        .filter(Boolean)
-        .reduce((sum, el) => sum + el.getBoundingClientRect().height * PX_TO_MM, 0);
-    const gapCount = [header, body, lifestyle, speczone].filter(Boolean).length - 1;
-    const gapTotal = gapCount * 3.5;
-    lines.push(`  ${'total used'.padEnd(22)} ${(usedH + gapTotal).toFixed(1)}mm / ${innerH.toFixed(1)}mm available`);
-
-    console.log(lines.join('\n'));
 }
 
 function cleanDescription(desc) {
@@ -1493,76 +934,90 @@ async function fetchPage(url) {
     processPageContent(new DOMParser().parseFromString(html, 'text/html'), url);
 }
 
-function createMasterContentsPage(sections, pageOrder) {
-    const page = document.createElement('div');
-    page.classList.add('a4-page');
-    page.dataset.productName = 'Contents';
-
-    const inner = el('div', null);
-    inner.style.cssText = 'position:absolute;inset:12mm;display:flex;flex-direction:column;font-family:Open Sans,sans-serif;';
-
-    const heading = el('div', null);
-    heading.style.cssText = 'flex-shrink:0;margin-bottom:7mm;padding-bottom:4mm;border-bottom:0.4mm solid #000;display:flex;align-items:baseline;justify-content:space-between;';
-    const headTitle = el('span', null, 'CONTENTS');
-    headTitle.style.cssText = 'font-size:6mm;font-weight:300;letter-spacing:0.3em;color:#000;';
-    heading.appendChild(headTitle);
-    inner.appendChild(heading);
-
-    const cols = el('div', null);
-    cols.style.cssText = 'flex:1;overflow:hidden;display:flex;flex-direction:row;gap:10mm;';
-
-    const totalItems = sections.reduce((s, sec) => s + sec.urls.length, 0);
-    const numCols = totalItems > 30 ? 2 : 1;
-
+function createMasterContentsPages(sections, pageOrder) {
+    const pages = [];
     const flatItems = [];
     sections.forEach(sec => {
         flatItems.push({ isSectionHeader: true, title: sec.title, startPageNum: sec.startPageNum });
         sec.urls.forEach((u, ui) => {
-            let pgNum = null;
-            let count = 0;
+            let pgNum = null; let count = 0;
             for (const item of pageOrder) {
                 if (item.type === 'url' && item.section === sec.title) {
                     if (count === ui) { pgNum = item._pageNum; break; }
                     count++;
                 }
             }
-            flatItems.push({ isSectionHeader: false, name: u.split('/').pop().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/-/g, ' ').toUpperCase(), pageNum: pgNum });
+            flatItems.push({ 
+                isSectionHeader: false, 
+                name: u.split('/').pop().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/-/g, ' ').toUpperCase(), 
+                pageNum: pgNum 
+            });
         });
     });
 
-    const itemsPerCol = Math.ceil(flatItems.length / numCols);
-    for (let c = 0; c < numCols; c++) {
-        const col = el('div', null);
-        col.style.cssText = 'flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;';
-        const slice = flatItems.slice(c * itemsPerCol, (c + 1) * itemsPerCol);
-        slice.forEach(item => {
-            if (item.isSectionHeader) {
-                const sec = el('div', null);
-                sec.style.cssText = 'display:flex;align-items:baseline;justify-content:space-between;padding:3.5mm 0 1.5mm 0;margin-top:2mm;border-bottom:0.25mm solid #000;flex-shrink:0;';
-                const t = el('span', null, item.title.toUpperCase());
-                t.style.cssText = 'font-size:2.6mm;font-weight:700;letter-spacing:0.15em;color:#000;';
-                const p = el('span', null, item.startPageNum !== null ? String(item.startPageNum) : '');
-                p.style.cssText = 'font-size:2.4mm;color:#555;font-weight:600;';
-                sec.appendChild(t); sec.appendChild(p);
-                col.appendChild(sec);
-            } else {
-                const row = el('div', null);
-                row.style.cssText = 'display:flex;align-items:center;padding:1.6mm 0;border-bottom:0.1mm solid #f0f0f0;flex-shrink:0;';
-                const name = el('span', null, item.name);
-                name.style.cssText = 'font-size:2.3mm;font-weight:300;letter-spacing:0.04em;color:#222;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:3mm;';
-                const pgEl = el('span', null, item.pageNum !== null ? String(item.pageNum) : '');
-                pgEl.style.cssText = 'font-size:2.2mm;color:#999;flex-shrink:0;min-width:4mm;text-align:right;';
-                row.appendChild(name); row.appendChild(pgEl);
-                col.appendChild(row);
-            }
-        });
-        cols.appendChild(col);
-    }
+    const MAX_ITEMS_PER_PAGE = 144; 
+    
+    for (let pageIdx = 0; pageIdx < flatItems.length; pageIdx += MAX_ITEMS_PER_PAGE) {
+        const pageItems = flatItems.slice(pageIdx, pageIdx + MAX_ITEMS_PER_PAGE);
+        
+        const page = document.createElement('div');
+        page.classList.add('a4-page');
+        page.dataset.productName = 'Contents';
+        if (pageIdx > 0) page.dataset.productName += ` (Part ${Math.floor(pageIdx/MAX_ITEMS_PER_PAGE) + 1})`;
 
-    inner.appendChild(cols);
-    page.appendChild(inner);
-    addPageControls(page);
-    return page;
+        const inner = el('div', null);
+        inner.style.cssText = 'position:absolute;inset:12mm;display:flex;flex-direction:column;font-family:Open Sans,sans-serif;';
+        const heading = el('div', null);
+        heading.style.cssText = 'flex-shrink:0;margin-bottom:7mm;padding-bottom:4mm;border-bottom:0.4mm solid #000;display:flex;align-items:baseline;justify-content:space-between;';
+        const headTitle = el('span', null, pageIdx === 0 ? 'CONTENTS' : 'CONTENTS (CONT.)');
+        headTitle.style.cssText = 'font-size:6mm;font-weight:300;letter-spacing:0.3em;color:#000;';
+        heading.appendChild(headTitle);
+        inner.appendChild(heading);
+
+        let numCols = 1; let scale = 1;
+        const itemsCount = pageItems.length;
+        if(itemsCount > 90) { numCols = 3; scale = 0.75; }
+        else if(itemsCount > 45) { numCols = 3; scale = 0.85; }
+        else if(itemsCount > 25) { numCols = 2; scale = 0.9; }
+
+        const cols = el('div', null);
+        cols.style.cssText = `flex:1;overflow:hidden;display:flex;flex-direction:row;gap:10mm;font-size:${scale}em;`;
+
+        const itemsPerCol = Math.ceil(itemsCount / numCols);
+        for (let c = 0; c < numCols; c++) {
+            const col = el('div', null);
+            col.style.cssText = 'flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;';
+            const slice = pageItems.slice(c * itemsPerCol, (c + 1) * itemsPerCol);
+            slice.forEach(item => {
+                if (item.isSectionHeader) {
+                    const sec = el('div', null);
+                    sec.style.cssText = 'display:flex;align-items:baseline;justify-content:space-between;padding:3.5mm 0 1.5mm 0;margin-top:2mm;border-bottom:0.25mm solid #000;flex-shrink:0;';
+                    const t = el('span', null, item.title.toUpperCase());
+                    t.style.cssText = 'font-size:2.6mm;font-weight:700;letter-spacing:0.15em;color:#000;';
+                    const p = el('span', null, item.startPageNum !== null ? String(item.startPageNum) : '');
+                    p.style.cssText = 'font-size:2.4mm;color:#555;font-weight:600;';
+                    sec.appendChild(t); sec.appendChild(p);
+                    col.appendChild(sec);
+                } else {
+                    const row = el('div', null);
+                    row.style.cssText = 'display:flex;align-items:center;padding:1.6mm 0;border-bottom:0.1mm solid #f0f0f0;flex-shrink:0;';
+                    const name = el('span', null, item.name);
+                    name.style.cssText = 'font-size:2.3mm;font-weight:300;letter-spacing:0.04em;color:#222;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:3mm;';
+                    const pgEl = el('span', null, item.pageNum !== null ? String(item.pageNum) : '');
+                    pgEl.style.cssText = 'font-size:2.2mm;color:#999;flex-shrink:0;min-width:4mm;text-align:right;';
+                    row.appendChild(name); row.appendChild(pgEl);
+                    col.appendChild(row);
+                }
+            });
+            cols.appendChild(col);
+        }
+
+        inner.appendChild(cols);
+        page.appendChild(inner);
+        addPageControls(page);
+        pages.push(page);
+    }
+    return pages;
 }
 
 async function fetchCdnUrls() {
@@ -1571,30 +1026,24 @@ async function fetchCdnUrls() {
     const statusContainer = document.getElementById('statusContainer');
     const createButton = document.getElementById('createButton');
     if (!lines[0] || !lines[0].trim()) { showToast('No URLs provided', 'warning'); return; }
-
     pagesContainer.innerHTML = '';
     statusContainer.style.display = 'flex';
     createButton.disabled = true;
-
     try {
         const pageOrder = [];
         const sections = [];
         let currentSection = '';
         let hasCover = false;
-
         for (let i = 0; i < lines.length; i++) {
             const url = lines[i].trim();
             if (!url) continue;
             updateProgress((i / lines.length) * 100);
-
             if (url.startsWith('COVER')) {
                 hasCover = true;
                 pageOrder.push({ type: 'cover', page: createCoverPage(url.split(' - ')[1] || url), section: '' });
             } else if (url.startsWith('CONTENTS')) {
                 currentSection = url.split(' - ')[1] || url.replace(/^CONTENTS\s*-?\s*/i, '').trim() || url;
                 sections.push({ title: currentSection, urls: [], startPageNum: null });
-                /* SECTION-SEPARATOR: hidden placeholder — to restore section divider pages between sections,
-                   find all elements with data-section-separator and set their style.display to '' */
                 const sep = createContentsPage(currentSection, [], []);
                 sep.dataset.sectionSeparator = 'true';
                 sep.dataset.sectionTitle = currentSection;
@@ -1618,14 +1067,9 @@ async function fetchCdnUrls() {
                 } catch { showToast(`Error: ${url.split('/').pop()}`, 'error'); }
             }
         }
-
         pagesContainer.innerHTML = '';
-
         let insidePageNum = 1;
-        pageOrder.forEach(item => {
-            item._pageNum = (item.type === 'url') ? insidePageNum++ : null;
-        });
-
+        pageOrder.forEach(item => { item._pageNum = (item.type === 'url') ? insidePageNum++ : null; });
         sections.forEach(sec => {
             let first = true;
             pageOrder.forEach(item => {
@@ -1635,21 +1079,20 @@ async function fetchCdnUrls() {
                 }
             });
         });
-
+        
         if (hasCover && sections.length > 0) {
-            const masterContents = createMasterContentsPage(sections, pageOrder);
-            masterContents.dataset.pageType = 'contents';
-
+            const masterContentsPages = createMasterContentsPages(sections, pageOrder);
+            masterContentsPages.forEach(p => p.dataset.pageType = 'contents');
+            
             pageOrder.forEach(item => {
                 if (!item.page) return;
                 pagesContainer.appendChild(item.page);
-                if (item.type === 'cover') pagesContainer.appendChild(masterContents);
+                if (item.type === 'cover') {
+                    masterContentsPages.forEach(mcp => pagesContainer.appendChild(mcp));
+                }
             });
         } else {
-            pageOrder.forEach(item => {
-                if (!item.page) return;
-                pagesContainer.appendChild(item.page);
-            });
+            pageOrder.forEach(item => { if (item.page) pagesContainer.appendChild(item.page); });
         }
 
         if (hasCover) {
@@ -1664,7 +1107,6 @@ async function fetchCdnUrls() {
                 const pgNum = matchingItem._pageNum;
                 const section = matchingItem.section || '';
                 if (!pgNum) { visibleIdx++; return; }
-
                 const isRight = (visibleIdx % 2 === 0);
                 const footer = el('div', null);
                 footer.className = 'pg-footer';
@@ -1681,7 +1123,6 @@ async function fetchCdnUrls() {
                 visibleIdx++;
             });
         }
-
         updatePageNavigator();
         showToast('Brochure created', 'success');
     } catch (e) { console.error(e); showToast('Error creating brochure', 'error'); }
