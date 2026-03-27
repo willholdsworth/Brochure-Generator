@@ -174,18 +174,19 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 <body>
 <div class="container">
     <div class="top-container">
-        <h1>FLYER / BROCHURE DESIGNER</h1>
+        <h1>SELL SHEET / BROCHURE CREATOR</h1>
         <div class="left">
             <div class="input-section">
                 <label for="pageUrls">PAGES:</label>
-                <textarea id="pageUrls" placeholder="Current page list will appear here">https://www.futureautomation.co.uk/Product/Details/PLFS</textarea>
+                <textarea id="pageUrls" placeholder="Paste one URL per line then press 'Build Pages' to generate sell sheets for individual products">https://www.futureautomation.co.uk/Product/Details/PLFS</textarea>
             </div>
             <div class="input-section">
                 <label for="urlInput">PASTE URLS HERE TO GENERATE BROCHURE:</label>
-                <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST'">https://www.futureautomation.co.uk/Product/Details/PLFS</textarea>
+                <textarea id="urlInput" placeholder="Paste a url from the website here and then 'Generate List' 
+Eg. https:www.futureautomation.co.uk/Product">https://www.futureautomation.co.uk/TV</textarea>
             </div>
             <div class="button-container">
-                <button type="button" id="createButton" onclick="fetchCdnUrls()"><i class="fas fa-file-pdf"></i> Create Brochure</button>
+                <button type="button" id="createButton" onclick="fetchCdnUrls()"><i class="fas fa-file-pdf"></i> Build Pages</button>
                 <button type="button" onclick="startScraping()"><i class="fas fa-list"></i> Generate List</button>
                 <button type="button" onclick="printPage()"><i class="fas fa-download"></i> Export PDF</button>
                 <button type="button" onclick="clearAll()"><i class="fas fa-trash"></i> Clear All</button>
@@ -208,10 +209,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 const visitedLinks = new Set();
 const processedUrls = new Set();
 const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
-const delayBetweenRequests = 333;
-const retryDelay = 2000;
-const maxRetries = 3;
 const cacheExpirationTime = 30 * 60 * 1000;
+
 const cache = {
     data: {},
     set(k, v) { this.data[k] = { value: v, timestamp: Date.now() }; },
@@ -223,6 +222,7 @@ const cache = {
     },
     clear() { this.data = {}; }
 };
+
 const excludeKeywords = ['Login','Account','mailto:','facebook.com','twitter.com','instagram.com','linkedin.com','privacy','terms','cookies','copyright','sitemap','contact-us','about-us','help','faq'];
 
 function showToast(message, type = 'info', duration = 5000) {
@@ -238,34 +238,86 @@ function showToast(message, type = 'info', duration = 5000) {
     }, duration);
 }
 
-async function fetchWithRetry(url, retries = maxRetries, backoff = retryDelay) {
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function fetchWithRetry(url, retries = 10) {
     const cached = cache.get(url);
     if (cached) return cached;
+
+    let lastError = "";
+
     for (let i = 0; i < retries; i++) {
         try {
+            updateStatus(`Fetching: ${url.split('/').pop()}... (Attempt ${i + 1}/${retries})`);
             const proxyUrl = `${corsProxyAPI}${encodeURIComponent(url)}`;
-            updateStatus(`Fetching: ${url.split('/').pop()}... (${i+1}/${retries})`);
-            const res = await fetch(proxyUrl);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const ct = res.headers.get('Content-Type') || '';
-            let data;
-            if (ct.includes('application/json')) data = await res.json();
-            else data = { contents: await res.text() };
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 20000); 
+            
+            const res = await fetch(proxyUrl, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            
+            if (res.status === 429 || res.status === 503 || res.status === 502) {
+                updateStatus(`Server busy/Rate Limit. Pausing 5s...`);
+                await delay(5000);
+                i--; 
+                continue;
+            }
+            
+            if (!res.ok) {
+                if (res.status === 404) throw new Error("404 Not Found");
+                throw new Error(`HTTP ${res.status}`);
+            }
+            
+            const ct = res.headers.get('content-type') || '';
+            let html = '';
+            
+            if (ct.includes('application/json')) {
+                const json = await res.json();
+                html = json.contents || '';
+            } else {
+                html = await res.text();
+            }
+            
+            if (!html || html.length < 500 || !html.toLowerCase().includes('futureautomation')) {
+                throw new Error("Invalid or empty content");
+            }
+            
+            const data = { contents: html };
             cache.set(url, data);
             return data;
+
         } catch (err) {
-            if (i < retries - 1) { await delay(backoff * Math.pow(2, i)); }
-            else { showToast(`Failed to fetch ${url.split('/').pop()}`, 'error'); throw err; }
+            lastError = err.message;
+            if (lastError === "404 Not Found") {
+                throw err; 
+            }
+
+            if (i < retries - 1) {
+                updateStatus(`Error (${lastError}). Retrying in 2s...`);
+                await delay(2000);
+            } else {
+                throw new Error(lastError);
+            }
         }
     }
 }
 
 async function fetchHTML(url) {
-    try { await delay(delayBetweenRequests); return (await fetchWithRetry(url)).contents; }
-    catch { return ''; }
+    try { 
+        await delay(400); 
+        const data = await fetchWithRetry(url, 5);
+        return data.contents;
+    } catch { 
+        return ''; 
+    }
 }
 
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+async function fetchPage(url) {
+    const data = await fetchWithRetry(url, 10);
+    const doc = new DOMParser().parseFromString(data.contents, 'text/html');
+    processPageContent(doc, url);
+}
+
 function shouldExclude(href) { return excludeKeywords.some(k => href.includes(k)); }
 
 async function getSublinks(url, baseUrl) {
@@ -273,6 +325,7 @@ async function getSublinks(url, baseUrl) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const sublinks = [];
     const main = doc.querySelector('main') || doc.body;
+    if(!main) return sublinks;
     main.querySelectorAll('a:not(nav a):not(footer a):not(.MegaMenu a):not(.btn)').forEach(a => {
         const href = a.getAttribute('href');
         if (href && href.startsWith('/') && !href.includes('#') && !visitedLinks.has(href) && !shouldExclude(href)) {
@@ -322,13 +375,15 @@ async function scrape(url, parentDiv, baseUrl) {
             return;
         }
         const sublinks = await getSublinks(url, baseUrl);
-        for (const sub of sublinks) { await delay(delayBetweenRequests); await scrape(sub, parentDiv, baseUrl); }
+        for (const sub of sublinks) { await delay(400); await scrape(sub, parentDiv, baseUrl); }
     } catch { showToast(`Error scraping ${url.split('/').pop()}`, 'error'); }
 }
 
 async function scrapeMultipleWebsites(urls) {
     const resultsDiv = document.getElementById('results');
+    const spinner = document.querySelector('.spinner');
     document.getElementById('statusContainer').style.display = 'flex';
+    if (spinner) spinner.style.display = '';
     resultsDiv.innerHTML = '';
     try {
         removeBackCoverAndBlanks();
@@ -344,26 +399,20 @@ async function scrapeMultipleWebsites(urls) {
                 updateProgress((++done / urls.length) * 100);
             }
         }
-        addBackCoverAndBlanks();
         updatePageURLs();
         showToast('List generation complete', 'success');
     } catch { showToast('Error during list generation', 'error'); }
-    finally { updateStatus('Done'); hideProgress(); }
+    finally { 
+        updateStatus('Done - Select Create Brochure'); 
+        hideProgress(); 
+        if (spinner) spinner.style.display = 'none';
+    }
 }
 
 function removeBackCoverAndBlanks() {
     Array.from(document.getElementById('results').children)
         .filter(d => d.textContent === 'BACK COVER' || d.textContent === 'BLANK')
         .forEach(d => d.remove());
-}
-
-function addBackCoverAndBlanks() {
-    const r = document.getElementById('results');
-    const count = r.querySelectorAll('div').length;
-    const total = Math.ceil((count + 1) / 4) * 4;
-    const blanks = total - (count + 1);
-    for (let i = 0; i < blanks; i++) { const b = document.createElement('div'); b.textContent = 'BLANK'; r.appendChild(b); }
-    const bc = document.createElement('div'); bc.textContent = 'BACK COVER'; r.appendChild(bc);
 }
 
 function startScraping() {
@@ -384,24 +433,50 @@ function createCoverPage(text) {
     page.classList.add('a4-page');
     page.dataset.productName = 'Cover: ' + text;
     page.style.cssText = 'position:relative;overflow:hidden;';
+
+    function generateGradient(t) {
+        const uniqueChars = Array.from(new Set(t.toUpperCase()));
+        const luxuryColors = ['#F6F6F6', '#f1f1f1', '#999999', '#FFFFFF', '#FFFFFF'];
+        return uniqueChars.map((char, index) => luxuryColors[index % luxuryColors.length]);
+    }
+
+    function generateBokehGradient(t) {
+        const colors = generateGradient(t);
+        return colors.map((color, index) => {
+            const x = (index + 1) * 20; 
+            const y = (index + 1) * 20;
+            return `radial-gradient(circle at ${x}% ${y}%, ${color}, transparent 100%)`;
+        }).join(', ');
+    }
+
     const bg = document.createElement('div');
-    bg.style.cssText = 'position:absolute;top:10mm;left:10mm;width:calc(100% - 20mm);height:calc(100% - 20mm);background:radial-gradient(circle at 20% 20%,#f6f6f6,transparent 100%),radial-gradient(circle at 80% 80%,#f1f1f1,transparent 100%);';
+    bg.style.cssText = 'position:absolute;top:10mm;left:10mm;width:calc(100% - 20mm);height:calc(100% - 20mm);border-radius:5mm;overflow:hidden;';
+    bg.style.background = generateBokehGradient(text);
     page.appendChild(bg);
+
+    const wavePattern = document.createElement('div');
+    wavePattern.style.cssText = 'position:absolute;top:10mm;left:10mm;width:calc(100% - 20mm);height:calc(100% - 20mm);background-image:url("https://as2.ftcdn.net/v2/jpg/11/27/29/13/1000_F_1127291390_NOfDcoRWKNQNVpcgjt3VfiSTUCesuvOd.jpg");background-size:130%;background-position:center;opacity:0.1;border-radius:5mm;overflow:hidden;';
+    page.appendChild(wavePattern);
+
     const bar = document.createElement('div');
     bar.style.cssText = 'position:absolute;left:50%;top:0;transform:translateX(-50%);width:50mm;height:90mm;background:#000;';
     page.appendChild(bar);
+
     const logo = document.createElement('img');
     logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
-    logo.style.cssText = 'position:absolute;bottom:10mm;left:50%;transform:translateX(-50%);height:15mm;filter:invert(1);';
+    logo.style.cssText = 'position:absolute;bottom:10mm;left:50%;transform:translateX(-50%);height:15mm;filter:brightness(0) invert(1);';
     bar.appendChild(logo);
+
     const title = document.createElement('div');
     title.style.cssText = 'position:absolute;top:60%;left:50%;transform:translate(-50%,-50%);width:calc(100% - 40mm);font-size:60px;line-height:1.2;color:#000;font-weight:100;text-align:center;word-wrap:break-word;padding:20mm;letter-spacing:0.15rem;';
     title.textContent = text;
     page.appendChild(title);
+
     const url = document.createElement('div');
     url.style.cssText = 'position:absolute;bottom:20mm;left:50%;transform:translateX(-50%);font-size:12px;color:#000;letter-spacing:0.15rem;';
     url.textContent = 'www.futureautomation.net';
     page.appendChild(url);
+
     addPageControls(page);
     return page;
 }
@@ -426,7 +501,7 @@ function createContentsPage(title, urls, sectionStartPages) {
     stripe.appendChild(logoWrap);
     page.appendChild(stripe);
     const content = el('div', null);
-    content.style.cssText = 'position:absolute;left:36mm;top:0;right:0;bottom:0;display:flex;flex-direction:column;padding:14mm 12mm 12mm 0;font-family:Open Sans,sans-serif;';
+    content.style.cssText = 'position:absolute;left:36mm;top:0;right:0;bottom:0;display:flex;flex-direction:column;padding:14mm 15mm 12mm 0;font-family:Open Sans,sans-serif;box-sizing:border-box;';
     const titleEl = el('div', null, title);
     titleEl.style.cssText = 'font-size:9mm;font-weight:100;color:#000;letter-spacing:0.08em;line-height:1.1;margin-bottom:2mm;flex-shrink:0;';
     const subtitle = el('div', null, 'www.futureautomation.net');
@@ -437,29 +512,43 @@ function createContentsPage(title, urls, sectionStartPages) {
     content.appendChild(subtitle);
     content.appendChild(rule);
     const list = el('div', null);
+    
     const urlCount = urls.length;
-    const cols = urlCount > 40 ? 3 : urlCount > 20 ? 2 : 1;
-    const scale = urlCount > 60 ? 0.75 : urlCount > 40 ? 0.85 : 1;
-    list.style.cssText = `flex:1;overflow:hidden;column-count:${cols};column-gap:8mm;font-size:${scale}em;`;
+    let numCols = 2; let scale = 1; let rowPad = '1.5mm'; let lineH = '1.2'; let colGap = '8mm';
+    if(urlCount > 250) { numCols = 6; scale = 0.45; rowPad = '0px'; lineH = '1.1'; colGap = '3mm'; }
+    else if(urlCount > 200) { numCols = 5; scale = 0.5; rowPad = '0px'; lineH = '1.1'; colGap = '4mm'; }
+    else if(urlCount > 160) { numCols = 4; scale = 0.55; rowPad = '0.2mm'; lineH = '1.1'; colGap = '5mm'; }
+    else if(urlCount > 110) { numCols = 4; scale = 0.65; rowPad = '0.5mm'; lineH = '1.15'; colGap = '6mm'; }
+    else if(urlCount > 70) { numCols = 3; scale = 0.75; rowPad = '0.8mm'; lineH = '1.2'; colGap = '8mm'; }
+    else if(urlCount > 35) { numCols = 2; scale = 0.85; rowPad = '1.2mm'; lineH = '1.2'; colGap = '8mm'; }
+    
+    list.style.cssText = `flex:1;min-height:0;height:100%;column-count:${numCols};column-gap:${colGap};column-fill:auto;font-size:${scale}em;width:100%;box-sizing:border-box;padding-bottom:2mm;overflow:hidden;`;
+    
     urls.forEach((u, i) => {
         const name = u.split('/').pop().replace(/([a-z])([A-Z])/g,'$1 $2').replace(/-/g,' ');
         const pageNum = sectionStartPages ? sectionStartPages[i] : null;
         const row = el('div', null);
-        row.style.cssText = 'display:flex;align-items:baseline;padding:2.2mm 0;border-bottom:0.15mm solid #f0f0f0;break-inside:avoid;';
+        row.style.cssText = `display:flex;align-items:flex-end;padding:${rowPad} 0;break-inside:avoid;page-break-inside:avoid;width:100%;max-width:100%;`;
+        
         const numEl = el('span', null, String(i + 1).padStart(2, '0'));
-        numEl.style.cssText = 'font-size:2mm;color:#ccc;font-weight:400;letter-spacing:0.06em;margin-right:3mm;flex-shrink:0;';
+        numEl.style.cssText = 'font-size:2mm;color:#ccc;font-weight:400;letter-spacing:0.06em;margin-right:3mm;flex-shrink:0;margin-bottom:0.3mm;';
+        
         const nameEl = el('span', null, name.toUpperCase());
-        nameEl.style.cssText = 'font-size:2.6mm;font-weight:300;letter-spacing:0.08em;color:#111;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+        nameEl.style.cssText = `font-size:2.6mm;font-weight:300;letter-spacing:0.02em;color:#111;flex:0 1 auto;min-width:0;word-break:normal;overflow-wrap:break-word;white-space:normal;line-height:${lineH};`;
+        
         const dots = el('span', null);
-        dots.style.cssText = 'flex:1;min-width:3mm;max-width:20mm;margin:0 2mm;border-bottom:0.15mm dotted #ddd;height:1px;align-self:center;';
+        dots.style.cssText = 'flex:1 1 auto;min-width:1px;margin:0 1.5mm;border-bottom:0.15mm dotted #ccc;height:1px;position:relative;top:-1mm;';
+        
         const pgEl = el('span', null, pageNum !== null ? pageNum : '');
-        pgEl.style.cssText = 'font-size:2.6mm;color:#999;font-weight:300;flex-shrink:0;min-width:5mm;text-align:right;';
+        pgEl.style.cssText = 'font-size:2.6mm;color:#999;font-weight:300;flex-shrink:0;text-align:right;margin-bottom:0.2mm;';
+        
         row.appendChild(numEl);
         row.appendChild(nameEl);
         row.appendChild(dots);
         row.appendChild(pgEl);
         list.appendChild(row);
     });
+    
     content.appendChild(list);
     page.appendChild(content);
     addPageControls(page);
@@ -932,12 +1021,6 @@ function cleanTechnicalSpecificationTable(table) {
     });
 }
 
-async function fetchPage(url) {
-    const data = await fetchWithRetry(url);
-    const html = (typeof data === 'object' && data.contents) ? data.contents : data;
-    processPageContent(new DOMParser().parseFromString(html, 'text/html'), url);
-}
-
 function createMasterContentsPages(sections, pageOrder) {
     const pages = [];
     const flatItems = [];
@@ -959,68 +1042,64 @@ function createMasterContentsPages(sections, pageOrder) {
         });
     });
 
-    const MAX_ITEMS_PER_PAGE = 144; 
-    
-    for (let pageIdx = 0; pageIdx < flatItems.length; pageIdx += MAX_ITEMS_PER_PAGE) {
-        const pageItems = flatItems.slice(pageIdx, pageIdx + MAX_ITEMS_PER_PAGE);
-        
-        const page = document.createElement('div');
-        page.classList.add('a4-page');
-        page.dataset.productName = 'Contents';
-        if (pageIdx > 0) page.dataset.productName += ` (Part ${Math.floor(pageIdx/MAX_ITEMS_PER_PAGE) + 1})`;
+    const page = document.createElement('div');
+    page.classList.add('a4-page');
+    page.dataset.productName = 'Contents';
 
-        const inner = el('div', null);
-        inner.style.cssText = 'position:absolute;inset:12mm;display:flex;flex-direction:column;font-family:Open Sans,sans-serif;';
-        const heading = el('div', null);
-        heading.style.cssText = 'flex-shrink:0;margin-bottom:7mm;padding-bottom:4mm;border-bottom:0.4mm solid #000;display:flex;align-items:baseline;justify-content:space-between;';
-        const headTitle = el('span', null, pageIdx === 0 ? 'CONTENTS' : 'CONTENTS (CONT.)');
-        headTitle.style.cssText = 'font-size:6mm;font-weight:300;letter-spacing:0.3em;color:#000;';
-        heading.appendChild(headTitle);
-        inner.appendChild(heading);
+    const inner = el('div', null);
+    inner.style.cssText = 'position:absolute;inset:12mm;display:flex;flex-direction:column;font-family:Open Sans,sans-serif;box-sizing:border-box;';
+    const heading = el('div', null);
+    heading.style.cssText = 'flex-shrink:0;margin-bottom:5mm;padding-bottom:3mm;border-bottom:0.4mm solid #000;display:flex;align-items:baseline;justify-content:space-between;';
+    const headTitle = el('span', null, 'CONTENTS');
+    headTitle.style.cssText = 'font-size:6mm;font-weight:300;letter-spacing:0.3em;color:#000;';
+    heading.appendChild(headTitle);
+    inner.appendChild(heading);
 
-        let numCols = 1; let scale = 1;
-        const itemsCount = pageItems.length;
-        if(itemsCount > 90) { numCols = 3; scale = 0.75; }
-        else if(itemsCount > 45) { numCols = 3; scale = 0.85; }
-        else if(itemsCount > 25) { numCols = 2; scale = 0.9; }
+    let numCols = 2; let scale = 1; let rowPad = '1.5mm'; let secMargin = '3mm'; let lineH = '1.2'; let colGap = '8mm';
+    const itemsCount = flatItems.length;
 
-        const cols = el('div', null);
-        cols.style.cssText = `flex:1;overflow:hidden;display:flex;flex-direction:row;gap:10mm;font-size:${scale}em;`;
+    if(itemsCount > 250) { numCols = 6; scale = 0.45; rowPad = '0px'; secMargin = '1mm'; lineH = '1.1'; colGap = '3mm'; }
+    else if(itemsCount > 200) { numCols = 5; scale = 0.5; rowPad = '0px'; secMargin = '1.5mm'; lineH = '1.1'; colGap = '4mm'; }
+    else if(itemsCount > 150) { numCols = 4; scale = 0.55; rowPad = '0.2mm'; secMargin = '1.5mm'; lineH = '1.1'; colGap = '5mm'; }
+    else if(itemsCount > 110) { numCols = 4; scale = 0.65; rowPad = '0.5mm'; secMargin = '2mm'; lineH = '1.15'; colGap = '6mm'; }
+    else if(itemsCount > 70) { numCols = 3; scale = 0.75; rowPad = '0.8mm'; secMargin = '2.5mm'; lineH = '1.2'; colGap = '8mm'; }
+    else if(itemsCount > 40) { numCols = 2; scale = 0.85; rowPad = '1.2mm'; secMargin = '3mm'; lineH = '1.2'; colGap = '8mm'; }
 
-        const itemsPerCol = Math.ceil(itemsCount / numCols);
-        for (let c = 0; c < numCols; c++) {
-            const col = el('div', null);
-            col.style.cssText = 'flex:1;min-width:0;overflow:hidden;display:flex;flex-direction:column;';
-            const slice = pageItems.slice(c * itemsPerCol, (c + 1) * itemsPerCol);
-            slice.forEach(item => {
-                if (item.isSectionHeader) {
-                    const sec = el('div', null);
-                    sec.style.cssText = 'display:flex;align-items:baseline;justify-content:space-between;padding:3.5mm 0 1.5mm 0;margin-top:2mm;border-bottom:0.25mm solid #000;flex-shrink:0;';
-                    const t = el('span', null, item.title.toUpperCase());
-                    t.style.cssText = 'font-size:2.6mm;font-weight:700;letter-spacing:0.15em;color:#000;';
-                    const p = el('span', null, item.startPageNum !== null ? String(item.startPageNum) : '');
-                    p.style.cssText = 'font-size:2.4mm;color:#555;font-weight:600;';
-                    sec.appendChild(t); sec.appendChild(p);
-                    col.appendChild(sec);
-                } else {
-                    const row = el('div', null);
-                    row.style.cssText = 'display:flex;align-items:center;padding:1.6mm 0;border-bottom:0.1mm solid #f0f0f0;flex-shrink:0;';
-                    const name = el('span', null, item.name);
-                    name.style.cssText = 'font-size:2.3mm;font-weight:300;letter-spacing:0.04em;color:#222;flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:3mm;';
-                    const pgEl = el('span', null, item.pageNum !== null ? String(item.pageNum) : '');
-                    pgEl.style.cssText = 'font-size:2.2mm;color:#999;flex-shrink:0;min-width:4mm;text-align:right;';
-                    row.appendChild(name); row.appendChild(pgEl);
-                    col.appendChild(row);
-                }
-            });
-            cols.appendChild(col);
+    const cols = el('div', null);
+    cols.style.cssText = `flex:1;min-height:0;height:100%;column-count:${numCols};column-gap:${colGap};column-fill:auto;font-size:${scale}em;width:100%;box-sizing:border-box;overflow:hidden;`;
+
+    flatItems.forEach(item => {
+        if (item.isSectionHeader) {
+            const sec = el('div', null);
+            sec.style.cssText = `display:flex;align-items:flex-end;justify-content:space-between;padding:2mm 0 1mm 0;margin-top:${secMargin};border-bottom:0.3mm solid #000;break-inside:avoid;page-break-inside:avoid;break-after:avoid;width:100%;max-width:100%;`;
+            const t = el('span', null, item.title.toUpperCase());
+            t.style.cssText = `font-size:2.6mm;font-weight:700;letter-spacing:0.05em;color:#000;line-height:${lineH};`;
+            sec.appendChild(t);
+            cols.appendChild(sec);
+        } else {
+            const row = el('div', null);
+            row.style.cssText = `display:flex;align-items:flex-end;padding:${rowPad} 0;break-inside:avoid;page-break-inside:avoid;width:100%;max-width:100%;`;
+            
+            const name = el('span', null, item.name);
+            name.style.cssText = `font-size:2.3mm;font-weight:400;letter-spacing:0.02em;color:#222;flex:0 1 auto;min-width:0;word-break:normal;overflow-wrap:break-word;white-space:normal;line-height:${lineH};padding-right:1mm;`;
+            
+            const dots = el('span', null);
+            dots.style.cssText = 'flex:1 1 auto;min-width:1px;margin:0 1mm;border-bottom:0.15mm dotted #ccc;height:1px;position:relative;top:-0.5mm;';
+            
+            const pgEl = el('span', null, item.pageNum !== null ? String(item.pageNum) : '');
+            pgEl.style.cssText = 'font-size:2.2mm;color:#777;flex-shrink:0;text-align:right;';
+            
+            row.appendChild(name);
+            row.appendChild(dots);
+            row.appendChild(pgEl);
+            cols.appendChild(row);
         }
+    });
 
-        inner.appendChild(cols);
-        page.appendChild(inner);
-        addPageControls(page);
-        pages.push(page);
-    }
+    inner.appendChild(cols);
+    page.appendChild(inner);
+    pages.push(page);
+    
     return pages;
 }
 
@@ -1032,6 +1111,8 @@ async function fetchCdnUrls() {
     if (!lines[0] || !lines[0].trim()) { showToast('No URLs provided', 'warning'); return; }
     pagesContainer.innerHTML = '';
     statusContainer.style.display = 'flex';
+    const spinner = document.querySelector('.spinner');
+    if (spinner) spinner.style.display = '';
     createButton.disabled = true;
     try {
         const pageOrder = [];
@@ -1065,18 +1146,36 @@ async function fetchCdnUrls() {
                 try {
                     updateStatus(`Processing ${i + 1}/${lines.length}: ${url.split('/').pop()}`);
                     await fetchPage(url);
-                    await delay(500);
-                    if ((i + 1) % 3 === 0) await delay(1000);
                     pageOrder.push({ type: 'url', page: pagesContainer.lastChild, section: currentSection });
-                } catch { showToast(`Error: ${url.split('/').pop()}`, 'error'); }
+                } catch (err) { 
+                    showToast(`Skipped: ${url.split('/').pop()} - ${err.message}`, 'error');
+                }
             }
         }
+        
         pagesContainer.innerHTML = '';
         let insidePageNum = 1;
-        pageOrder.forEach(item => { item._pageNum = (item.type === 'url') ? insidePageNum++ : null; });
+        
+        let filteredPageOrder = [];
+        let backCoverItem = null;
+        
+        for (const item of pageOrder) {
+            if (item.type === 'backCover') {
+                backCoverItem = item;
+            } else {
+                filteredPageOrder.push(item);
+            }
+        }
+
+        filteredPageOrder.forEach(item => { 
+            if (item.type === 'url') {
+                item._pageNum = insidePageNum++;
+            }
+        });
+
         sections.forEach(sec => {
             let first = true;
-            pageOrder.forEach(item => {
+            filteredPageOrder.forEach(item => {
                 if (item.type === 'url' && item.section === sec.title && first) {
                     sec.startPageNum = item._pageNum;
                     first = false;
@@ -1084,27 +1183,52 @@ async function fetchCdnUrls() {
             });
         });
         
+        let masterContentsPages = [];
         if (hasCover && sections.length > 0) {
-            const masterContentsPages = createMasterContentsPages(sections, pageOrder);
+            masterContentsPages = createMasterContentsPages(sections, filteredPageOrder);
             masterContentsPages.forEach(p => p.dataset.pageType = 'contents');
+        }
+
+        let coverAdded = false;
+        filteredPageOrder.forEach(item => {
+            if (!item.page) return;
+            pagesContainer.appendChild(item.page);
             
-            pageOrder.forEach(item => {
-                if (!item.page) return;
-                pagesContainer.appendChild(item.page);
-                if (item.type === 'cover') {
-                    masterContentsPages.forEach(mcp => pagesContainer.appendChild(mcp));
-                }
-            });
-        } else {
-            pageOrder.forEach(item => { if (item.page) pagesContainer.appendChild(item.page); });
+            if (item.type === 'cover' && !coverAdded) {
+                coverAdded = true;
+                
+                const insideBlank = document.createElement('div');
+                insideBlank.classList.add('a4-page');
+                addPageControls(insideBlank);
+                pagesContainer.appendChild(insideBlank);
+                
+                masterContentsPages.forEach(mcp => pagesContainer.appendChild(mcp));
+            }
+        });
+
+        let currentCount = pagesContainer.children.length;
+        let totalWithBackCover = currentCount + (backCoverItem ? 1 : (hasCover ? 1 : 0));
+        let blanksNeeded = (4 - (totalWithBackCover % 4)) % 4;
+
+        for (let i = 0; i < blanksNeeded; i++) {
+            const padBlank = document.createElement('div');
+            padBlank.classList.add('a4-page');
+            addPageControls(padBlank);
+            pagesContainer.appendChild(padBlank);
+        }
+
+        if (backCoverItem) {
+            pagesContainer.appendChild(backCoverItem.page);
+        } else if (hasCover) {
+            pagesContainer.appendChild(createBackCoverPage());
         }
 
         if (hasCover) {
             const allPages = Array.from(pagesContainer.querySelectorAll('.a4-page:not([data-section-separator])'));
             let visibleIdx = 0;
             allPages.forEach(page => {
-                const matchingItem = pageOrder.find(it => it.page === page);
-                if (!matchingItem || matchingItem.type === 'cover' || matchingItem.type === 'backCover' || matchingItem.type === 'blank') {
+                const matchingItem = filteredPageOrder.find(it => it.page === page);
+                if (!matchingItem || matchingItem.type === 'cover' || matchingItem.type === 'blank') {
                     visibleIdx++;
                     return;
                 }
@@ -1127,10 +1251,16 @@ async function fetchCdnUrls() {
                 visibleIdx++;
             });
         }
+        
         updatePageNavigator();
         showToast('Brochure created', 'success');
     } catch (e) { console.error(e); showToast('Error creating brochure', 'error'); }
-    finally { statusContainer.style.display = 'none'; createButton.disabled = false; updateStatus('Done'); }
+    finally { 
+        statusContainer.style.display = 'none'; 
+        createButton.disabled = false; 
+        updateStatus('Done'); 
+        if (spinner) spinner.style.display = 'none';
+    }
 }
 
 function updateStatus(msg) { document.getElementById('statusText').textContent = msg; }
