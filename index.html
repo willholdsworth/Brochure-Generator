@@ -96,7 +96,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     padding: 2.5mm 4mm;
 }
 .pg-logo { height: 9mm; filter: invert(1); flex-shrink: 0; }
-.pg-url  { font-size: 1.5mm; color: rgba(255,255,255,0.4); letter-spacing: 0.1em; text-transform: uppercase; }
+.pg-url  { font-size: 1.5mm; color: #fff; letter-spacing: 0.1em; text-transform: uppercase; }
 .fa-namebox {
     flex-shrink: 0;
     padding-bottom: 2mm;
@@ -112,7 +112,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .fa-psub {
     font-size: 2mm;
-    color: #999;
+    color: #000;
     font-weight: 300;
     letter-spacing: 0.14em;
     margin-top: 1mm;
@@ -139,11 +139,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .fa-desc li::before { content: '—'; position: absolute; left: 0; color: #ccc; }
 .fa-desc .alert, .fa-desc .row { display: none; }
 .fa-speczone { display: flex; flex-direction: column; min-height: 0; flex-shrink: 0; }
-.fa-speclabel { font-size: 1.6mm; font-weight: 400; letter-spacing: 0.14em; color: #aaa; text-transform: uppercase; margin-bottom: 1.5mm; }
+.fa-speclabel { font-size: 2mm; font-weight: 300; letter-spacing: 0.14em; color: #000; text-transform: uppercase; margin-bottom: 1.5mm; }
 .fa-specwrap { border-radius: 2mm; overflow: hidden; border: 0.2mm solid #e8e8e8; }
 .fa-spectable { width: 100%; border-collapse: collapse; font-size: 1.7mm; table-layout: fixed; }
 .fa-spectable thead tr { background: #000; }
-.fa-spectable thead th { padding: 1mm 2mm; color: white; font-weight: 400; text-align: center; letter-spacing: 0.04em; }
+.fa-spectable thead th { padding: 1mm 2mm; color: white; font-weight: 400; text-align: center; letter-spacing: 0.04em; font-size: 1.2em; }
 .fa-spectable thead th:first-child { text-align: left; width: 28%; }
 .fa-spectable tbody tr:nth-child(odd)  { background: #fff; }
 .fa-spectable tbody tr:nth-child(even) { background: #fafafa; }
@@ -165,10 +165,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     .a4-page { position: relative !important; width: 210mm !important; height: 297mm !important; page-break-after: always !important; margin: 0 !important; padding: 0 !important; border: 0 !important; transform: none !important; box-shadow: none !important; }
     .a4-page:last-child { page-break-after: auto !important; }
 }
-.pg-footer { position: absolute; bottom: 0; left: 0; right: 0; height: 7mm; display: flex; align-items: center; justify-content: space-between; font-family: 'Open Sans', sans-serif; font-size: 1.8mm; color: #aaa; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 7mm; pointer-events: none; background: #fff; }
-.pg-footer-left { text-align: left; }
-.pg-footer-right { text-align: right; }
-.pg-footer-center { flex: 1; text-align: center; font-size: 1.6mm; color: #bbb; }
+.pg-footer { position: absolute; bottom: 0; left: 0; right: 0; height: 7mm; display: flex; align-items: center; justify-content: space-between; font-family: 'Open Sans', sans-serif; font-size: 1.8mm; color: #000; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 7mm; pointer-events: none; background: #fff; }
+.pg-footer-left { text-align: left; flex: 1; }
+.pg-footer-right { text-align: right; flex: 1; }
+.pg-footer-center { flex: 1; text-align: center; font-size: 1.6mm; color: #000; }
 </style>
 </head>
 <body>
@@ -178,11 +178,11 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         <div class="left">
             <div class="input-section">
                 <label for="pageUrls">PAGES:</label>
-                <textarea id="pageUrls" placeholder="Current page list will appear here">https://www.futureautomation.co.uk/Product/Details/AM</textarea>
+                <textarea id="pageUrls" placeholder="Current page list will appear here">https://www.futureautomation.co.uk/Product/Details/PLFS</textarea>
             </div>
             <div class="input-section">
                 <label for="urlInput">PASTE URLS HERE TO GENERATE BROCHURE:</label>
-                <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST'"></textarea>
+                <textarea id="urlInput" placeholder="PASTE LINKS HERE THEN PRESS 'GENERATE LIST'">https://www.futureautomation.co.uk/Product/Details/PLFS</textarea>
             </div>
             <div class="button-container">
                 <button type="button" id="createButton" onclick="fetchCdnUrls()"><i class="fas fa-file-pdf"></i> Create Brochure</button>
@@ -395,7 +395,7 @@ function createCoverPage(text) {
     logo.style.cssText = 'position:absolute;bottom:10mm;left:50%;transform:translateX(-50%);height:15mm;filter:invert(1);';
     bar.appendChild(logo);
     const title = document.createElement('div');
-    title.style.cssText = 'position:absolute;top:60%;left:50%;transform:translate(-50%,-50%);width:calc(100% - 40mm);font-size:60px;color:#000;font-weight:100;text-align:center;word-wrap:break-word;padding:20mm;letter-spacing:0.15rem;';
+    title.style.cssText = 'position:absolute;top:60%;left:50%;transform:translate(-50%,-50%);width:calc(100% - 40mm);font-size:60px;line-height:1.2;color:#000;font-weight:100;text-align:center;word-wrap:break-word;padding:20mm;letter-spacing:0.15rem;';
     title.textContent = text;
     page.appendChild(title);
     const url = document.createElement('div');
@@ -552,16 +552,18 @@ function makeSlot(imgArray, initialIdx, totalSlots, type) {
     const isProduct = type === 'product';
     wrap.className = isProduct ? 'pg-img' : 'fa-lifestyle';
 
+    let currentIdx = initialIdx;
+    
     if (!isProduct) {
-        wrap.style.cssText += 'background:#0a0a0a;border-radius:2mm;border:0.2mm solid #e8e8e8; aspect-ratio: 16/9; width: 100%; flex-shrink: 0;';
+        wrap.style.cssText += 'border-radius:2mm;border:0.2mm solid #e8e8e8; aspect-ratio: 16/9; width: 100%; flex-shrink: 0;';
+        wrap.style.background = imgArray[currentIdx].toLowerCase().includes('.png') ? '#fff' : '#0a0a0a';
     }
 
     const img = el('img', !isProduct ? 'width:100%;height:100%;object-fit:cover;display:block;' : 'max-width:100%;max-height:100%;object-fit:contain;display:block;');
-    let currentIdx = initialIdx;
     img.src = imgArray[currentIdx];
     wrap.appendChild(img);
 
-    if (imgArray.length > totalSlots) {
+    if (imgArray.length > 1) {
         const nav = el('div', null);
         nav.style.cssText = 'position:absolute;display:flex;gap:1.5mm;align-items:center;z-index:2;' + (isProduct ? 'top:2mm;right:2mm;' : 'bottom:2mm;right:2mm;');
 
@@ -575,14 +577,16 @@ function makeSlot(imgArray, initialIdx, totalSlots, type) {
         prev.style.cssText = btnCss; next.style.cssText = btnCss;
 
         prev.onclick = () => {
-            currentIdx = (currentIdx - totalSlots + imgArray.length) % imgArray.length;
+            currentIdx = (currentIdx - 1 + imgArray.length) % imgArray.length;
             img.src = imgArray[currentIdx];
             cnt.textContent = `${currentIdx + 1}/${imgArray.length}`;
+            if (!isProduct) wrap.style.background = imgArray[currentIdx].toLowerCase().includes('.png') ? '#fff' : '#0a0a0a';
         };
         next.onclick = () => {
-            currentIdx = (currentIdx + totalSlots) % imgArray.length;
+            currentIdx = (currentIdx + 1) % imgArray.length;
             img.src = imgArray[currentIdx];
             cnt.textContent = `${currentIdx + 1}/${imgArray.length}`;
+            if (!isProduct) wrap.style.background = imgArray[currentIdx].toLowerCase().includes('.png') ? '#fff' : '#0a0a0a';
         };
 
         nav.appendChild(prev); nav.appendChild(cnt); nav.appendChild(next);
