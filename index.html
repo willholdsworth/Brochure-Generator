@@ -164,6 +164,7 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     .page-navigator, .page-controls, .fa-ls-arrows, .pg-editor, .pg-img-nav { display: none !important; }
     .a4-page { position: relative !important; width: 210mm !important; height: 297mm !important; page-break-after: always !important; margin: 0 !important; padding: 0 !important; border: 0 !important; transform: none !important; box-shadow: none !important; }
     .a4-page:last-child { page-break-after: auto !important; }
+    .a4-page[data-pad-blank] { display: none !important; }
 }
 .pg-footer { position: absolute; bottom: 0; left: 0; right: 0; height: 7mm; display: flex; align-items: center; justify-content: space-between; font-family: 'Open Sans', sans-serif; font-size: 1.8mm; color: #000; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 7mm; pointer-events: none; background: #fff; }
 .pg-footer-left { text-align: left; flex: 1; }
@@ -244,78 +245,73 @@ async function fetchWithRetry(url, retries = 10) {
     const cached = cache.get(url);
     if (cached) return cached;
 
-    let lastError = "";
-
     for (let i = 0; i < retries; i++) {
         try {
             updateStatus(`Fetching: ${url.split('/').pop()}... (Attempt ${i + 1}/${retries})`);
             const proxyUrl = `${corsProxyAPI}${encodeURIComponent(url)}`;
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 20000); 
-            
+            const timeoutId = setTimeout(() => controller.abort(), 25000);
             const res = await fetch(proxyUrl, { signal: controller.signal });
             clearTimeout(timeoutId);
-            
+
             if (res.status === 429 || res.status === 503 || res.status === 502) {
-                updateStatus(`Server busy/Rate Limit. Pausing 5s...`);
-                await delay(5000);
-                i--; 
+                const wait = 6000 + i * 2000;
+                updateStatus(`Rate limited. Waiting ${wait / 1000}s...`);
+                await delay(wait);
                 continue;
             }
-            
+
             if (!res.ok) {
-                if (res.status === 404) throw new Error("404 Not Found");
+                if (res.status === 404) throw new Error('404 Not Found');
                 throw new Error(`HTTP ${res.status}`);
             }
-            
+
             const ct = res.headers.get('content-type') || '';
             let html = '';
-            
             if (ct.includes('application/json')) {
                 const json = await res.json();
                 html = json.contents || '';
             } else {
                 html = await res.text();
             }
-            
+
             if (!html || html.length < 500 || !html.toLowerCase().includes('futureautomation')) {
-                throw new Error("Invalid or empty content");
+                throw new Error('Invalid or empty content');
             }
-            
+
             const data = { contents: html };
             cache.set(url, data);
             return data;
 
         } catch (err) {
-            lastError = err.message;
-            if (lastError === "404 Not Found") {
-                throw err; 
-            }
-
+            if (err.message === '404 Not Found') throw err;
             if (i < retries - 1) {
-                updateStatus(`Error (${lastError}). Retrying in 2s...`);
-                await delay(2000);
+                const wait = 2000 + i * 1000;
+                updateStatus(`Error (${err.message}). Retrying in ${wait / 1000}s...`);
+                await delay(wait);
             } else {
-                throw new Error(lastError);
+                throw err;
             }
         }
     }
+    throw new Error('Max retries exceeded');
 }
 
-async function fetchHTML(url) {
-    try { 
-        await delay(400); 
-        const data = await fetchWithRetry(url, 5);
-        return data.contents;
-    } catch { 
-        return ''; 
-    }
-}
-
-async function fetchPage(url) {
+async function fetchAndBuildPage(url) {
     const data = await fetchWithRetry(url, 10);
     const doc = new DOMParser().parseFromString(data.contents, 'text/html');
     processPageContent(doc, url);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+}
+
+async function fetchHTML(url) {
+    try {
+        await delay(500);
+        const data = await fetchWithRetry(url, 5);
+        return data.contents;
+    } catch {
+        return '';
+    }
 }
 
 function shouldExclude(href) { return excludeKeywords.some(k => href.includes(k)); }
@@ -1145,7 +1141,8 @@ async function fetchCdnUrls() {
                 if (sections.length) sections[sections.length - 1].urls.push(url);
                 try {
                     updateStatus(`Processing ${i + 1}/${lines.length}: ${url.split('/').pop()}`);
-                    await fetchPage(url);
+                    if (i > 0) await delay(600);
+                    await fetchAndBuildPage(url);
                     pageOrder.push({ type: 'url', page: pagesContainer.lastChild, section: currentSection });
                 } catch (err) { 
                     showToast(`Skipped: ${url.split('/').pop()} - ${err.message}`, 'error');
@@ -1206,15 +1203,17 @@ async function fetchCdnUrls() {
             }
         });
 
-        let currentCount = pagesContainer.children.length;
-        let totalWithBackCover = currentCount + (backCoverItem ? 1 : (hasCover ? 1 : 0));
-        let blanksNeeded = (4 - (totalWithBackCover % 4)) % 4;
-
-        for (let i = 0; i < blanksNeeded; i++) {
-            const padBlank = document.createElement('div');
-            padBlank.classList.add('a4-page');
-            addPageControls(padBlank);
-            pagesContainer.appendChild(padBlank);
+        if (hasCover) {
+            let currentCount = pagesContainer.children.length;
+            let totalWithBackCover = currentCount + (backCoverItem ? 1 : 1);
+            let blanksNeeded = (4 - (totalWithBackCover % 4)) % 4;
+            for (let i = 0; i < blanksNeeded; i++) {
+                const padBlank = document.createElement('div');
+                padBlank.classList.add('a4-page');
+                padBlank.dataset.padBlank = '1';
+                addPageControls(padBlank);
+                pagesContainer.appendChild(padBlank);
+            }
         }
 
         if (backCoverItem) {
