@@ -158,6 +158,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .pg-ed-btn.active { background: white; color: #000; }
 .pg-ed-btn.del { background: rgba(180,0,0,0.5); border-color: rgba(180,0,0,0.6); }
 .pg-ed-btn.del:hover { background: rgba(180,0,0,0.8); }
+.pg-footer { position: absolute; bottom: 0; left: 0; right: 0; height: 7mm; display: flex; align-items: center; justify-content: space-between; font-family: 'Open Sans', sans-serif; font-size: 1.8mm; color: #000; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 7mm; pointer-events: none; background: #fff; }
+.pg-footer-left { text-align: left; flex: 1; }
+.pg-footer-right { text-align: right; flex: 1; }
+.pg-footer-center { flex: 1; text-align: center; font-size: 1.6mm; color: #000; }
 @media print {
     @page { size: A4 portrait !important; margin: 0 !important; }
     .container, .button-container, .status-container, .toast-container,
@@ -165,11 +169,10 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     .a4-page { position: relative !important; width: 210mm !important; height: 297mm !important; page-break-after: always !important; margin: 0 !important; padding: 0 !important; border: 0 !important; transform: none !important; box-shadow: none !important; }
     .a4-page:last-child { page-break-after: auto !important; }
     .a4-page[data-pad-blank] { display: none !important; }
+    body.sell-sheet-mode .a4-page { display: none !important; }
+    body.sell-sheet-mode .a4-page.is-printing { display: block !important; }
+    body.sell-sheet-mode .pg-footer { display: none !important; }
 }
-.pg-footer { position: absolute; bottom: 0; left: 0; right: 0; height: 7mm; display: flex; align-items: center; justify-content: space-between; font-family: 'Open Sans', sans-serif; font-size: 1.8mm; color: #000; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 7mm; pointer-events: none; background: #fff; }
-.pg-footer-left { text-align: left; flex: 1; }
-.pg-footer-right { text-align: right; flex: 1; }
-.pg-footer-center { flex: 1; text-align: center; font-size: 1.6mm; color: #000; }
 </style>
 </head>
 <body>
@@ -188,8 +191,9 @@ Eg. https:www.futureautomation.co.uk/Product">https://www.futureautomation.co.uk
             </div>
             <div class="button-container">
                 <button type="button" id="createButton" onclick="fetchCdnUrls()"><i class="fas fa-file-pdf"></i> Build Pages</button>
-                <button type="button" onclick="startScraping()"><i class="fas fa-list"></i> Generate List</button>
-                <button type="button" onclick="printPage()"><i class="fas fa-download"></i> Export PDF</button>
+                <button type="button" onclick="startScraping()"><i class="fas fa-list"></i> Generate Pages</button>
+                <button type="button" onclick="printPage()"><i class="fas fa-download"></i> Export Brochure</button>
+                <button type="button" onclick="exportSellSheets()"><i class="fas fa-file-export"></i> Export Sell Sheets</button>
                 <button type="button" onclick="clearAll()"><i class="fas fa-trash"></i> Clear All</button>
             </div>
             <div class="status-container" id="statusContainer" style="display:none;">
@@ -211,7 +215,6 @@ const visitedLinks = new Set();
 const processedUrls = new Set();
 const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
 const cacheExpirationTime = 30 * 60 * 1000;
-
 const cache = {
     data: {},
     set(k, v) { this.data[k] = { value: v, timestamp: Date.now() }; },
@@ -223,9 +226,7 @@ const cache = {
     },
     clear() { this.data = {}; }
 };
-
 const excludeKeywords = ['Login','Account','mailto:','facebook.com','twitter.com','instagram.com','linkedin.com','privacy','terms','cookies','copyright','sitemap','contact-us','about-us','help','faq'];
-
 function showToast(message, type = 'info', duration = 5000) {
     const tc = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -238,13 +239,10 @@ function showToast(message, type = 'info', duration = 5000) {
         setTimeout(() => tc.removeChild(toast), 300);
     }, duration);
 }
-
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
 async function fetchWithRetry(url, retries = 10) {
     const cached = cache.get(url);
     if (cached) return cached;
-
     for (let i = 0; i < retries; i++) {
         try {
             updateStatus(`Fetching: ${url.split('/').pop()}... (Attempt ${i + 1}/${retries})`);
@@ -253,19 +251,16 @@ async function fetchWithRetry(url, retries = 10) {
             const timeoutId = setTimeout(() => controller.abort(), 25000);
             const res = await fetch(proxyUrl, { signal: controller.signal });
             clearTimeout(timeoutId);
-
             if (res.status === 429 || res.status === 503 || res.status === 502) {
                 const wait = 6000 + i * 2000;
                 updateStatus(`Rate limited. Waiting ${wait / 1000}s...`);
                 await delay(wait);
                 continue;
             }
-
             if (!res.ok) {
                 if (res.status === 404) throw new Error('404 Not Found');
                 throw new Error(`HTTP ${res.status}`);
             }
-
             const ct = res.headers.get('content-type') || '';
             let html = '';
             if (ct.includes('application/json')) {
@@ -274,15 +269,12 @@ async function fetchWithRetry(url, retries = 10) {
             } else {
                 html = await res.text();
             }
-
             if (!html || html.length < 500 || !html.toLowerCase().includes('futureautomation')) {
                 throw new Error('Invalid or empty content');
             }
-
             const data = { contents: html };
             cache.set(url, data);
             return data;
-
         } catch (err) {
             if (err.message === '404 Not Found') throw err;
             if (i < retries - 1) {
@@ -296,14 +288,12 @@ async function fetchWithRetry(url, retries = 10) {
     }
     throw new Error('Max retries exceeded');
 }
-
 async function fetchAndBuildPage(url) {
     const data = await fetchWithRetry(url, 10);
     const doc = new DOMParser().parseFromString(data.contents, 'text/html');
     processPageContent(doc, url);
     await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 }
-
 async function fetchHTML(url) {
     try {
         await delay(500);
@@ -313,9 +303,7 @@ async function fetchHTML(url) {
         return '';
     }
 }
-
 function shouldExclude(href) { return excludeKeywords.some(k => href.includes(k)); }
-
 async function getSublinks(url, baseUrl) {
     const html = await fetchHTML(url);
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -331,7 +319,6 @@ async function getSublinks(url, baseUrl) {
     });
     return sublinks;
 }
-
 async function getProductLinks(url) {
     const html = await fetchHTML(url);
     const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -347,9 +334,7 @@ async function getProductLinks(url) {
     });
     return Array.from(links);
 }
-
 function formatTitle(url) { return url.split('/').pop().replace(/([a-z])([A-Z])/g,'$1 $2').replace(/-/g,' ').toUpperCase(); }
-
 async function scrape(url, parentDiv, baseUrl) {
     if (visitedLinks.has(url)) return;
     visitedLinks.add(url);
@@ -374,7 +359,6 @@ async function scrape(url, parentDiv, baseUrl) {
         for (const sub of sublinks) { await delay(400); await scrape(sub, parentDiv, baseUrl); }
     } catch { showToast(`Error scraping ${url.split('/').pop()}`, 'error'); }
 }
-
 async function scrapeMultipleWebsites(urls) {
     const resultsDiv = document.getElementById('results');
     const spinner = document.querySelector('.spinner');
@@ -404,13 +388,11 @@ async function scrapeMultipleWebsites(urls) {
         if (spinner) spinner.style.display = 'none';
     }
 }
-
 function removeBackCoverAndBlanks() {
     Array.from(document.getElementById('results').children)
         .filter(d => d.textContent === 'BACK COVER' || d.textContent === 'BLANK')
         .forEach(d => d.remove());
 }
-
 function startScraping() {
     visitedLinks.clear(); processedUrls.clear();
     document.getElementById('results').innerHTML = '';
@@ -419,23 +401,19 @@ function startScraping() {
     if (urls.length) scrapeMultipleWebsites(urls);
     else showToast('Please enter one or more URLs', 'warning');
 }
-
 function updatePageURLs() {
     document.getElementById('pageUrls').value = Array.from(document.getElementById('results').querySelectorAll('div')).map(d => d.textContent).join('\n');
 }
-
 function createCoverPage(text) {
     const page = document.createElement('div');
     page.classList.add('a4-page');
     page.dataset.productName = 'Cover: ' + text;
     page.style.cssText = 'position:relative;overflow:hidden;';
-
     function generateGradient(t) {
         const uniqueChars = Array.from(new Set(t.toUpperCase()));
         const luxuryColors = ['#F6F6F6', '#f1f1f1', '#999999', '#FFFFFF', '#FFFFFF'];
         return uniqueChars.map((char, index) => luxuryColors[index % luxuryColors.length]);
     }
-
     function generateBokehGradient(t) {
         const colors = generateGradient(t);
         return colors.map((color, index) => {
@@ -444,39 +422,31 @@ function createCoverPage(text) {
             return `radial-gradient(circle at ${x}% ${y}%, ${color}, transparent 100%)`;
         }).join(', ');
     }
-
     const bg = document.createElement('div');
     bg.style.cssText = 'position:absolute;top:10mm;left:10mm;width:calc(100% - 20mm);height:calc(100% - 20mm);border-radius:5mm;overflow:hidden;';
     bg.style.background = generateBokehGradient(text);
     page.appendChild(bg);
-
     const wavePattern = document.createElement('div');
     wavePattern.style.cssText = 'position:absolute;top:10mm;left:10mm;width:calc(100% - 20mm);height:calc(100% - 20mm);background-image:url("https://as2.ftcdn.net/v2/jpg/11/27/29/13/1000_F_1127291390_NOfDcoRWKNQNVpcgjt3VfiSTUCesuvOd.jpg");background-size:130%;background-position:center;opacity:0.1;border-radius:5mm;overflow:hidden;';
     page.appendChild(wavePattern);
-
     const bar = document.createElement('div');
     bar.style.cssText = 'position:absolute;left:50%;top:0;transform:translateX(-50%);width:50mm;height:90mm;background:#000;';
     page.appendChild(bar);
-
     const logo = document.createElement('img');
     logo.src = 'https://s3.eu-west-1.amazonaws.com/cdn.futureautomation.co.uk/Files/Logo+Centered+-+Black.svg';
     logo.style.cssText = 'position:absolute;bottom:10mm;left:50%;transform:translateX(-50%);height:15mm;filter:brightness(0) invert(1);';
     bar.appendChild(logo);
-
     const title = document.createElement('div');
     title.style.cssText = 'position:absolute;top:60%;left:50%;transform:translate(-50%,-50%);width:calc(100% - 40mm);font-size:60px;line-height:1.2;color:#000;font-weight:100;text-align:center;word-wrap:break-word;padding:20mm;letter-spacing:0.15rem;';
     title.textContent = text;
     page.appendChild(title);
-
     const url = document.createElement('div');
     url.style.cssText = 'position:absolute;bottom:20mm;left:50%;transform:translateX(-50%);font-size:12px;color:#000;letter-spacing:0.15rem;';
     url.textContent = 'www.futureautomation.net';
     page.appendChild(url);
-
     addPageControls(page);
     return page;
 }
-
 function createContentsPage(title, urls, sectionStartPages) {
     const page = document.createElement('div');
     page.classList.add('a4-page');
@@ -508,7 +478,6 @@ function createContentsPage(title, urls, sectionStartPages) {
     content.appendChild(subtitle);
     content.appendChild(rule);
     const list = el('div', null);
-    
     const urlCount = urls.length;
     let numCols = 2; let scale = 1; let rowPad = '1.5mm'; let lineH = '1.2'; let colGap = '8mm';
     if(urlCount > 250) { numCols = 6; scale = 0.45; rowPad = '0px'; lineH = '1.1'; colGap = '3mm'; }
@@ -517,40 +486,31 @@ function createContentsPage(title, urls, sectionStartPages) {
     else if(urlCount > 110) { numCols = 4; scale = 0.65; rowPad = '0.5mm'; lineH = '1.15'; colGap = '6mm'; }
     else if(urlCount > 70) { numCols = 3; scale = 0.75; rowPad = '0.8mm'; lineH = '1.2'; colGap = '8mm'; }
     else if(urlCount > 35) { numCols = 2; scale = 0.85; rowPad = '1.2mm'; lineH = '1.2'; colGap = '8mm'; }
-    
     list.style.cssText = `flex:1;min-height:0;height:100%;column-count:${numCols};column-gap:${colGap};column-fill:auto;font-size:${scale}em;width:100%;box-sizing:border-box;padding-bottom:2mm;overflow:hidden;`;
-    
     urls.forEach((u, i) => {
         const name = u.split('/').pop().replace(/([a-z])([A-Z])/g,'$1 $2').replace(/-/g,' ');
         const pageNum = sectionStartPages ? sectionStartPages[i] : null;
         const row = el('div', null);
         row.style.cssText = `display:flex;align-items:flex-end;padding:${rowPad} 0;break-inside:avoid;page-break-inside:avoid;width:100%;max-width:100%;`;
-        
         const numEl = el('span', null, String(i + 1).padStart(2, '0'));
         numEl.style.cssText = 'font-size:2mm;color:#ccc;font-weight:400;letter-spacing:0.06em;margin-right:3mm;flex-shrink:0;margin-bottom:0.3mm;';
-        
         const nameEl = el('span', null, name.toUpperCase());
         nameEl.style.cssText = `font-size:2.6mm;font-weight:300;letter-spacing:0.02em;color:#111;flex:0 1 auto;min-width:0;word-break:normal;overflow-wrap:break-word;white-space:normal;line-height:${lineH};`;
-        
         const dots = el('span', null);
         dots.style.cssText = 'flex:1 1 auto;min-width:1px;margin:0 1.5mm;border-bottom:0.15mm dotted #ccc;height:1px;position:relative;top:-1mm;';
-        
         const pgEl = el('span', null, pageNum !== null ? pageNum : '');
         pgEl.style.cssText = 'font-size:2.6mm;color:#999;font-weight:300;flex-shrink:0;text-align:right;margin-bottom:0.2mm;';
-        
         row.appendChild(numEl);
         row.appendChild(nameEl);
         row.appendChild(dots);
         row.appendChild(pgEl);
         list.appendChild(row);
     });
-    
     content.appendChild(list);
     page.appendChild(content);
     addPageControls(page);
     return page;
 }
-
 function createBackCoverPage() {
     const page = document.createElement('div');
     page.classList.add('a4-page');
@@ -566,7 +526,6 @@ function createBackCoverPage() {
     addPageControls(page);
     return page;
 }
-
 function addPageControls(page) {
     const div = document.createElement('div');
     div.className = 'page-controls';
@@ -578,7 +537,6 @@ function addPageControls(page) {
     div.appendChild(btn);
     page.appendChild(div);
 }
-
 function classifyImages(carouselImgs, productCode) {
     const code = productCode.toLowerCase();
     const lifestyle = [], product = [];
@@ -597,14 +555,12 @@ function classifyImages(carouselImgs, productCode) {
     });
     return { lifestyle, product };
 }
-
 function el(tag, css, html) {
     const e = document.createElement(tag);
     if (css) e.style.cssText = css;
     if (html !== undefined) e.innerHTML = html;
     return e;
 }
-
 function makeHeader(productCode, subtitle, tags) {
     const hdr = el('div', null);
     hdr.className = 'pg-header';
@@ -617,7 +573,6 @@ function makeHeader(productCode, subtitle, tags) {
     hdr.appendChild(urlDiv);
     return hdr;
 }
-
 function makeSpecZone(specTable) {
     const zone = el('div', null);
     zone.className = 'fa-speczone';
@@ -631,36 +586,27 @@ function makeSpecZone(specTable) {
     zone.appendChild(wrap);
     return zone;
 }
-
 function makeSlot(imgArray, initialIdx, totalSlots, type) {
     const wrap = el('div', 'position:relative;overflow:hidden;min-height:0;display:flex;align-items:center;justify-content:center;');
     const isProduct = type === 'product';
     wrap.className = isProduct ? 'pg-img' : 'fa-lifestyle';
-
     let currentIdx = initialIdx;
-    
     if (!isProduct) {
         wrap.style.cssText += 'border-radius:2mm;border:0.2mm solid #e8e8e8; aspect-ratio: 16/9; width: 100%; flex-shrink: 0;';
         wrap.style.background = imgArray[currentIdx].toLowerCase().includes('.png') ? '#fff' : '#0a0a0a';
     }
-
     const img = el('img', !isProduct ? 'width:100%;height:100%;object-fit:cover;display:block;' : 'max-width:100%;max-height:100%;object-fit:contain;display:block;');
     img.src = imgArray[currentIdx];
     wrap.appendChild(img);
-
     if (imgArray.length > 1) {
         const nav = el('div', null);
         nav.style.cssText = 'position:absolute;display:flex;gap:1.5mm;align-items:center;z-index:2;' + (isProduct ? 'top:2mm;right:2mm;' : 'bottom:2mm;right:2mm;');
-
         const cnt = el('span', null, `${currentIdx + 1}/${imgArray.length}`);
         cnt.style.cssText = 'color:#fff;background:rgba(0,0,0,0.75);padding:0 1.5mm;border-radius:1mm;height:5mm;display:flex;align-items:center;font-size:1.8mm;letter-spacing:0.05em;font-family:Open Sans,sans-serif;margin:0;border:1px solid rgba(255,255,255,0.4);box-shadow:0 2px 5px rgba(0,0,0,0.5); backdrop-filter: blur(2px);';
-
         const btnCss = 'background:rgba(0,0,0,0.75);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:1mm;width:5mm;height:5mm;font-size:2mm;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.5); backdrop-filter: blur(2px);';
-
         const prev = el('button', null, '◀');
         const next = el('button', null, '▶');
         prev.style.cssText = btnCss; next.style.cssText = btnCss;
-
         prev.onclick = () => {
             currentIdx = (currentIdx - 1 + imgArray.length) % imgArray.length;
             img.src = imgArray[currentIdx];
@@ -673,24 +619,19 @@ function makeSlot(imgArray, initialIdx, totalSlots, type) {
             cnt.textContent = `${currentIdx + 1}/${imgArray.length}`;
             if (!isProduct) wrap.style.background = imgArray[currentIdx].toLowerCase().includes('.png') ? '#fff' : '#0a0a0a';
         };
-
         nav.appendChild(prev); nav.appendChild(cnt); nav.appendChild(next);
         wrap.appendChild(nav);
     }
     return wrap;
 }
-
 function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTable, tags, lifestyleImgs) {
     const layoutContainer = el('div', 'display: grid; gap: 4mm; height: 100%; width: 100%; min-height: 0;');
     inner.appendChild(layoutContainer);
-
     const hdr = makeHeader(productCode, subtitle, tags);
     hdr.style.gridArea = 'hd';
     layoutContainer.appendChild(hdr);
-
     const imgCol = el('div', 'grid-area: im; display: flex; flex-direction: column; gap: 4mm; overflow: hidden; min-height: 0;');
     layoutContainer.appendChild(imgCol);
-
     const textCol = el('div', 'grid-area: tx; display: flex; flex-direction: column; overflow: hidden; min-height: 0;');
     const nameBox = el('div', null);
     nameBox.className = 'fa-namebox';
@@ -700,29 +641,23 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
     desc.className = 'fa-desc';
     textCol.appendChild(desc);
     layoutContainer.appendChild(textCol);
-
     const lsCol = el('div', 'grid-area: ls; display: flex; flex-direction: column; gap: 2mm; overflow: hidden; min-height: 0;');
     layoutContainer.appendChild(lsCol);
-
     const specCol = el('div', 'grid-area: sp; overflow: hidden; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0;');
     if(specTable) {
         specCol.appendChild(makeSpecZone(specTable));
     }
     layoutContainer.appendChild(specCol);
-
     let state = {
         lsVisible: lifestyleImgs ? Math.min(lifestyleImgs.length, 3) : 0,
         imgVisible: productImgs ? Math.min(productImgs.length, 4) : 0,
         hasSpec: !!specTable
     };
-
     function renderGrid() {
         imgCol.innerHTML = '';
         lsCol.innerHTML = '';
-        
         imgCol.style.justifyContent = 'flex-start';
         textCol.style.justifyContent = 'flex-start';
-
         if(state.imgVisible > 0) {
             const isGrid = (state.imgVisible === 4 || state.imgVisible === 2) && state.lsVisible === 0;
             imgCol.style.display = isGrid ? 'grid' : 'flex';
@@ -733,7 +668,6 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
                 imgCol.style.gridTemplateColumns = '';
                 imgCol.style.gridTemplateRows = '';
             }
-
             for (let i = 0; i < state.imgVisible; i++) {
                 if (i < productImgs.length) {
                     const z = makeSlot(productImgs, i, state.imgVisible, 'product');
@@ -751,16 +685,12 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
         } else { 
             imgCol.style.display = 'none'; 
         }
-
         let isBannerLS = (state.imgVisible === 1 && state.lsVisible === 3 && !state.hasSpec) || (state.imgVisible === 1 && state.lsVisible === 1);
-
         if(state.lsVisible > 0) {
             lsCol.style.display = 'flex';
-            
             if(state.lsVisible === 1 || state.lsVisible === 2) {
                 lsCol.style.flexDirection = 'column'; 
                 if (isBannerLS) lsCol.style.flexDirection = 'row';
-                
                 for (let i = 0; i < state.lsVisible; i++) {
                     if (i < lifestyleImgs.length) {
                         const z = makeSlot(lifestyleImgs, i, state.lsVisible, 'lifestyle');
@@ -773,10 +703,8 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
                 const z1 = makeSlot(lifestyleImgs, 0, state.lsVisible, 'lifestyle');
                 z1.style.flex = '2';
                 lsCol.appendChild(z1);
-
                 const sub = el('div', 'display:flex;gap:2mm;flex-shrink:0;flex:1;min-height:0;');
                 sub.style.flexDirection = (state.imgVisible === 0 || isBannerLS) ? 'column' : 'row';
-
                 for(let n=1; n<3; n++) {
                     if (n < lifestyleImgs.length) {
                         const z = makeSlot(lifestyleImgs, n, state.lsVisible, 'lifestyle');
@@ -789,13 +717,10 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
         } else { 
             lsCol.style.display = 'none'; 
         }
-
         specCol.style.display = state.hasSpec ? 'flex' : 'none';
-
         let gridCols = '1fr';
         let gridAreas = '';
         let gridRows = '';
-
         if (state.imgVisible === 0) {
             gridCols = '1fr';
             if (state.lsVisible === 0) {
@@ -815,11 +740,9 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
                 gridCols = '40% 1fr';
                 gridAreas = state.hasSpec ? '"hd hd" "ls ls" "im tx" "sp sp"' : '"hd hd" "ls ls" "im tx"';
                 gridRows = state.hasSpec ? 'auto auto 1fr auto' : 'auto auto 1fr';
-                
                 imgCol.style.justifyContent = 'flex-start';
                 textCol.style.justifyContent = 'flex-start';
                 if (imgCol.firstElementChild) imgCol.firstElementChild.style.alignItems = 'flex-start';
-
             } else if (state.lsVisible === 3 && !state.hasSpec) {
                 gridCols = '40% 1fr';
                 gridAreas = '"hd hd" "ls ls" "im tx"';
@@ -862,27 +785,22 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
                 }
             }
         }
-
         layoutContainer.style.gridTemplateColumns = gridCols;
         layoutContainer.style.gridTemplateRows = gridRows;
         layoutContainer.style.gridTemplateAreas = gridAreas;
-
         if (state.imgVisible === 0 && state.lsVisible === 2 && state.hasSpec) {
             if (textCol.scrollHeight > textCol.clientHeight + 5 || layoutContainer.scrollHeight > layoutContainer.clientHeight + 5) {
                 lsCol.style.flexDirection = 'row';
                 layoutContainer.style.gridTemplateRows = 'auto min-content 1fr auto'; 
             }
         }
-
         if (state.imgVisible === 1 && state.lsVisible === 0) {
             imgCol.style.alignItems = 'center';
             if (imgCol.firstElementChild) imgCol.firstElementChild.style.width = '60%';
         }
     }
-
     const editor = el('div', null);
     editor.className = 'pg-editor';
-
     if (lifestyleImgs && lifestyleImgs.length > 0) {
         const maxL = Math.min(lifestyleImgs.length, 3);
         const lsSec = el('div', null);
@@ -901,7 +819,6 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
         }
         editor.appendChild(lsSec);
     }
-
     if (productImgs && productImgs.length > 0) {
         const maxI = Math.min(productImgs.length, 4);
         const imgSec = el('div', null);
@@ -920,7 +837,6 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
         }
         editor.appendChild(imgSec);
     }
-
     const delSection = el('div', null);
     delSection.className = 'pg-editor-section';
     const delBtn = el('button', null, '✕ Delete page');
@@ -928,32 +844,24 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
     delBtn.onclick = () => { if (confirm('Delete this page?')) { inner.closest('.a4-page').remove(); updatePageNavigator(); } };
     delSection.appendChild(delBtn);
     editor.appendChild(delSection);
-
     inner.appendChild(editor);
     renderGrid();
 }
-
 function processPageContent(doc, pageUrl) {
     const productNameEl = doc.querySelector('#PageProductID');
     const h2El = doc.querySelector('h2');
     const productCode = productNameEl ? productNameEl.textContent.trim() : pageUrl.split('/').pop();
     const subtitle = h2El ? h2El.textContent.trim() : '';
-
     const descEl = doc.querySelector('.mt-1.mb-5.pb-5');
     if (descEl) cleanDescription(descEl);
     const descHTML = descEl ? descEl.innerHTML : '';
-
     const carouselImages = doc.querySelectorAll('.owl-carousel img');
     const allImages = Array.from(doc.querySelectorAll('img'));
     const mainImage = allImages.find(img => img.src.includes(pageUrl.split('/').pop())) || allImages.find(img => img.src.includes('QA2-1.png'));
-
     const carouselImgs = Array.from(carouselImages);
     let { lifestyle, product } = classifyImages(carouselImgs, productCode);
-
     if (product.length === 0 && mainImage) product.push(mainImage.src);
-
     const tags = Array.from(doc.querySelectorAll('.row .Tag')).map(t => (t.title || t.textContent).trim()).filter(Boolean);
-
     let specTable = null;
     const specHeading = Array.from(doc.querySelectorAll('h2')).find(h => h.textContent.includes('TECHNICAL SPECIFICATION'));
     if (specHeading && specHeading.nextElementSibling) {
@@ -981,18 +889,15 @@ function processPageContent(doc, pageUrl) {
             if (nonEmpty.length > 1) specTable = tbl;
         }
     }
-
     const page = document.createElement('div');
     page.classList.add('a4-page');
     page.dataset.productName = productCode;
     const inner = el('div', null);
     inner.className = 'fa-inner';
     page.appendChild(inner);
-
     buildLayout(inner, productCode, subtitle, descHTML, product, specTable, tags, lifestyle);
     document.getElementById('pagesContainer').appendChild(page);
 }
-
 function cleanDescription(desc) {
     desc.querySelectorAll('table,button').forEach(e => e.remove());
     desc.querySelectorAll('img,video,iframe').forEach(e => { if (e.parentElement) e.parentElement.remove(); else e.remove(); });
@@ -1008,7 +913,6 @@ function cleanDescription(desc) {
     });
     desc.innerHTML = d.body.innerHTML.split('. ').filter(s => !(s.includes('see') && s.includes('for details'))).join('. ');
 }
-
 function cleanTechnicalSpecificationTable(table) {
     Array.from(table.querySelectorAll('tr')).forEach(row => {
         if (row.querySelectorAll('button').length) { row.remove(); return; }
@@ -1016,7 +920,6 @@ function cleanTechnicalSpecificationTable(table) {
         if (Array.from(row.cells).some(c => c.textContent.trim() === '')) row.remove();
     });
 }
-
 function createMasterContentsPages(sections, pageOrder) {
     const pages = [];
     const flatItems = [];
@@ -1037,11 +940,9 @@ function createMasterContentsPages(sections, pageOrder) {
             });
         });
     });
-
     const page = document.createElement('div');
     page.classList.add('a4-page');
     page.dataset.productName = 'Contents';
-
     const inner = el('div', null);
     inner.style.cssText = 'position:absolute;inset:12mm;display:flex;flex-direction:column;font-family:Open Sans,sans-serif;box-sizing:border-box;';
     const heading = el('div', null);
@@ -1050,20 +951,16 @@ function createMasterContentsPages(sections, pageOrder) {
     headTitle.style.cssText = 'font-size:6mm;font-weight:300;letter-spacing:0.3em;color:#000;';
     heading.appendChild(headTitle);
     inner.appendChild(heading);
-
     let numCols = 2; let scale = 1; let rowPad = '1.5mm'; let secMargin = '3mm'; let lineH = '1.2'; let colGap = '8mm';
     const itemsCount = flatItems.length;
-
     if(itemsCount > 250) { numCols = 6; scale = 0.45; rowPad = '0px'; secMargin = '1mm'; lineH = '1.1'; colGap = '3mm'; }
     else if(itemsCount > 200) { numCols = 5; scale = 0.5; rowPad = '0px'; secMargin = '1.5mm'; lineH = '1.1'; colGap = '4mm'; }
     else if(itemsCount > 150) { numCols = 4; scale = 0.55; rowPad = '0.2mm'; secMargin = '1.5mm'; lineH = '1.1'; colGap = '5mm'; }
     else if(itemsCount > 110) { numCols = 4; scale = 0.65; rowPad = '0.5mm'; secMargin = '2mm'; lineH = '1.15'; colGap = '6mm'; }
     else if(itemsCount > 70) { numCols = 3; scale = 0.75; rowPad = '0.8mm'; secMargin = '2.5mm'; lineH = '1.2'; colGap = '8mm'; }
     else if(itemsCount > 40) { numCols = 2; scale = 0.85; rowPad = '1.2mm'; secMargin = '3mm'; lineH = '1.2'; colGap = '8mm'; }
-
     const cols = el('div', null);
     cols.style.cssText = `flex:1;min-height:0;height:100%;column-count:${numCols};column-gap:${colGap};column-fill:auto;font-size:${scale}em;width:100%;box-sizing:border-box;overflow:hidden;`;
-
     flatItems.forEach(item => {
         if (item.isSectionHeader) {
             const sec = el('div', null);
@@ -1075,30 +972,23 @@ function createMasterContentsPages(sections, pageOrder) {
         } else {
             const row = el('div', null);
             row.style.cssText = `display:flex;align-items:flex-end;padding:${rowPad} 0;break-inside:avoid;page-break-inside:avoid;width:100%;max-width:100%;`;
-            
             const name = el('span', null, item.name);
             name.style.cssText = `font-size:2.3mm;font-weight:400;letter-spacing:0.02em;color:#222;flex:0 1 auto;min-width:0;word-break:normal;overflow-wrap:break-word;white-space:normal;line-height:${lineH};padding-right:1mm;`;
-            
             const dots = el('span', null);
             dots.style.cssText = 'flex:1 1 auto;min-width:1px;margin:0 1mm;border-bottom:0.15mm dotted #ccc;height:1px;position:relative;top:-0.5mm;';
-            
             const pgEl = el('span', null, item.pageNum !== null ? String(item.pageNum) : '');
             pgEl.style.cssText = 'font-size:2.2mm;color:#777;flex-shrink:0;text-align:right;';
-            
             row.appendChild(name);
             row.appendChild(dots);
             row.appendChild(pgEl);
             cols.appendChild(row);
         }
     });
-
     inner.appendChild(cols);
     page.appendChild(inner);
     pages.push(page);
-    
     return pages;
 }
-
 async function fetchCdnUrls() {
     const lines = document.getElementById('pageUrls').value.split('\n');
     const pagesContainer = document.getElementById('pagesContainer');
@@ -1149,13 +1039,10 @@ async function fetchCdnUrls() {
                 }
             }
         }
-        
         pagesContainer.innerHTML = '';
         let insidePageNum = 1;
-        
         let filteredPageOrder = [];
         let backCoverItem = null;
-        
         for (const item of pageOrder) {
             if (item.type === 'backCover') {
                 backCoverItem = item;
@@ -1163,13 +1050,11 @@ async function fetchCdnUrls() {
                 filteredPageOrder.push(item);
             }
         }
-
         filteredPageOrder.forEach(item => { 
             if (item.type === 'url') {
                 item._pageNum = insidePageNum++;
             }
         });
-
         sections.forEach(sec => {
             let first = true;
             filteredPageOrder.forEach(item => {
@@ -1179,30 +1064,24 @@ async function fetchCdnUrls() {
                 }
             });
         });
-        
         let masterContentsPages = [];
         if (hasCover && sections.length > 0) {
             masterContentsPages = createMasterContentsPages(sections, filteredPageOrder);
             masterContentsPages.forEach(p => p.dataset.pageType = 'contents');
         }
-
         let coverAdded = false;
         filteredPageOrder.forEach(item => {
             if (!item.page) return;
             pagesContainer.appendChild(item.page);
-            
             if (item.type === 'cover' && !coverAdded) {
                 coverAdded = true;
-                
                 const insideBlank = document.createElement('div');
                 insideBlank.classList.add('a4-page');
                 addPageControls(insideBlank);
                 pagesContainer.appendChild(insideBlank);
-                
                 masterContentsPages.forEach(mcp => pagesContainer.appendChild(mcp));
             }
         });
-
         if (hasCover) {
             let currentCount = pagesContainer.children.length;
             let totalWithBackCover = currentCount + (backCoverItem ? 1 : 1);
@@ -1215,13 +1094,11 @@ async function fetchCdnUrls() {
                 pagesContainer.appendChild(padBlank);
             }
         }
-
         if (backCoverItem) {
             pagesContainer.appendChild(backCoverItem.page);
         } else if (hasCover) {
             pagesContainer.appendChild(createBackCoverPage());
         }
-
         if (hasCover) {
             const allPages = Array.from(pagesContainer.querySelectorAll('.a4-page:not([data-section-separator])'));
             let visibleIdx = 0;
@@ -1250,7 +1127,6 @@ async function fetchCdnUrls() {
                 visibleIdx++;
             });
         }
-        
         updatePageNavigator();
         showToast('Brochure created', 'success');
     } catch (e) { console.error(e); showToast('Error creating brochure', 'error'); }
@@ -1261,11 +1137,9 @@ async function fetchCdnUrls() {
         if (spinner) spinner.style.display = 'none';
     }
 }
-
 function updateStatus(msg) { document.getElementById('statusText').textContent = msg; }
 function updateProgress(pct) { document.getElementById('progressBar').style.width = `${pct}%`; }
 function hideProgress() { document.getElementById('progressBar').style.width = '0%'; }
-
 function updatePageNavigator() {
     const nav = document.getElementById('pageNavigator');
     const pages = Array.from(document.querySelectorAll('.a4-page'));
@@ -1292,7 +1166,6 @@ function updatePageNavigator() {
     }, { threshold: 0.5 });
     pages.forEach(p => obs.observe(p));
 }
-
 function printPage() {
     const pages = document.querySelectorAll('.a4-page');
     if (pages.length) {
@@ -1303,7 +1176,28 @@ function printPage() {
         setTimeout(() => { last.style.pageBreakAfter = orig; }, 1000);
     } else { window.print(); }
 }
-
+async function exportSellSheets() {
+    const pages = Array.from(document.querySelectorAll('.a4-page'));
+    const products = pages.filter(p => {
+        const name = p.dataset.productName || "";
+        return name && !name.startsWith("Cover") && !name.startsWith("Contents") && name !== "Back Cover" && !p.dataset.padBlank && p.querySelector('.fa-inner');
+    });
+    if (!products.length) { showToast('No product pages found', 'warning'); return; }
+    const originalTitle = document.title;
+    const date = new Date().toLocaleDateString('en-GB', {month:'short', year:'2-digit'}).toUpperCase().replace(' ', '-');
+    document.body.classList.add('sell-sheet-mode');
+    for (const page of products) {
+        const prodName = page.dataset.productName || "Product";
+        document.title = `${prodName} - SELL SHEET - ${date}`;
+        page.classList.add('is-printing');
+        window.print();
+        page.classList.remove('is-printing');
+        await delay(500);
+    }
+    document.body.classList.remove('sell-sheet-mode');
+    document.title = originalTitle;
+    showToast('Export complete', 'success');
+}
 function clearAll() {
     if (!confirm('Clear all data?')) return;
     document.getElementById('pageUrls').value = '';
@@ -1314,7 +1208,6 @@ function clearAll() {
     updatePageNavigator();
     showToast('All data cleared', 'info');
 }
-
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('pageUrls').addEventListener('input', function() {
         document.getElementById('createButton').disabled = !this.value.trim();
