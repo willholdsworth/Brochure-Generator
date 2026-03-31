@@ -1183,10 +1183,19 @@ async function exportSellSheets() {
         return name && !name.startsWith("Cover") && !name.startsWith("Contents") && name !== "Back Cover" && !p.dataset.padBlank && p.querySelector('.fa-inner');
     });
     if (!products.length) { showToast('No product pages found', 'warning'); return; }
+    let abortExport = false;
+    const escapeListener = (e) => {
+        if (e.key === "Escape") {
+            abortExport = true;
+            showToast('Stopping export loop...', 'warning');
+        }
+    };
+    window.addEventListener('keydown', escapeListener);
     const originalTitle = document.title;
     const date = new Date().toLocaleDateString('en-GB', {month:'short', year:'2-digit'}).toUpperCase().replace(' ', '-');
     document.body.classList.add('sell-sheet-mode');
     for (const page of products) {
+        if (abortExport) break;
         const prodName = page.dataset.productName || "Product";
         document.title = `${prodName} - SELL SHEET - ${date}`;
         page.classList.add('is-printing');
@@ -1194,9 +1203,10 @@ async function exportSellSheets() {
         page.classList.remove('is-printing');
         await delay(500);
     }
+    window.removeEventListener('keydown', escapeListener);
     document.body.classList.remove('sell-sheet-mode');
     document.title = originalTitle;
-    showToast('Export complete', 'success');
+    showToast(abortExport ? 'Export Stopped' : 'Export complete', abortExport ? 'info' : 'success');
 }
 function clearAll() {
     if (!confirm('Clear all data?')) return;
