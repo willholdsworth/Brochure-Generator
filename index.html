@@ -63,7 +63,83 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     overflow: hidden;
     transform-origin: top center;
 }
-@media screen and (max-width: 1200px) { .a4-page { transform: scale(0.9); } }
+.page-wrapper-outer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+.page-dropdown-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 8px;
+    width: 210mm;
+    max-width: 100%;
+}
+.dropdown-toggle {
+    padding: 5px 14px 5px 12px;
+    background-color: #d0d0d0;
+    color: black;
+    border: 2px solid white;
+    border-radius: 25px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    min-width: 0;
+    flex: none;
+}
+.dropdown-toggle::after { content: '▼'; font-size: 0.7em; }
+.dropdown-toggle.active::after { content: '▲'; }
+.dropdown-content {
+    display: none;
+    margin-bottom: 6px;
+    width: 210mm;
+    max-width: 100%;
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+.dropdown-content.show { display: block; }
+.spec-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.spec-button {
+    padding: 4px 8px;
+    background-color: #303030;
+    color: white;
+    border: 2px solid white;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 11px;
+    min-width: auto;
+    flex: none;
+    font-weight: 600;
+}
+.spec-button.active { background-color: lightgrey; color: black; }
+.section-title { font-weight: lighter; margin-bottom: 4px; color: #333; font-size: 0.85rem; }
+.vis-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.vis-btn {
+    padding: 4px 10px;
+    background-color: #fff;
+    color: #000;
+    border: 1.5px solid #888;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    flex: none;
+}
+.vis-btn.active { background: #000; color: #fff; border-color: #000; }
+.vis-btn.tog-on { background: #222; color: #fff; border-color: #222; }
+.vis-btn.tog-off { background: #fff; color: #555; border-color: #aaa; }
+@media screen and (max-width: 1200px) { .a4-page { transform: scale(0.9); } .page-dropdown-row, .dropdown-content { width: 90vw; } }
 @media screen and (max-width: 992px)  { .a4-page { transform: scale(0.7); } }
 @media screen and (max-width: 768px)  { .a4-page { transform: translateX(-10%) scale(0.5); } }
 @media screen and (max-width: 576px)  { .a4-page { transform: translateX(-30%) scale(0.5); margin-left: 120px; } }
@@ -110,6 +186,13 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     color: #000;
     line-height: 1;
 }
+.fa-pname-merged {
+    font-size: 5.5mm;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: #000;
+    line-height: 1.1;
+}
 .fa-psub {
     font-size: 2mm;
     color: #000;
@@ -150,7 +233,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 .fa-spectable tbody td { padding: 0.7mm 2mm; color: #333; text-align: center; border-bottom: 0.2mm solid #f0f0f0; }
 .fa-spectable tbody tr:last-child td { border-bottom: none; }
 .fa-spectable tbody td:first-child { text-align: left; color: #666; font-weight: 400; letter-spacing: 0.02em; }
-.pg-editor { position: absolute; bottom: 5mm; right: 5mm; z-index: 200; display: flex; flex-direction: column; gap: 2mm; align-items: flex-end; }
+.fa-spectable .cat-header td { background: #707070; color: #fff; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; font-size: 1.5mm; }
+.fa-spectable .cat-header td:first-child { background: #000; color: #fff; }
+.pg-editor { position: absolute; bottom: 10mm; right: 5mm; z-index: 200; display: flex; flex-direction: column; gap: 2mm; align-items: flex-end; }
 .pg-editor-section { background: rgba(0,0,0,0.72); border-radius: 2mm; padding: 1.5mm 2mm; display: flex; flex-direction: row; gap: 1.5mm; align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 70mm; backdrop-filter: blur(4px); }
 .pg-editor-label { font-size: 1.6mm; color: rgba(255,255,255,0.45); letter-spacing: 0.08em; text-transform: uppercase; margin-right: 1mm; white-space: nowrap; }
 .pg-ed-btn { background: rgba(255,255,255,0.12); color: white; border: 0.2mm solid rgba(255,255,255,0.2); border-radius: 1.5mm; padding: 0.8mm 1.8mm; font-size: 1.6mm; cursor: pointer; white-space: nowrap; font-family: 'Open Sans', sans-serif; transition: background 0.15s; }
@@ -165,7 +250,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 @media print {
     @page { size: A4 portrait !important; margin: 0 !important; }
     .container, .button-container, .status-container, .toast-container,
-    .page-navigator, .page-controls, .fa-ls-arrows, .pg-editor, .pg-img-nav { display: none !important; }
+    .page-navigator, .page-controls, .fa-ls-arrows, .pg-editor, .pg-img-nav,
+    .page-dropdown-row, .dropdown-content { display: none !important; }
     .a4-page { position: relative !important; width: 210mm !important; height: 297mm !important; page-break-after: always !important; margin: 0 !important; padding: 0 !important; border: 0 !important; transform: none !important; box-shadow: none !important; }
     .a4-page:last-child { page-break-after: auto !important; }
     .a4-page[data-pad-blank] { display: none !important; }
@@ -181,8 +267,12 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
         <h1>SELL SHEET / BROCHURE CREATOR</h1>
         <div class="left">
             <div class="input-section">
-                <label for="pageUrls">PAGES:</label>
-                <textarea id="pageUrls" placeholder="Paste one URL per line then press 'Build Pages' to generate sell sheets for individual products">https://www.futureautomation.co.uk/Product/Details/PLFS</textarea>
+                <label for="pageUrls">PAGES (supports MERGE syntax: <code>MERGE A - url</code>, <code>MERGE B - url</code> etc):</label>
+                <textarea id="pageUrls" placeholder="Paste one URL per line. Use 'MERGE A - url' / 'MERGE B - url' to combine products onto one page.
+Examples:
+https://www.futureautomation.co.uk/Product/Details/PS40
+MERGE A - https://www.futureautomation.co.uk/Product/Details/FSE90
+MERGE A - https://www.futureautomation.co.uk/Product/Details/PSE90">https://www.futureautomation.co.uk/Product/Details/PLFS</textarea>
             </div>
             <div class="input-section">
                 <label for="urlInput">PASTE URLS HERE TO GENERATE BROCHURE:</label>
@@ -227,6 +317,14 @@ const cache = {
     clear() { this.data = {}; }
 };
 const excludeKeywords = ['Login','Account','mailto:','facebook.com','twitter.com','instagram.com','linkedin.com','privacy','terms','cookies','copyright','sitemap','contact-us','about-us','help','faq'];
+
+const DEFAULT_HIDDEN_SPECS = [
+    'DOWNLOADS', 'EXAMPLE TECHNICAL SHEETS', 'SHIPPING DIMENSIONS',
+    'VIDEO INSTRUCTIONS', 'SHIPPING WEIGHT', "WHAT'S INCLUDED",
+    'SHIPPING DIM', 'SHIPPING DIMS', 'TECH SHEET', 'TECHNICAL SHEET',
+    'SELL SHEET', 'CAD', 'INSTRUCTIONS'
+];
+
 function showToast(message, type = 'info', duration = 5000) {
     const tc = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -236,7 +334,7 @@ function showToast(message, type = 'info', duration = 5000) {
     tc.appendChild(toast);
     setTimeout(() => {
         toast.style.animation = 'slideOut 0.3s ease-out forwards';
-        setTimeout(() => tc.removeChild(toast), 300);
+        setTimeout(() => { if (tc.contains(toast)) tc.removeChild(toast); }, 300);
     }, duration);
 }
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -382,9 +480,9 @@ async function scrapeMultipleWebsites(urls) {
         updatePageURLs();
         showToast('List generation complete', 'success');
     } catch { showToast('Error during list generation', 'error'); }
-    finally { 
-        updateStatus('Done - Select Create Brochure'); 
-        hideProgress(); 
+    finally {
+        updateStatus('Done - Select Create Brochure');
+        hideProgress();
         if (spinner) spinner.style.display = 'none';
     }
 }
@@ -417,7 +515,7 @@ function createCoverPage(text) {
     function generateBokehGradient(t) {
         const colors = generateGradient(t);
         return colors.map((color, index) => {
-            const x = (index + 1) * 20; 
+            const x = (index + 1) * 20;
             const y = (index + 1) * 20;
             return `radial-gradient(circle at ${x}% ${y}%, ${color}, transparent 100%)`;
         }).join(', ');
@@ -533,7 +631,7 @@ function addPageControls(page) {
     btn.className = 'page-control-btn';
     btn.innerHTML = '<i class="fas fa-trash"></i>';
     btn.title = 'Delete page';
-    btn.addEventListener('click', e => { e.stopPropagation(); if (confirm('Delete this page?')) { page.remove(); updatePageNavigator(); } });
+    btn.addEventListener('click', e => { e.stopPropagation(); if (confirm('Delete this page?')) { const wrapper = page.closest('.page-wrapper-outer') || page; wrapper.remove(); updatePageNavigator(); } });
     div.appendChild(btn);
     page.appendChild(div);
 }
@@ -573,16 +671,205 @@ function makeHeader(productCode, subtitle, tags) {
     hdr.appendChild(urlDiv);
     return hdr;
 }
-function makeSpecZone(specTable) {
+
+function isSpecHidden(specName) {
+    const u = specName.toUpperCase();
+    return DEFAULT_HIDDEN_SPECS.some(h => u.includes(h));
+}
+
+function extractSpecDataFromTable(tbl) {
+    if (!tbl) return { categories: [], rows: [] };
+    const rows = Array.from(tbl.querySelectorAll('tr'));
+    const categories = [];
+    const dataRows = [];
+    let currentCategory = null;
+    rows.forEach(row => {
+        const cells = Array.from(row.cells);
+        if (cells.length === 0) return;
+        const isCategoryHeader = cells.length === 1 || (cells.length > 1 && cells.slice(1).every(c => c.textContent.trim() === ''));
+        if (isCategoryHeader && cells[0].textContent.trim()) {
+            currentCategory = cells[0].textContent.trim();
+            if (!categories.includes(currentCategory)) categories.push(currentCategory);
+        } else if (cells.length > 1) {
+            const label = cells[0].textContent.trim();
+            const values = cells.slice(1).map(c => c.innerHTML.trim());
+            dataRows.push({ label, values, category: currentCategory });
+        }
+    });
+    return { categories, rows: dataRows };
+}
+
+function mergeSpecData(specDataArray) {
+    const allCategories = [];
+    const seenCats = new Set();
+    specDataArray.forEach(sd => {
+        sd.categories.forEach(c => { if (!seenCats.has(c)) { seenCats.add(c); allCategories.push(c); } });
+    });
+    const allLabelMap = new Map();
+    specDataArray.forEach((sd, idx) => {
+        sd.rows.forEach(row => {
+            const key = (row.category || '') + '|||' + row.label;
+            if (!allLabelMap.has(key)) {
+                allLabelMap.set(key, { label: row.label, category: row.category, valuesByProduct: [] });
+            }
+            allLabelMap.get(key).valuesByProduct[idx] = row.values;
+        });
+    });
+    const mergedRows = [];
+    allLabelMap.forEach(v => mergedRows.push(v));
+    return { categories: allCategories, rows: mergedRows, productCount: specDataArray.length };
+}
+
+function buildMergedSpecTable(mergedSpec, productNames, specVisibility) {
+    const tbl = document.createElement('table');
+    tbl.className = 'fa-spectable';
+    const thead = document.createElement('thead');
+    const hdrRow = document.createElement('tr');
+    const th0 = document.createElement('th');
+    th0.textContent = 'SPECIFICATION';
+    th0.style.width = '28%';
+    hdrRow.appendChild(th0);
+    productNames.forEach(name => {
+        const th = document.createElement('th');
+        th.textContent = name;
+        hdrRow.appendChild(th);
+    });
+    thead.appendChild(hdrRow);
+    tbl.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    tbl.appendChild(tbody);
+
+    function renderRows() {
+        tbody.innerHTML = '';
+        let lastCat = null;
+        let rowIndex = 0;
+        mergedSpec.rows.forEach(row => {
+            if (specVisibility && !specVisibility[row.label]) return;
+            if (isSpecHidden(row.label)) return;
+            if (row.category && row.category !== lastCat) {
+                const catRow = document.createElement('tr');
+                catRow.className = 'cat-header';
+                const catTd = document.createElement('td');
+                catTd.textContent = row.category;
+                catTd.colSpan = productNames.length + 1;
+                catRow.appendChild(catTd);
+                tbody.appendChild(catRow);
+                lastCat = row.category;
+            }
+            const tr = document.createElement('tr');
+            tr.style.background = rowIndex % 2 === 0 ? '#fff' : '#fafafa';
+            rowIndex++;
+            const td0 = document.createElement('td');
+            td0.textContent = row.label;
+            tr.appendChild(td0);
+
+            // Build per-column display text, deduplicating repeated values within each cell
+            // (e.g. ["58DB","58DB","58DB"] becomes "58DB", not "58DB<br>58DB<br>58DB")
+            const cellTexts = [];
+            const cellNorm = [];
+            for (let i = 0; i < productNames.length; i++) {
+                const vals = row.valuesByProduct[i];
+                let display, norm;
+                if (!vals || vals.length === 0) {
+                    display = 'N/A';
+                    norm = 'N/A';
+                } else {
+                    // Deduplicate by normalised text, preserving first-seen order
+                    const seen = new Set();
+                    const unique = [];
+                    vals.forEach(v => {
+                        const key = v.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+                        if (!seen.has(key)) { seen.add(key); unique.push(v); }
+                    });
+                    display = unique.join('<br>') || 'N/A';
+                    norm = [...seen].join('|') || 'N/A';
+                }
+                cellTexts.push(display);
+                cellNorm.push(norm);
+            }
+            // If every column's normalised value is identical, merge into one spanning cell
+            const allSame = cellNorm.length > 1 && cellNorm.every(v => v === cellNorm[0]);
+            if (allSame) {
+                const td = document.createElement('td');
+                td.colSpan = productNames.length;
+                td.innerHTML = cellTexts[0];
+                td.style.textAlign = 'center';
+                tr.appendChild(td);
+            } else {
+                for (let i = 0; i < productNames.length; i++) {
+                    const td = document.createElement('td');
+                    td.innerHTML = cellTexts[i];
+                    tr.appendChild(td);
+                }
+            }
+            tbody.appendChild(tr);
+        });
+    }
+    tbl.renderRows = renderRows;
+    renderRows();
+    return tbl;
+}
+
+function buildSingleSpecTable(specTable, specVisibility) {
+    if (!specTable) return null;
+    const extracted = extractSpecDataFromTable(specTable);
+    const tbl = document.createElement('table');
+    tbl.className = 'fa-spectable';
+    const thead = document.createElement('thead');
+    const originalThead = specTable.querySelector('thead');
+    if (originalThead) {
+        thead.innerHTML = originalThead.innerHTML;
+    }
+    tbl.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    tbl.appendChild(tbody);
+
+    function renderRows() {
+        tbody.innerHTML = '';
+        let lastCat = null;
+        let rowIndex = 0;
+        extracted.rows.forEach(row => {
+            if (specVisibility && specVisibility[row.label] === false) return;
+            if (isSpecHidden(row.label)) return;
+            if (row.category && row.category !== lastCat) {
+                const catRow = document.createElement('tr');
+                catRow.className = 'cat-header';
+                const catTd = document.createElement('td');
+                catTd.textContent = row.category;
+                catTd.colSpan = 100;
+                catRow.appendChild(catTd);
+                tbody.appendChild(catRow);
+                lastCat = row.category;
+            }
+            const tr = document.createElement('tr');
+            tr.style.background = rowIndex % 2 === 0 ? '#fff' : '#fafafa';
+            rowIndex++;
+            const td0 = document.createElement('td');
+            td0.textContent = row.label;
+            tr.appendChild(td0);
+            row.values.forEach(v => {
+                const td = document.createElement('td');
+                td.innerHTML = v || 'N/A';
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
+        });
+    }
+    tbl.renderRows = renderRows;
+    tbl._extracted = extracted;
+    renderRows();
+    return tbl;
+}
+
+function makeSpecZone(specTableEl, label) {
     const zone = el('div', null);
     zone.className = 'fa-speczone';
-    const label = el('div', null, 'Technical Specification');
-    label.className = 'fa-speclabel';
-    zone.appendChild(label);
+    const lbl = el('div', null, label || 'Technical Specification');
+    lbl.className = 'fa-speclabel';
+    zone.appendChild(lbl);
     const wrap = el('div', null);
     wrap.className = 'fa-specwrap';
-    specTable.className = 'fa-spectable';
-    wrap.appendChild(specTable);
+    wrap.appendChild(specTableEl);
     zone.appendChild(wrap);
     return zone;
 }
@@ -624,7 +911,8 @@ function makeSlot(imgArray, initialIdx, totalSlots, type) {
     }
     return wrap;
 }
-function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTable, tags, lifestyleImgs) {
+
+function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTableEl, tags, lifestyleImgs) {
     const layoutContainer = el('div', 'display: grid; gap: 4mm; height: 100%; width: 100%; min-height: 0;');
     inner.appendChild(layoutContainer);
     const hdr = makeHeader(productCode, subtitle, tags);
@@ -644,20 +932,28 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
     const lsCol = el('div', 'grid-area: ls; display: flex; flex-direction: column; gap: 2mm; overflow: hidden; min-height: 0;');
     layoutContainer.appendChild(lsCol);
     const specCol = el('div', 'grid-area: sp; overflow: hidden; display: flex; flex-direction: column; min-height: 0; flex-shrink: 0;');
-    if(specTable) {
-        specCol.appendChild(makeSpecZone(specTable));
+    let specVis = {};
+    let renderedSpecTable = null;
+    if (specTableEl) {
+        const extracted = extractSpecDataFromTable(specTableEl);
+        extracted.rows.forEach(r => { specVis[r.label] = !isSpecHidden(r.label); });
+        renderedSpecTable = buildSingleSpecTable(specTableEl, specVis);
+        renderedSpecTable._extracted = extracted;
+        specCol.appendChild(makeSpecZone(renderedSpecTable));
     }
     layoutContainer.appendChild(specCol);
     let state = {
         lsVisible: lifestyleImgs ? Math.min(lifestyleImgs.length, 3) : 0,
-        imgVisible: productImgs ? Math.min(productImgs.length, 4) : 0,
-        hasSpec: !!specTable
+        imgVisible: productImgs ? Math.min(productImgs.length, 2) : 0,
+        hasSpec: !!specTableEl,
+        descVisible: true
     };
     function renderGrid() {
         imgCol.innerHTML = '';
         lsCol.innerHTML = '';
         imgCol.style.justifyContent = 'flex-start';
         textCol.style.justifyContent = 'flex-start';
+        desc.style.display = state.descVisible ? '' : 'none';
         if(state.imgVisible > 0) {
             const isGrid = (state.imgVisible === 4 || state.imgVisible === 2) && state.lsVisible === 0;
             imgCol.style.display = isGrid ? 'grid' : 'flex';
@@ -672,24 +968,24 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
                 if (i < productImgs.length) {
                     const z = makeSlot(productImgs, i, state.imgVisible, 'product');
                     if (!isGrid) {
-                         z.style.flex = '1';
-                         if (i > 0) z.style.borderTop = '0.2mm solid #e8e8e8';
-                         if (i > 0) z.style.paddingTop = '2mm';
+                        z.style.flex = '1';
+                        if (i > 0) z.style.borderTop = '0.2mm solid #e8e8e8';
+                        if (i > 0) z.style.paddingTop = '2mm';
                     } else {
-                         z.style.borderTop = 'none';
-                         z.style.paddingTop = '0';
+                        z.style.borderTop = 'none';
+                        z.style.paddingTop = '0';
                     }
                     imgCol.appendChild(z);
                 }
             }
-        } else { 
-            imgCol.style.display = 'none'; 
+        } else {
+            imgCol.style.display = 'none';
         }
         let isBannerLS = (state.imgVisible === 1 && state.lsVisible === 3 && !state.hasSpec) || (state.imgVisible === 1 && state.lsVisible === 1);
         if(state.lsVisible > 0) {
             lsCol.style.display = 'flex';
             if(state.lsVisible === 1 || state.lsVisible === 2) {
-                lsCol.style.flexDirection = 'column'; 
+                lsCol.style.flexDirection = 'column';
                 if (isBannerLS) lsCol.style.flexDirection = 'row';
                 for (let i = 0; i < state.lsVisible; i++) {
                     if (i < lifestyleImgs.length) {
@@ -714,8 +1010,8 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
                 }
                 lsCol.appendChild(sub);
             }
-        } else { 
-            lsCol.style.display = 'none'; 
+        } else {
+            lsCol.style.display = 'none';
         }
         specCol.style.display = state.hasSpec ? 'flex' : 'none';
         let gridCols = '1fr';
@@ -741,7 +1037,6 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
                 gridAreas = state.hasSpec ? '"hd hd" "ls ls" "im tx" "sp sp"' : '"hd hd" "ls ls" "im tx"';
                 gridRows = state.hasSpec ? 'auto auto 1fr auto' : 'auto auto 1fr';
                 imgCol.style.justifyContent = 'flex-start';
-                textCol.style.justifyContent = 'flex-start';
                 if (imgCol.firstElementChild) imgCol.firstElementChild.style.alignItems = 'flex-start';
             } else if (state.lsVisible === 3 && !state.hasSpec) {
                 gridCols = '40% 1fr';
@@ -791,7 +1086,7 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
         if (state.imgVisible === 0 && state.lsVisible === 2 && state.hasSpec) {
             if (textCol.scrollHeight > textCol.clientHeight + 5 || layoutContainer.scrollHeight > layoutContainer.clientHeight + 5) {
                 lsCol.style.flexDirection = 'row';
-                layoutContainer.style.gridTemplateRows = 'auto min-content 1fr auto'; 
+                layoutContainer.style.gridTemplateRows = 'auto min-content 1fr auto';
             }
         }
         if (state.imgVisible === 1 && state.lsVisible === 0) {
@@ -841,13 +1136,449 @@ function buildLayout(inner, productCode, subtitle, descHTML, productImgs, specTa
     delSection.className = 'pg-editor-section';
     const delBtn = el('button', null, '✕ Delete page');
     delBtn.className = 'pg-ed-btn del';
-    delBtn.onclick = () => { if (confirm('Delete this page?')) { inner.closest('.a4-page').remove(); updatePageNavigator(); } };
+    delBtn.onclick = () => {
+        if (confirm('Delete this page?')) {
+            const wrapper = inner.closest('.page-wrapper-outer') || inner.closest('.a4-page');
+            wrapper.remove();
+            updatePageNavigator();
+        }
+    };
     delSection.appendChild(delBtn);
     editor.appendChild(delSection);
     inner.appendChild(editor);
     renderGrid();
+    return { state, renderGrid, specVis, renderedSpecTable, specZoneEl: specCol };
 }
-function processPageContent(doc, pageUrl) {
+
+function buildMergedLayout(inner, products, mergedSpecTable, mergedSpec) {
+    const n = products.length;
+    const useGridMode = n >= 5;
+
+    const specVisMap = {};
+    if (mergedSpec) mergedSpec.rows.forEach(r => { specVisMap[r.label] = !isSpecHidden(r.label); });
+
+    let builtSpecTable = null;
+
+    // Pool all lifestyle images from every product, deduped
+    const allLifestyleImgs = [];
+    products.forEach(p => { if (p.lifestyleImgs) p.lifestyleImgs.forEach(src => { if (!allLifestyleImgs.includes(src)) allLifestyleImgs.push(src); }); });
+
+    // State
+    const imgStates = products.map(p => ({ imgVisible: p.productImgs ? Math.min(p.productImgs.length, 1) : 0 }));
+    let lsVisible = allLifestyleImgs.length > 0 ? Math.min(allLifestyleImgs.length, 1) : 0;
+    // Which lifestyle images are selected (indices into allLifestyleImgs)
+    let lsSelected = [0, 1, 2].slice(0, Math.min(3, allLifestyleImgs.length));
+    let descVisible = !useGridMode;
+    let hasSpec = !!mergedSpecTable;
+
+    // ── Grid cols helper ─────────────────────────────────────────────────────
+    function getGridCols(count) {
+        if (count <= 4)  return count;
+        if (count <= 6)  return 3;
+        if (count <= 9)  return 3;
+        if (count <= 12) return 4;
+        if (count <= 16) return 4;
+        return 5;
+    }
+
+    // ── Outer scaffold ───────────────────────────────────────────────────────
+    const outerGrid = el('div', 'display:grid;gap:3mm;height:100%;width:100%;min-height:0;');
+    inner.appendChild(outerGrid);
+    const hdr = makeHeader('', '', []);
+    hdr.style.gridArea = 'hd';
+    outerGrid.appendChild(hdr);
+
+    // The main content area — will be restructured in renderGrid
+    const mainArea = el('div', 'grid-area:cr;min-height:0;overflow:hidden;display:grid;');
+    outerGrid.appendChild(mainArea);
+
+    const specZoneWrap = el('div', 'grid-area:sp;overflow:hidden;display:flex;flex-direction:column;min-height:0;flex-shrink:0;');
+    outerGrid.appendChild(specZoneWrap);
+
+    if (mergedSpecTable && mergedSpec) {
+        builtSpecTable = buildMergedSpecTable(mergedSpec, products.map(p => p.productCode), specVisMap);
+        specZoneWrap.appendChild(makeSpecZone(builtSpecTable));
+    }
+
+    // ── Helper: make a lifestyle image slot that fills its cell ──────────────
+    function makeLsCell(imgIdx) {
+        const src = allLifestyleImgs[imgIdx % allLifestyleImgs.length];
+        const wrap = el('div', 'min-height:0;overflow:hidden;border-radius:2mm;width:100%;height:100%;');
+        const img = el('img', 'width:100%;height:100%;object-fit:cover;display:block;');
+        img.src = src;
+        wrap.appendChild(img);
+        return wrap;
+    }
+
+    // ── Helper: make a product card (grid mode) ──────────────────────────────
+    function makeProductCard(prod) {
+        const fs = n > 16 ? '1.5mm' : '1.8mm';
+        const card = el('div', 'display:grid;grid-template-rows:1fr auto;gap:1mm;min-height:0;overflow:hidden;background:#fff;padding:1mm;');
+        const imgWrap = el('div', 'min-height:0;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;');
+        if (prod.productImgs && prod.productImgs.length > 0) {
+            const img = el('img', 'max-width:100%;max-height:100%;object-fit:contain;display:block;');
+            img.src = prod.productImgs[0];
+            imgWrap.appendChild(img);
+        }
+        card.appendChild(imgWrap);
+        const nameWrap = el('div', 'flex-shrink:0;overflow:hidden;border-top:0.2mm solid #eee;padding-top:0.8mm;');
+        const codeEl = el('div', `font-size:${fs};font-weight:600;color:#000;letter-spacing:0.04em;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`, prod.productCode);
+        nameWrap.appendChild(codeEl);
+        if (prod.subtitle) {
+            const subEl = el('div', `font-size:${n > 16 ? '1.2mm' : '1.3mm'};color:#888;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:0.3mm;`, prod.subtitle);
+            nameWrap.appendChild(subEl);
+        }
+        card.appendChild(nameWrap);
+        return card;
+    }
+
+    // ── Column mode panels (built once) ─────────────────────────────────────
+    let productPanels = [];
+    let colContainer = null;
+    if (!useGridMode) {
+        colContainer = el('div', `display:grid;gap:3mm;height:100%;width:100%;min-height:0;grid-template-columns:${products.map(() => '1fr').join(' ')};`);
+        productPanels = products.map((prod, idx) => {
+            const fontSize = n === 2 ? '2.3mm' : (n === 3 ? '2.1mm' : '1.9mm');
+            const panel = el('div', `display:grid;gap:2mm;min-height:0;overflow:hidden;${idx > 0 ? 'border-left:0.3mm solid #e8e8e8;padding-left:3mm;' : ''}`);
+            const nameBox = el('div', null);
+            nameBox.className = 'fa-namebox';
+            nameBox.style.cssText = 'flex-shrink:0;grid-area:nm;';
+            nameBox.innerHTML = `<div class="fa-pname-merged">${prod.productCode}</div>${prod.subtitle ? `<div class="fa-psub">${prod.subtitle}</div>` : ''}`;
+            panel.appendChild(nameBox);
+            const descEl = el('div', null, prod.descHTML);
+            descEl.className = 'fa-desc';
+            descEl.style.cssText += `font-size:${fontSize};grid-area:tx;`;
+            panel.appendChild(descEl);
+            const imgGrid = el('div', 'grid-area:im;display:grid;gap:1.5mm;min-height:0;overflow:hidden;');
+            panel.appendChild(imgGrid);
+            colContainer.appendChild(panel);
+            return { panel, nameBox, descEl, imgGrid, prod };
+        });
+    }
+
+    // ── Render ───────────────────────────────────────────────────────────────
+    function renderGrid() {
+        const lsCount = Math.min(lsVisible, allLifestyleImgs.length);
+        const anyLS = lsCount > 0;
+
+        outerGrid.style.gridTemplateColumns = '1fr';
+        outerGrid.style.gridTemplateAreas = hasSpec ? `"hd" "cr" "sp"` : `"hd" "cr"`;
+        outerGrid.style.gridTemplateRows = hasSpec ? 'auto 1fr auto' : 'auto 1fr';
+        specZoneWrap.style.display = hasSpec ? 'flex' : 'none';
+
+        mainArea.innerHTML = '';
+
+        // ── GRID MODE ────────────────────────────────────────────────────────
+        if (useGridMode) {
+            const cols = getGridCols(n);
+            const totalCells = Math.ceil(n / cols) * cols;
+            const emptySlots = totalCells - n;
+
+            // Decide lifestyle placement: trailing cells, or a dedicated banner row
+            const lsFitsTrailing = anyLS && emptySlots >= lsCount;
+            const lsNeedsBanner  = anyLS && !lsFitsTrailing;
+
+            mainArea.style.gridTemplateColumns = '1fr';
+            mainArea.style.gridTemplateRows = lsNeedsBanner ? 'minmax(0,22%) 1fr' : '1fr';
+            mainArea.style.gridTemplateAreas = lsNeedsBanner ? '"lsbanner" "cards"' : '"cards"';
+            mainArea.style.gap = '3mm';
+
+            // Banner lifestyle row (when grid is perfect or ls won't fit trailing)
+            if (lsNeedsBanner) {
+                const banner = el('div', `grid-area:lsbanner;display:grid;gap:2mm;min-height:0;overflow:hidden;grid-template-columns:repeat(${lsCount},1fr);`);
+                for (let i = 0; i < lsCount; i++) banner.appendChild(makeLsCell(lsSelected[i] || i));
+                mainArea.appendChild(banner);
+            }
+
+            // Cards grid
+            const cardGrid = el('div', `grid-area:cards;display:grid;gap:2mm;min-height:0;overflow:hidden;grid-template-columns:repeat(${cols},1fr);grid-auto-rows:1fr;`);
+            products.forEach(prod => cardGrid.appendChild(makeProductCard(prod)));
+
+            // Trailing lifestyle cells (fill empty slots in last row)
+            if (lsFitsTrailing) {
+                for (let i = 0; i < lsCount && i < emptySlots; i++) {
+                    const cell = makeLsCell(lsSelected[i] || i);
+                    cell.style.borderRadius = '2mm';
+                    cardGrid.appendChild(cell);
+                }
+                // Fill any remaining empty slots with blank spacers
+                for (let i = lsCount; i < emptySlots; i++) {
+                    cardGrid.appendChild(el('div', 'min-height:0;'));
+                }
+            }
+
+            mainArea.appendChild(cardGrid);
+
+        // ── COLUMN MODE ──────────────────────────────────────────────────────
+        } else {
+            // Layout: [ls-col] [product-cols] — lifestyle as left column, or top banner, or none
+            if (anyLS) {
+                mainArea.style.gridTemplateColumns = 'minmax(0,28%) 1fr';
+                mainArea.style.gridTemplateRows = '1fr';
+                mainArea.style.gridTemplateAreas = '"ls pd"';
+                mainArea.style.gap = '3mm';
+
+                const lsColWrap = el('div', 'grid-area:ls;display:grid;gap:1.5mm;min-height:0;overflow:hidden;');
+                lsColWrap.style.gridTemplateRows = `repeat(${lsCount}, 1fr)`;
+                for (let i = 0; i < lsCount; i++) lsColWrap.appendChild(makeLsCell(lsSelected[i] || i));
+                mainArea.appendChild(lsColWrap);
+
+                const pdWrap = el('div', 'grid-area:pd;min-height:0;overflow:hidden;display:grid;');
+                pdWrap.style.gridTemplateColumns = products.map(() => '1fr').join(' ');
+                pdWrap.style.gap = '3mm';
+                productPanels.forEach(({ panel }) => pdWrap.appendChild(panel));
+                mainArea.appendChild(pdWrap);
+            } else {
+                mainArea.style.gridTemplateColumns = '1fr';
+                mainArea.style.gridTemplateRows = '1fr';
+                mainArea.style.gridTemplateAreas = '"pd"';
+                mainArea.style.gap = '0';
+                const pdWrap = el('div', 'grid-area:pd;min-height:0;overflow:hidden;display:grid;');
+                pdWrap.style.gridTemplateColumns = products.map(() => '1fr').join(' ');
+                pdWrap.style.gap = '3mm';
+                productPanels.forEach(({ panel }) => pdWrap.appendChild(panel));
+                mainArea.appendChild(pdWrap);
+            }
+
+            // Render each column panel's internal layout
+            productPanels.forEach(({ panel, descEl, imgGrid, prod }, idx) => {
+                const s = imgStates[idx];
+                const anyImgs = s.imgVisible > 0 && prod.productImgs && prod.productImgs.length > 0;
+                const showDesc = descVisible;
+
+                imgGrid.innerHTML = '';
+                descEl.style.display = showDesc ? '' : 'none';
+
+                if (anyImgs) {
+                    const count = Math.min(s.imgVisible, prod.productImgs.length);
+                    imgGrid.style.display = 'grid';
+                    imgGrid.style.gridTemplateColumns = count >= 2 ? '1fr 1fr' : '1fr';
+                    imgGrid.style.gridTemplateRows = count >= 3 ? '1fr 1fr' : '1fr';
+                    for (let i = 0; i < count; i++) {
+                        const z = makeSlot(prod.productImgs, i, count, 'product');
+                        z.style.cssText += 'min-height:0;border-radius:1.5mm;border:none;width:100%;height:100%;';
+                        imgGrid.appendChild(z);
+                    }
+                } else {
+                    imgGrid.style.display = 'none';
+                }
+
+                const rows = [];
+                rows.push({ area: 'nm', size: 'auto' });
+                if (showDesc) rows.push({ area: 'tx', size: '1fr' });
+                if (anyImgs) rows.push({ area: 'im', size: !showDesc ? '1fr' : (s.imgVisible >= 2 ? 'minmax(0,42%)' : 'minmax(0,30%)') });
+                if (!showDesc && !anyImgs) rows.push({ area: 'tx', size: '1fr' });
+
+                panel.style.gridTemplateAreas = rows.map(r => `"${r.area}"`).join(' ');
+                panel.style.gridTemplateRows = rows.map(r => r.size).join(' ');
+                panel.style.gridTemplateColumns = '1fr';
+            });
+
+            // Equalise image heights
+            requestAnimationFrame(() => {
+                const vg = productPanels.map(pp => pp.imgGrid).filter(g => g.style.display !== 'none');
+                if (vg.length > 1) {
+                    vg.forEach(g => { g.style.height = ''; g.style.maxHeight = ''; });
+                    const minH = Math.min(...vg.map(g => g.getBoundingClientRect().height));
+                    if (minH > 0) vg.forEach(g => { g.style.height = minH + 'px'; g.style.maxHeight = minH + 'px'; });
+                }
+            });
+        }
+    }
+
+    // ── Editor controls ──────────────────────────────────────────────────────
+    const editor = el('div', null);
+    editor.className = 'pg-editor';
+
+    if (!useGridMode) {
+        const descSec = el('div', null);
+        descSec.className = 'pg-editor-section';
+        descSec.appendChild(el('span', 'font-size:1.6mm;color:rgba(255,255,255,0.45);letter-spacing:0.08em;text-transform:uppercase;margin-right:1mm;', 'Desc'));
+        const descBtn = el('button', null, descVisible ? 'Hide' : 'Show');
+        descBtn.className = 'pg-ed-btn' + (descVisible ? ' active' : '');
+        descBtn.onclick = () => { descVisible = !descVisible; descBtn.textContent = descVisible ? 'Hide' : 'Show'; descBtn.classList.toggle('active', descVisible); renderGrid(); };
+        descSec.appendChild(descBtn);
+        editor.appendChild(descSec);
+    }
+
+    // Lifestyle: count buttons (0/1/2/3) + per-slot image pickers
+    if (allLifestyleImgs.length > 0) {
+        const maxL = Math.min(allLifestyleImgs.length, 3);
+        const lsSec = el('div', null);
+        lsSec.className = 'pg-editor-section';
+        lsSec.style.flexDirection = 'column';
+        lsSec.style.alignItems = 'flex-start';
+        lsSec.style.gap = '2mm';
+
+        // Count row
+        const countRow = el('div', 'display:flex;align-items:center;gap:1.5mm;flex-wrap:wrap;');
+        countRow.appendChild(el('span', 'font-size:1.6mm;color:rgba(255,255,255,0.45);letter-spacing:0.08em;text-transform:uppercase;margin-right:1mm;white-space:nowrap;', 'Lifestyle'));
+        const countBtns = [];
+        for (let i = 0; i <= maxL; i++) {
+            const btn = el('button', null, String(i));
+            btn.className = 'pg-ed-btn' + (i === lsVisible ? ' active' : '');
+            btn.onclick = () => {
+                lsVisible = i;
+                countBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderSlotPickers();
+                renderGrid();
+            };
+            countBtns.push(btn);
+            countRow.appendChild(btn);
+        }
+        lsSec.appendChild(countRow);
+
+        // Per-slot image pickers — shown when lsVisible > 0
+        const slotPickersWrap = el('div', 'display:flex;flex-direction:column;gap:1.5mm;width:100%;');
+        function renderSlotPickers() {
+            slotPickersWrap.innerHTML = '';
+            if (lsVisible === 0 || allLifestyleImgs.length <= 1) return;
+            for (let slot = 0; slot < lsVisible; slot++) {
+                const row = el('div', 'display:flex;align-items:center;gap:1mm;flex-wrap:wrap;');
+                row.appendChild(el('span', 'font-size:1.4mm;color:rgba(255,255,255,0.35);min-width:6mm;', `Img ${slot + 1}:`));
+                for (let imgIdx = 0; imgIdx < allLifestyleImgs.length; imgIdx++) {
+                    const s2 = slot; const ii = imgIdx;
+                    const btn = el('button', null, String(imgIdx + 1));
+                    btn.className = 'pg-ed-btn' + (lsSelected[s2] === ii ? ' active' : '');
+                    btn.style.fontSize = '1.3mm';
+                    btn.style.padding = '0.4mm 1.2mm';
+                    btn.onclick = () => {
+                        lsSelected[s2] = ii;
+                        row.querySelectorAll('.pg-ed-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        renderGrid();
+                    };
+                    row.appendChild(btn);
+                }
+                slotPickersWrap.appendChild(row);
+            }
+        }
+        renderSlotPickers();
+        lsSec.appendChild(slotPickersWrap);
+        editor.appendChild(lsSec);
+    }
+
+    // Per-product image count (column mode only)
+    if (!useGridMode) {
+        products.forEach((prod, idx) => {
+            if (prod.productImgs && prod.productImgs.length > 0) {
+                const maxI = Math.min(prod.productImgs.length, 4);
+                const imgSec = el('div', null);
+                imgSec.className = 'pg-editor-section';
+                imgSec.appendChild(el('span', 'font-size:1.6mm;color:rgba(255,255,255,0.45);letter-spacing:0.08em;text-transform:uppercase;margin-right:1mm;', `${prod.productCode} Img`));
+                for (let i = 0; i <= maxI; i++) {
+                    const btn = el('button', null, String(i));
+                    btn.className = 'pg-ed-btn' + (i === imgStates[idx].imgVisible ? ' active' : '');
+                    btn.onclick = () => {
+                        imgStates[idx].imgVisible = i;
+                        imgSec.querySelectorAll('.pg-ed-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        renderGrid();
+                    };
+                    imgSec.appendChild(btn);
+                }
+                editor.appendChild(imgSec);
+            }
+        });
+    }
+
+    const delSection = el('div', null);
+    delSection.className = 'pg-editor-section';
+    const delBtn = el('button', null, '✕ Delete page');
+    delBtn.className = 'pg-ed-btn del';
+    delBtn.onclick = () => {
+        if (confirm('Delete this page?')) {
+            const wrapper = inner.closest('.page-wrapper-outer') || inner.closest('.a4-page');
+            wrapper.remove(); updatePageNavigator();
+        }
+    };
+    delSection.appendChild(delBtn);
+    editor.appendChild(delSection);
+    inner.appendChild(editor);
+    renderGrid();
+    return { specVisMap, builtSpecTable, mergedSpec, specZoneEl: specZoneWrap };
+}
+
+function buildCategoryDropdown(pageWrapper, specVis, specTableEl, mergedSpec, isMerged, specZoneEl) {
+    const dropRow = el('div', null);
+    dropRow.className = 'page-dropdown-row';
+
+    const catToggle = el('button', null);
+    catToggle.className = 'dropdown-toggle';
+    catToggle.textContent = 'CATEGORIES';
+    dropRow.appendChild(catToggle);
+
+    const dropContent = el('div', null);
+    dropContent.className = 'dropdown-content';
+
+    catToggle.onclick = () => {
+        dropContent.classList.toggle('show');
+        catToggle.classList.toggle('active');
+    };
+
+    const specBtnsWrap = el('div', null);
+    specBtnsWrap.className = 'spec-buttons';
+
+    let allRows = [];
+    if (isMerged && mergedSpec) {
+        allRows = mergedSpec.rows;
+    } else if (specTableEl) {
+        const extracted = extractSpecDataFromTable(specTableEl);
+        allRows = extracted.rows;
+    }
+
+    const labelsSeen = new Set();
+    allRows.forEach(row => {
+        const label = row.label;
+        if (labelsSeen.has(label)) return;
+        labelsSeen.add(label);
+        if (isSpecHidden(label)) return;
+        const btn = el('button', null, label);
+        btn.className = 'spec-button' + (specVis[label] === false ? ' active' : '');
+        btn.title = specVis[label] === false ? 'Hidden' : 'Visible';
+        btn.onclick = () => {
+            specVis[label] = !specVis[label];
+            btn.classList.toggle('active', !specVis[label]);
+            btn.title = specVis[label] ? 'Visible' : 'Hidden';
+            if (specTableEl && specTableEl.renderRows) specTableEl.renderRows();
+        };
+        specBtnsWrap.appendChild(btn);
+    });
+
+    // Spec table visibility toggle
+    if (specZoneEl) {
+        const specToggleWrap = el('div', 'margin-bottom:8px;display:flex;align-items:center;gap:8px;');
+        const specToggleLabel = el('span', 'font-size:0.8rem;font-weight:600;color:#333;', 'Spec Table:');
+        let specVisible = true;
+        const specToggleBtn = el('button', null, 'Hide');
+        specToggleBtn.className = 'spec-button';
+        specToggleBtn.style.cssText = 'background:#303030;color:#fff;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:2px solid white;';
+        specToggleBtn.onclick = () => {
+            specVisible = !specVisible;
+            specZoneEl.style.display = specVisible ? '' : 'none';
+            specToggleBtn.textContent = specVisible ? 'Hide' : 'Show';
+            specToggleBtn.style.background = specVisible ? '#303030' : 'lightgrey';
+            specToggleBtn.style.color = specVisible ? '#fff' : '#000';
+        };
+        specToggleWrap.appendChild(specToggleLabel);
+        specToggleWrap.appendChild(specToggleBtn);
+        dropContent.appendChild(specToggleWrap);
+
+        const divider = el('div', 'width:100%;height:1px;background:#e0e0e0;margin-bottom:8px;');
+        dropContent.appendChild(divider);
+    }
+
+    const sectionTitle = el('div', null, 'Toggle spec rows (dark = hidden):');
+    sectionTitle.className = 'section-title';
+    dropContent.appendChild(sectionTitle);
+    dropContent.appendChild(specBtnsWrap);
+
+    pageWrapper.appendChild(dropRow);
+    pageWrapper.appendChild(dropContent);
+}
+
+function extractProductDataFromDoc(doc, pageUrl) {
     const productNameEl = doc.querySelector('#PageProductID');
     const h2El = doc.querySelector('h2');
     const productCode = productNameEl ? productNameEl.textContent.trim() : pageUrl.split('/').pop();
@@ -889,15 +1620,72 @@ function processPageContent(doc, pageUrl) {
             if (nonEmpty.length > 1) specTable = tbl;
         }
     }
+    return { productCode, subtitle, descHTML, productImgs: product, lifestyleImgs: lifestyle, specTable, tags };
+}
+
+function processPageContent(doc, pageUrl) {
+    const data = extractProductDataFromDoc(doc, pageUrl);
     const page = document.createElement('div');
     page.classList.add('a4-page');
-    page.dataset.productName = productCode;
+    page.dataset.productName = data.productCode;
     const inner = el('div', null);
     inner.className = 'fa-inner';
     page.appendChild(inner);
-    buildLayout(inner, productCode, subtitle, descHTML, product, specTable, tags, lifestyle);
-    document.getElementById('pagesContainer').appendChild(page);
+
+    const wrapper = el('div', null);
+    wrapper.className = 'page-wrapper-outer';
+
+    const layoutResult2 = buildLayout(inner, data.productCode, data.subtitle, data.descHTML, data.productImgs, data.specTable, data.tags, data.lifestyleImgs);
+    const { state, renderGrid, specVis, renderedSpecTable } = layoutResult2;
+
+    if (data.specTable && renderedSpecTable) {
+        buildCategoryDropdown(wrapper, specVis, renderedSpecTable, null, false, layoutResult2.specZoneEl);
+    }
+
+    wrapper.appendChild(page);
+    document.getElementById('pagesContainer').appendChild(wrapper);
 }
+
+function processMergedPage(productsData, productCodes) {
+    const page = document.createElement('div');
+    page.classList.add('a4-page');
+    page.dataset.productName = productCodes.join(' + ');
+    const inner = el('div', null);
+    inner.className = 'fa-inner';
+    page.appendChild(inner);
+
+    const specDataArray = productsData.map(d => d.specTable ? extractSpecDataFromTable(d.specTable) : { categories: [], rows: [] });
+    const mergedSpec = mergeSpecData(specDataArray);
+
+    const products = productsData.map(d => ({
+        productCode: d.productCode,
+        subtitle: d.subtitle,
+        descHTML: d.descHTML,
+        productImgs: d.productImgs,
+        lifestyleImgs: d.lifestyleImgs,
+        tags: d.tags
+    }));
+
+    const productNames = products.map(p => p.productCode);
+    let dummySpecTable = null;
+    if (mergedSpec.rows.length > 0) {
+        dummySpecTable = { _isMerged: true };
+    }
+
+    const wrapper = el('div', null);
+    wrapper.className = 'page-wrapper-outer';
+
+    const mergedResult = buildMergedLayout(inner, products, dummySpecTable, mergedSpec);
+    const { specVisMap, builtSpecTable } = mergedResult;
+
+    if (mergedSpec.rows.length > 0) {
+        buildCategoryDropdown(wrapper, specVisMap, builtSpecTable, mergedSpec, true, mergedResult.specZoneEl);
+    }
+
+    wrapper.appendChild(page);
+    document.getElementById('pagesContainer').appendChild(wrapper);
+}
+
 function cleanDescription(desc) {
     desc.querySelectorAll('table,button').forEach(e => e.remove());
     desc.querySelectorAll('img,video,iframe').forEach(e => { if (e.parentElement) e.parentElement.remove(); else e.remove(); });
@@ -925,18 +1713,18 @@ function createMasterContentsPages(sections, pageOrder) {
     const flatItems = [];
     sections.forEach(sec => {
         flatItems.push({ isSectionHeader: true, title: sec.title, startPageNum: sec.startPageNum });
-        sec.urls.forEach((u, ui) => {
-            let pgNum = null; let count = 0;
+        sec.entries.forEach((entry) => {
+            let pgNum = null;
             for (const item of pageOrder) {
-                if (item.type === 'url' && item.section === sec.title) {
-                    if (count === ui) { pgNum = item._pageNum; break; }
-                    count++;
+                if (item.type === 'url' && item.section === sec.title && item._entryKey === entry.key) {
+                    pgNum = item._pageNum;
+                    break;
                 }
             }
-            flatItems.push({ 
-                isSectionHeader: false, 
-                name: u.split('/').pop().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/-/g, ' ').toUpperCase(), 
-                pageNum: pgNum 
+            flatItems.push({
+                isSectionHeader: false,
+                name: entry.displayName,
+                pageNum: pgNum
             });
         });
     });
@@ -976,7 +1764,7 @@ function createMasterContentsPages(sections, pageOrder) {
             name.style.cssText = `font-size:2.3mm;font-weight:400;letter-spacing:0.02em;color:#222;flex:0 1 auto;min-width:0;word-break:normal;overflow-wrap:break-word;white-space:normal;line-height:${lineH};padding-right:1mm;`;
             const dots = el('span', null);
             dots.style.cssText = 'flex:1 1 auto;min-width:1px;margin:0 1mm;border-bottom:0.15mm dotted #ccc;height:1px;position:relative;top:-0.5mm;';
-            const pgEl = el('span', null, item.pageNum !== null ? String(item.pageNum) : '');
+            const pgEl = el('span', null, item.pageNum !== null && item.pageNum !== undefined ? String(item.pageNum) : '');
             pgEl.style.cssText = 'font-size:2.2mm;color:#777;flex-shrink:0;text-align:right;';
             row.appendChild(name);
             row.appendChild(dots);
@@ -989,6 +1777,18 @@ function createMasterContentsPages(sections, pageOrder) {
     pages.push(page);
     return pages;
 }
+
+function parseLine(line) {
+    const mergeMatch = line.match(/^MERGE\s+(\w+)\s*-\s*(.+)$/i);
+    if (mergeMatch) return { type: 'merge', mergeId: mergeMatch[1].toUpperCase(), url: mergeMatch[2].trim() };
+    if (line.startsWith('COVER')) return { type: 'cover', text: line.split(' - ')[1] || line };
+    if (line.startsWith('CONTENTS')) return { type: 'contents', title: line.replace(/^CONTENTS\s*-?\s*/i, '').trim() || line };
+    if (line.startsWith('BACK COVER')) return { type: 'backCover' };
+    if (line === 'BLANK') return { type: 'blank' };
+    if (line.startsWith('http')) return { type: 'url', url: line };
+    return null;
+}
+
 async function fetchCdnUrls() {
     const lines = document.getElementById('pageUrls').value.split('\n');
     const pagesContainer = document.getElementById('pagesContainer');
@@ -1005,41 +1805,173 @@ async function fetchCdnUrls() {
         const sections = [];
         let currentSection = '';
         let hasCover = false;
+        const pendingMerges = {};
+        const processedLines = [];
+
         for (let i = 0; i < lines.length; i++) {
-            const url = lines[i].trim();
-            if (!url) continue;
-            updateProgress((i / lines.length) * 100);
-            if (url.startsWith('COVER')) {
+            const raw = lines[i].trim();
+            if (!raw) continue;
+            const parsed = parseLine(raw);
+            if (parsed) processedLines.push({ ...parsed, rawLine: raw });
+        }
+
+        const urlsToFetch = [];
+        processedLines.forEach(p => {
+            if (p.type === 'url' || p.type === 'merge') urlsToFetch.push(p.url);
+        });
+
+        const docCache = new Map();
+        // Track which merge groups are complete so we can stream them
+        const mergeUrlSets = {}; // mergeId -> Set of urls
+        processedLines.forEach(p => {
+            if (p.type === 'merge') {
+                if (!mergeUrlSets[p.mergeId]) mergeUrlSets[p.mergeId] = new Set();
+                mergeUrlSets[p.mergeId].add(p.url);
+            }
+        });
+        const renderedItems = new Set(); // track already-streamed items
+
+        function tryStreamPage(url) {
+            // Find the processedLine for this url and render if ready
+            for (const p of processedLines) {
+                if (p.type === 'url' && p.url === url && !renderedItems.has(url)) {
+                    const doc = docCache.get(url);
+                    if (!doc) { renderedItems.add(url); return; }
+                    const pdata = extractProductDataFromDoc(doc, url);
+                    const wrapper = el('div', null);
+                    wrapper.className = 'page-wrapper-outer';
+                    const page = document.createElement('div');
+                    page.classList.add('a4-page');
+                    page.dataset.productName = pdata.productCode;
+                    page.dataset.streamUrl = url;
+                    const inner2 = el('div', null);
+                    inner2.className = 'fa-inner';
+                    page.appendChild(inner2);
+                    let specVis2 = {};
+                    let renderedSpecTable2 = null;
+                    if (pdata.specTable) {
+                        const extracted2 = extractSpecDataFromTable(pdata.specTable);
+                        extracted2.rows.forEach(r => { specVis2[r.label] = !isSpecHidden(r.label); });
+                        renderedSpecTable2 = buildSingleSpecTable(pdata.specTable, specVis2);
+                    }
+                    const lr2 = buildLayout(inner2, pdata.productCode, pdata.subtitle, pdata.descHTML, pdata.productImgs, pdata.specTable, pdata.tags, pdata.lifestyleImgs);
+                    if (pdata.specTable && renderedSpecTable2) {
+                        buildCategoryDropdown(wrapper, specVis2, renderedSpecTable2, null, false, lr2.specZoneEl);
+                    }
+                    wrapper.appendChild(page);
+                    pagesContainer.appendChild(wrapper);
+                    renderedItems.add(url);
+                    updatePageNavigator();
+                }
+            }
+        }
+
+        function tryStreamMerge(mergeId) {
+            if (renderedItems.has('merge:' + mergeId)) return;
+            const needed = mergeUrlSets[mergeId];
+            if (!needed) return;
+            for (const u of needed) { if (!docCache.has(u)) return; } // not all fetched yet
+            // All ready — build merged page
+            const mgLines = processedLines.filter(p => p.type === 'merge' && p.mergeId === mergeId);
+            const pdatas2 = mgLines.map(p => {
+                const doc2 = docCache.get(p.url);
+                return doc2 ? extractProductDataFromDoc(doc2, p.url) : null;
+            }).filter(Boolean);
+            if (!pdatas2.length) { renderedItems.add('merge:' + mergeId); return; }
+            const specDataArray2 = pdatas2.map(d => d.specTable ? extractSpecDataFromTable(d.specTable) : { categories: [], rows: [] });
+            const mergedSpec2 = mergeSpecData(specDataArray2);
+            const wrapper2 = el('div', null);
+            wrapper2.className = 'page-wrapper-outer';
+            const page2 = document.createElement('div');
+            page2.classList.add('a4-page');
+            page2.dataset.productName = pdatas2.map(p => p.productCode).join(' + ');
+            page2.dataset.streamMergeId = mergeId;
+            const inner3 = el('div', null);
+            inner3.className = 'fa-inner';
+            page2.appendChild(inner3);
+            const products2 = pdatas2.map(d => ({
+                productCode: d.productCode, subtitle: d.subtitle, descHTML: d.descHTML,
+                productImgs: d.productImgs, lifestyleImgs: d.lifestyleImgs, tags: d.tags
+            }));
+            const dummySpec2 = mergedSpec2.rows.length > 0 ? { _isMerged: true } : null;
+            const { specVisMap: svm2, builtSpecTable: bst2, specZoneEl: sze2 } = buildMergedLayout(inner3, products2, dummySpec2, mergedSpec2);
+            if (mergedSpec2.rows.length > 0 && bst2) {
+                buildCategoryDropdown(wrapper2, svm2, bst2, mergedSpec2, true, sze2);
+            }
+            wrapper2.appendChild(page2);
+            pagesContainer.appendChild(wrapper2);
+            renderedItems.add('merge:' + mergeId);
+            updatePageNavigator();
+        }
+
+        for (let i = 0; i < urlsToFetch.length; i++) {
+            const url = urlsToFetch[i];
+            if (docCache.has(url)) continue;
+            updateStatus(`Fetching ${i + 1}/${urlsToFetch.length}: ${url.split('/').pop()}`);
+            updateProgress((i / urlsToFetch.length) * 100);
+            if (i > 0) await delay(600);
+            try {
+                const data = await fetchWithRetry(url, 10);
+                const doc = new DOMParser().parseFromString(data.contents, 'text/html');
+                docCache.set(url, doc);
+            } catch (err) {
+                showToast(`Skipped: ${url.split('/').pop()} - ${err.message}`, 'error');
+                docCache.set(url, null);
+            }
+            // Stream: render solo page immediately or check if a merge group is now complete
+            tryStreamPage(url);
+            for (const mid of Object.keys(mergeUrlSets)) tryStreamMerge(mid);
+        }
+
+        const mergeGroups = {};
+        const mergeOrder = [];
+
+        for (let i = 0; i < processedLines.length; i++) {
+            const parsed = processedLines[i];
+            if (parsed.type === 'cover') {
                 hasCover = true;
-                pageOrder.push({ type: 'cover', page: createCoverPage(url.split(' - ')[1] || url), section: '' });
-            } else if (url.startsWith('CONTENTS')) {
-                currentSection = url.split(' - ')[1] || url.replace(/^CONTENTS\s*-?\s*/i, '').trim() || url;
-                sections.push({ title: currentSection, urls: [], startPageNum: null });
+                pageOrder.push({ type: 'cover', page: createCoverPage(parsed.text), section: '' });
+            } else if (parsed.type === 'contents') {
+                currentSection = parsed.title;
+                sections.push({ title: currentSection, entries: [] });
                 const sep = createContentsPage(currentSection, [], []);
                 sep.dataset.sectionSeparator = 'true';
                 sep.dataset.sectionTitle = currentSection;
                 sep.style.display = 'none';
                 pageOrder.push({ type: 'sectionSeparator', page: sep, section: currentSection });
-            } else if (url.startsWith('BACK COVER')) {
+            } else if (parsed.type === 'backCover') {
                 pageOrder.push({ type: 'backCover', page: createBackCoverPage(), section: '' });
-            } else if (url === 'BLANK') {
+            } else if (parsed.type === 'blank') {
                 const bp = document.createElement('div');
                 bp.classList.add('a4-page');
                 addPageControls(bp);
                 pageOrder.push({ type: 'blank', page: bp, section: '' });
-            } else {
-                if (sections.length) sections[sections.length - 1].urls.push(url);
-                try {
-                    updateStatus(`Processing ${i + 1}/${lines.length}: ${url.split('/').pop()}`);
-                    if (i > 0) await delay(600);
-                    await fetchAndBuildPage(url);
-                    pageOrder.push({ type: 'url', page: pagesContainer.lastChild, section: currentSection });
-                } catch (err) { 
-                    showToast(`Skipped: ${url.split('/').pop()} - ${err.message}`, 'error');
+            } else if (parsed.type === 'merge') {
+                const mid = parsed.mergeId;
+                if (!mergeGroups[mid]) { mergeGroups[mid] = []; mergeOrder.push(mid); }
+                const doc = docCache.get(parsed.url);
+                if (doc) {
+                    const pdata = extractProductDataFromDoc(doc, parsed.url);
+                    mergeGroups[mid].push({ pdata, url: parsed.url, section: currentSection, lineIdx: i });
+                }
+                const existingOrder = pageOrder.find(p => p.type === 'mergeGroup' && p.mergeId === mid);
+                if (!existingOrder) {
+                    pageOrder.push({ type: 'mergeGroup', mergeId: mid, section: currentSection, _entryKey: mid });
+                }
+            } else if (parsed.type === 'url') {
+                const doc = docCache.get(parsed.url);
+                if (doc) {
+                    const pdata = extractProductDataFromDoc(doc, parsed.url);
+                    const entryKey = parsed.url;
+                    const displayName = pdata.productCode;
+                    if (sections.length) sections[sections.length - 1].entries.push({ key: entryKey, displayName });
+                    pageOrder.push({ type: 'url', section: currentSection, _entryKey: entryKey, _productName: pdata.productCode, _pdata: pdata });
                 }
             }
         }
+
         pagesContainer.innerHTML = '';
+
         let insidePageNum = 1;
         let filteredPageOrder = [];
         let backCoverItem = null;
@@ -1050,38 +1982,127 @@ async function fetchCdnUrls() {
                 filteredPageOrder.push(item);
             }
         }
-        filteredPageOrder.forEach(item => { 
-            if (item.type === 'url') {
+        filteredPageOrder.forEach(item => {
+            if (item.type === 'url' || item.type === 'mergeGroup') {
                 item._pageNum = insidePageNum++;
             }
         });
+
         sections.forEach(sec => {
             let first = true;
             filteredPageOrder.forEach(item => {
-                if (item.type === 'url' && item.section === sec.title && first) {
+                if ((item.type === 'url' || item.type === 'mergeGroup') && item.section === sec.title && first) {
                     sec.startPageNum = item._pageNum;
                     first = false;
                 }
             });
         });
+
+        filteredPageOrder.forEach(item => {
+            if (item.type === 'url') {
+                for (const sec of sections) {
+                    const entry = sec.entries.find(e => e.key === item._entryKey);
+                    if (entry) { entry.pageNum = item._pageNum; break; }
+                }
+            } else if (item.type === 'mergeGroup') {
+                const mg = mergeGroups[item.mergeId];
+                if (mg && mg.length > 0) {
+                    const sec = mg[0].section;
+                    for (const s of sections) {
+                        if (s.title === sec) {
+                            const displayName = mg.map(g => g.pdata.productCode).join(' + ');
+                            const existingEntry = s.entries.find(e => e.key === item.mergeId);
+                            if (existingEntry) {
+                                existingEntry.pageNum = item._pageNum;
+                                existingEntry.displayName = displayName;
+                            } else {
+                                s.entries.push({ key: item.mergeId, displayName, pageNum: item._pageNum });
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+
         let masterContentsPages = [];
         if (hasCover && sections.length > 0) {
             masterContentsPages = createMasterContentsPages(sections, filteredPageOrder);
             masterContentsPages.forEach(p => p.dataset.pageType = 'contents');
         }
+
         let coverAdded = false;
         filteredPageOrder.forEach(item => {
-            if (!item.page) return;
-            pagesContainer.appendChild(item.page);
-            if (item.type === 'cover' && !coverAdded) {
-                coverAdded = true;
-                const insideBlank = document.createElement('div');
-                insideBlank.classList.add('a4-page');
-                addPageControls(insideBlank);
-                pagesContainer.appendChild(insideBlank);
-                masterContentsPages.forEach(mcp => pagesContainer.appendChild(mcp));
+            if (!item.page && item.type !== 'url' && item.type !== 'mergeGroup') return;
+            if (item.type === 'url') {
+                const wrapper = el('div', null);
+                wrapper.className = 'page-wrapper-outer';
+                const page = document.createElement('div');
+                page.classList.add('a4-page');
+                page.dataset.productName = item._productName || '';
+                const inner = el('div', null);
+                inner.className = 'fa-inner';
+                page.appendChild(inner);
+                const pdata = item._pdata;
+                let specVis = {};
+                let renderedSpecTable = null;
+                if (pdata.specTable) {
+                    const extracted = extractSpecDataFromTable(pdata.specTable);
+                    extracted.rows.forEach(r => { specVis[r.label] = !isSpecHidden(r.label); });
+                    renderedSpecTable = buildSingleSpecTable(pdata.specTable, specVis);
+                }
+                const layoutResult = buildLayout(inner, pdata.productCode, pdata.subtitle, pdata.descHTML, pdata.productImgs, pdata.specTable, pdata.tags, pdata.lifestyleImgs);
+                if (pdata.specTable && renderedSpecTable) {
+                    buildCategoryDropdown(wrapper, specVis, renderedSpecTable, null, false, layoutResult.specZoneEl);
+                }
+                wrapper.appendChild(page);
+                item._page = page;
+                pagesContainer.appendChild(wrapper);
+            } else if (item.type === 'mergeGroup') {
+                const mg = mergeGroups[item.mergeId];
+                if (mg && mg.length > 0) {
+                    const pdatas = mg.map(g => g.pdata);
+                    const codes = pdatas.map(p => p.productCode);
+                    const specDataArray = pdatas.map(d => d.specTable ? extractSpecDataFromTable(d.specTable) : { categories: [], rows: [] });
+                    const mergedSpec = mergeSpecData(specDataArray);
+                    const wrapper = el('div', null);
+                    wrapper.className = 'page-wrapper-outer';
+                    const page = document.createElement('div');
+                    page.classList.add('a4-page');
+                    page.dataset.productName = codes.join(' + ');
+                    const inner = el('div', null);
+                    inner.className = 'fa-inner';
+                    page.appendChild(inner);
+                    const products = pdatas.map(d => ({
+                        productCode: d.productCode,
+                        subtitle: d.subtitle,
+                        descHTML: d.descHTML,
+                        productImgs: d.productImgs,
+                        lifestyleImgs: d.lifestyleImgs,
+                        tags: d.tags
+                    }));
+                    let dummySpecTable = mergedSpec.rows.length > 0 ? { _isMerged: true } : null;
+                    const { specVisMap, builtSpecTable, specZoneEl } = buildMergedLayout(inner, products, dummySpecTable, mergedSpec);
+                    if (mergedSpec.rows.length > 0 && builtSpecTable) {
+                        buildCategoryDropdown(wrapper, specVisMap, builtSpecTable, mergedSpec, true, specZoneEl);
+                    }
+                    wrapper.appendChild(page);
+                    item._page = page;
+                    pagesContainer.appendChild(wrapper);
+                }
+            } else if (item.page) {
+                pagesContainer.appendChild(item.page);
+                if (item.type === 'cover' && !coverAdded) {
+                    coverAdded = true;
+                    const insideBlank = document.createElement('div');
+                    insideBlank.classList.add('a4-page');
+                    addPageControls(insideBlank);
+                    pagesContainer.appendChild(insideBlank);
+                    masterContentsPages.forEach(mcp => pagesContainer.appendChild(mcp));
+                }
             }
         });
+
         if (hasCover) {
             let currentCount = pagesContainer.children.length;
             let totalWithBackCover = currentCount + (backCoverItem ? 1 : 1);
@@ -1099,11 +2120,12 @@ async function fetchCdnUrls() {
         } else if (hasCover) {
             pagesContainer.appendChild(createBackCoverPage());
         }
+
         if (hasCover) {
             const allPages = Array.from(pagesContainer.querySelectorAll('.a4-page:not([data-section-separator])'));
             let visibleIdx = 0;
             allPages.forEach(page => {
-                const matchingItem = filteredPageOrder.find(it => it.page === page);
+                const matchingItem = filteredPageOrder.find(it => it._page === page || it.page === page);
                 if (!matchingItem || matchingItem.type === 'cover' || matchingItem.type === 'blank') {
                     visibleIdx++;
                     return;
@@ -1130,10 +2152,10 @@ async function fetchCdnUrls() {
         updatePageNavigator();
         showToast('Brochure created', 'success');
     } catch (e) { console.error(e); showToast('Error creating brochure', 'error'); }
-    finally { 
-        statusContainer.style.display = 'none'; 
-        createButton.disabled = false; 
-        updateStatus('Done'); 
+    finally {
+        statusContainer.style.display = 'none';
+        createButton.disabled = false;
+        updateStatus('Done');
         if (spinner) spinner.style.display = 'none';
     }
 }
