@@ -258,6 +258,14 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
     body.sell-sheet-mode .a4-page { display: none !important; }
     body.sell-sheet-mode .a4-page.is-printing { display: block !important; }
     body.sell-sheet-mode .pg-footer { display: none !important; }
+    .pg-img > div[style*="position:absolute"],
+    .fa-lifestyle > div[style*="position:absolute"],
+    .pg-img button,
+    .fa-lifestyle button,
+    .pg-img span,
+    .fa-lifestyle span {
+        display: none !important;
+    }
 }
 </style>
 </head>
@@ -789,18 +797,10 @@ function buildMergedSpecTable(mergedSpec, productNames, specVisibility) {
             }
             // If every column's normalised value is identical, merge into one spanning cell
             const allSame = cellNorm.length > 1 && cellNorm.every(v => v === cellNorm[0]);
-            if (allSame) {
+            for (let i = 0; i < productNames.length; i++) {
                 const td = document.createElement('td');
-                td.colSpan = productNames.length;
-                td.innerHTML = cellTexts[0];
-                td.style.textAlign = 'center';
+                td.innerHTML = cellTexts[i];
                 tr.appendChild(td);
-            } else {
-                for (let i = 0; i < productNames.length; i++) {
-                    const td = document.createElement('td');
-                    td.innerHTML = cellTexts[i];
-                    tr.appendChild(td);
-                }
             }
             tbody.appendChild(tr);
         });
@@ -1374,13 +1374,18 @@ function buildMergedLayout(inner, products, mergedSpecTable, mergedSpec) {
                 panel.style.gridTemplateColumns = '1fr';
             });
 
-            // Equalise image heights
             requestAnimationFrame(() => {
                 const vg = productPanels.map(pp => pp.imgGrid).filter(g => g.style.display !== 'none');
                 if (vg.length > 1) {
                     vg.forEach(g => { g.style.height = ''; g.style.maxHeight = ''; });
-                    const minH = Math.min(...vg.map(g => g.getBoundingClientRect().height));
-                    if (minH > 0) vg.forEach(g => { g.style.height = minH + 'px'; g.style.maxHeight = minH + 'px'; });
+                    const heights = vg.map(g => g.getBoundingClientRect().height);
+                    const maxH = Math.max(...heights);
+                    if (maxH > 0) {
+                        vg.forEach(g => {
+                            g.style.minHeight = maxH + 'px';
+                            g.style.maxHeight = maxH + 'px';
+                        });
+                    }
                 }
             });
         }
