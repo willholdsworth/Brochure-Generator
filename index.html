@@ -1159,14 +1159,60 @@ function buildMergedLayout(inner, products, mergedSpecTable, mergedSpec) {
 
     let builtSpecTable = null;
 
-    // Pool all lifestyle images from every product, deduped
     const allLifestyleImgs = [];
     products.forEach(p => { if (p.lifestyleImgs) p.lifestyleImgs.forEach(src => { if (!allLifestyleImgs.includes(src)) allLifestyleImgs.push(src); }); });
 
-    // State
+    function extractParagraphs(html) {
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        const paras = [];
+        const walker = document.createTreeWalker(temp, NodeFilter.SHOW_ELEMENT);
+        let node;
+        while (node = walker.nextNode()) {
+            if (node.tagName === 'P') {
+                const text = node.textContent.trim();
+                if (text.length > 20) paras.push(text);
+            }
+        }
+        return paras;
+    }
+
+    function findSharedContent() {
+        if (n < 2) return { shared: [], unique: [products[0]?.descHTML || ''] };
+        
+        const allParas = products.map(p => extractParagraphs(p.descHTML || ''));
+        const shared = [];
+        const paraCounts = new Map();
+        
+        allParas.forEach(paras => {
+            paras.forEach(p => {
+                const norm = p.replace(/\s+/g, ' ').trim().toLowerCase();
+                paraCounts.set(norm, (paraCounts.get(norm) || 0) + 1);
+            });
+        });
+        
+        allParas[0].forEach(para => {
+            const norm = para.replace(/\s+/g, ' ').trim().toLowerCase();
+            if (paraCounts.get(norm) === n) {
+                shared.push(para);
+            }
+        });
+        
+        const unique = products.map((p, idx) => {
+            const paras = allParas[idx];
+            const sharedNorms = new Set(shared.map(s => s.replace(/\s+/g, ' ').trim().toLowerCase()));
+            const uniqueParas = paras.filter(p => !sharedNorms.has(p.replace(/\s+/g, ' ').trim().toLowerCase()));
+            return uniqueParas.length > 0 ? '<p>' + uniqueParas.join('</p><p>') + '</p>' : '';
+        });
+        
+        return { shared: shared.length > 0 ? '<p>' + shared.join('</p><p>') + '</p>' : '', unique };
+    }
+
+    const descContent = findSharedContent();
+    const hasSharedDesc = descContent.shared.length > 0 && n >= 2 && n <= 4;
+
     const imgStates = products.map(p => ({ imgVisible: p.productImgs ? Math.min(p.productImgs.length, 1) : 0 }));
     let lsVisible = allLifestyleImgs.length > 0 ? Math.min(allLifestyleImgs.length, 1) : 0;
-    // Which lifestyle images are selected (indices into allLifestyleImgs)
     let lsSelected = [0, 1, 2].slice(0, Math.min(3, allLifestyleImgs.length));
     let descVisible = !useGridMode;
     let hasSpec = !!mergedSpecTable;
@@ -1232,28 +1278,35 @@ function buildMergedLayout(inner, products, mergedSpecTable, mergedSpec) {
         return card;
     }
 
-    // ── Column mode panels (built once) ─────────────────────────────────────
     let productPanels = [];
     let colContainer = null;
+    let sharedDescEl = null;
     if (!useGridMode) {
         colContainer = el('div', `display:grid;gap:3mm;height:100%;width:100%;min-height:0;grid-template-columns:${products.map(() => '1fr').join(' ')};`);
         productPanels = products.map((prod, idx) => {
             const fontSize = n === 2 ? '2.3mm' : (n === 3 ? '2.1mm' : '1.9mm');
-            const panel = el('div', `display:grid;gap:2mm;min-height:0;overflow:hidden;${idx > 0 ? 'border-left:0.3mm solid #e8e8e8;padding-left:3mm;' : ''}`);
+            const panel = el('div', `display:grid;gap:2mm;min-height:0;overflow:hidden;`);
             const nameBox = el('div', null);
             nameBox.className = 'fa-namebox';
-            nameBox.style.cssText = 'flex-shrink:0;grid-area:nm;';
+            nameBox.style.cssText = 'flex-shrink:0;grid-area:nm;border-bottom:none;padding-bottom:1mm;margin-bottom:0;';
             nameBox.innerHTML = `<div class="fa-pname-merged">${prod.productCode}</div>${prod.subtitle ? `<div class="fa-psub">${prod.subtitle}</div>` : ''}`;
             panel.appendChild(nameBox);
-            const descEl = el('div', null, prod.descHTML);
+            const uniqueDesc = hasSharedDesc ? descContent.unique[idx] : prod.descHTML;
+            const descEl = el('div', null, uniqueDesc);
             descEl.className = 'fa-desc';
             descEl.style.cssText += `font-size:${fontSize};grid-area:tx;`;
             panel.appendChild(descEl);
             const imgGrid = el('div', 'grid-area:im;display:grid;gap:1.5mm;min-height:0;overflow:hidden;');
             panel.appendChild(imgGrid);
             colContainer.appendChild(panel);
-            return { panel, nameBox, descEl, imgGrid, prod };
+            return { panel, nameBox, descEl, imgGrid, prod, originalIndex: idx };
         });
+        
+        if (hasSharedDesc) {
+            sharedDescEl = el('div', null, descContent.shared);
+            sharedDescEl.className = 'fa-desc';
+            sharedDescEl.style.cssText = 'grid-area:sd;font-size:2.2mm;color:#444;line-height:1.6;';
+        }
     }
 
     // ── Render ───────────────────────────────────────────────────────────────
@@ -1311,79 +1364,395 @@ function buildMergedLayout(inner, products, mergedSpecTable, mergedSpec) {
 
         // ── COLUMN MODE ──────────────────────────────────────────────────────
         } else {
-            // Layout: [ls-col] [product-cols] — lifestyle as left column, or top banner, or none
-            if (anyLS) {
-                mainArea.style.gridTemplateColumns = 'minmax(0,28%) 1fr';
-                mainArea.style.gridTemplateRows = '1fr';
-                mainArea.style.gridTemplateAreas = '"ls pd"';
+            const hasMultipleLS = lsCount > 1;
+            const totalProductImgs = products.reduce((sum, p) => sum + (p.productImgs ? p.productImgs.length : 0), 0);
+            
+            let layoutMode = 'vertical';
+            const hasDesc = descVisible && products.some(p => p.descHTML && p.descHTML.trim().length > 0);
+            const anyProductImgs = products.some(p => p.productImgs && p.productImgs.length > 0);
+
+            if (n >= 3 && anyLS && hasMultipleLS) {
+                layoutMode = 'vertical-ls';
+            } else if (n >= 3 && anyLS) {
+                layoutMode = 'horizontal';
+            } else if (n === 2 && hasMultipleLS) {
+                layoutMode = 'horizontal';
+            } else if (n <= 2 && anyLS) {
+                layoutMode = 'vertical';
+            } else if (!hasDesc && anyProductImgs) {
+                layoutMode = 'horizontal';
+            } else if (n >= 2 && !anyLS && !hasDesc) {
+                layoutMode = 'horizontal';
+            } else {
+                layoutMode = 'products-only';
+            }
+
+            if (layoutMode === 'vertical-ls') {
+                const lsWidth = '25%';
+                const areas = [];
+                const rows = [];
+                if (hasSharedDesc && descVisible) { areas.push('"ls sd"'); rows.push('auto'); }
+                areas.push('"ls pd"'); rows.push('1fr');
+
+                mainArea.style.gridTemplateColumns = `minmax(0,${lsWidth}) 1fr`;
+                mainArea.style.gridTemplateRows = rows.join(' ');
+                mainArea.style.gridTemplateAreas = areas.join(' ');
                 mainArea.style.gap = '3mm';
 
                 const lsColWrap = el('div', 'grid-area:ls;display:grid;gap:1.5mm;min-height:0;overflow:hidden;');
                 lsColWrap.style.gridTemplateRows = `repeat(${lsCount}, 1fr)`;
-                for (let i = 0; i < lsCount; i++) lsColWrap.appendChild(makeLsCell(lsSelected[i] || i));
+                if (hasSharedDesc && descVisible) lsColWrap.style.gridRow = '1 / -1';
+                for (let i = 0; i < lsCount; i++) {
+                    const cell = makeLsCell(lsSelected[i] || i);
+                    cell.style.aspectRatio = '4/3';
+                    cell.style.width = '100%';
+                    lsColWrap.appendChild(cell);
+                }
                 mainArea.appendChild(lsColWrap);
 
-                const pdWrap = el('div', 'grid-area:pd;min-height:0;overflow:hidden;display:grid;');
-                pdWrap.style.gridTemplateColumns = products.map(() => '1fr').join(' ');
-                pdWrap.style.gap = '3mm';
+                if (hasSharedDesc && descVisible && sharedDescEl) {
+                    const sdClone = sharedDescEl.cloneNode(true);
+                    sdClone.style.gridArea = 'sd';
+                    mainArea.appendChild(sdClone);
+                }
+
+                const pdWrap = el('div', 'grid-area:pd;min-height:0;overflow:hidden;display:grid;gap:3mm;');
+                pdWrap.style.gridTemplateRows = products.map(() => '1fr').join(' ');
+                pdWrap.style.gridTemplateColumns = '1fr';
                 productPanels.forEach(({ panel }) => pdWrap.appendChild(panel));
                 mainArea.appendChild(pdWrap);
-            } else {
+
+            } else if (layoutMode === 'horizontal') {
+                const rowsTemplate = [];
+                const areasTemplate = [];
+                
+                if (anyLS) {
+                    rowsTemplate.push('minmax(0,30%)');
+                    areasTemplate.push('"ls"');
+                }
+                if (hasSharedDesc && descVisible) {
+                    rowsTemplate.push('auto');
+                    areasTemplate.push('"sd"');
+                }
+                rowsTemplate.push('1fr');
+                areasTemplate.push('"pd"');
+                
                 mainArea.style.gridTemplateColumns = '1fr';
-                mainArea.style.gridTemplateRows = '1fr';
-                mainArea.style.gridTemplateAreas = '"pd"';
-                mainArea.style.gap = '0';
-                const pdWrap = el('div', 'grid-area:pd;min-height:0;overflow:hidden;display:grid;');
-                pdWrap.style.gridTemplateColumns = products.map(() => '1fr').join(' ');
-                pdWrap.style.gap = '3mm';
+                mainArea.style.gridTemplateRows = rowsTemplate.join(' ');
+                mainArea.style.gridTemplateAreas = areasTemplate.join(' ');
+                mainArea.style.gap = '3mm';
+
+                if (anyLS) {
+                    const lsBanner = el('div', 'grid-area:ls;display:grid;gap:2mm;min-height:0;overflow:hidden;');
+                    lsBanner.style.gridTemplateColumns = `repeat(${Math.min(lsCount, n)}, 1fr)`;
+                    for (let i = 0; i < Math.min(lsCount, n); i++) {
+                        const cell = makeLsCell(lsSelected[i] || i);
+                        cell.style.aspectRatio = '16/9';
+                        lsBanner.appendChild(cell);
+                    }
+                    mainArea.appendChild(lsBanner);
+                }
+                
+                if (hasSharedDesc && descVisible && sharedDescEl) {
+                    const sdClone = sharedDescEl.cloneNode(true);
+                    mainArea.appendChild(sdClone);
+                }
+
+                const pdWrap = el('div', 'grid-area:pd;min-height:0;overflow:hidden;display:grid;gap:3mm;');
+                const prodCols = n === 4 ? 2 : n === 3 ? 3 : n;
+                pdWrap.style.gridTemplateColumns = `repeat(${prodCols}, 1fr)`;
+                pdWrap.style.gridAutoRows = '1fr';
+                
                 productPanels.forEach(({ panel }) => pdWrap.appendChild(panel));
                 mainArea.appendChild(pdWrap);
+
+            } else if (layoutMode === 'vertical') {
+                const lsWidth = lsCount > 1 ? '22%' : (n === 1 ? '32%' : '28%');
+                const hasSdRow = hasSharedDesc && descVisible;
+                const anyProdImgs = products.some(p => p.productImgs && p.productImgs.length > 0);
+                const hasImgRow = hasSdRow && anyProdImgs;
+
+                let areas, rows;
+                if (hasImgRow && hasSdRow) {
+                    areas = anyLS ? ['"ls im"', '"ls sd"', '"ls nm"'] : ['"im"', '"sd"', '"nm"'];
+                    rows = ['minmax(0,1fr)', 'auto', 'auto'];
+                } else if (hasSdRow) {
+                    areas = anyLS ? ['"ls sd"', '"ls nm"'] : ['"sd"', '"nm"'];
+                    rows = ['auto', 'auto'];
+                } else {
+                    areas = anyLS ? ['"ls pd"'] : ['"pd"'];
+                    rows = ['1fr'];
+                }
+
+                mainArea.style.gridTemplateColumns = anyLS ? `minmax(0,${lsWidth}) 1fr` : '1fr';
+                mainArea.style.gridTemplateRows = rows.join(' ');
+                mainArea.style.gridTemplateAreas = areas.join(' ');
+                mainArea.style.gap = '3mm';
+
+                if (anyLS) {
+                    const lsColWrap = el('div', 'grid-area:ls;display:grid;gap:1.5mm;min-height:0;overflow:hidden;');
+                    lsColWrap.style.gridTemplateRows = `repeat(${lsCount}, 1fr)`;
+                    lsColWrap.style.gridRow = '1 / -1';
+                    for (let i = 0; i < lsCount; i++) lsColWrap.appendChild(makeLsCell(lsSelected[i] || i));
+                    mainArea.appendChild(lsColWrap);
+                }
+
+                if (hasImgRow) {
+                    const imRow = el('div', 'grid-area:im;display:grid;gap:3mm;min-height:0;overflow:hidden;');
+                    imRow.style.gridTemplateColumns = products.map(() => '1fr').join(' ');
+                    products.forEach(prod => {
+                        const cell = el('div', 'min-height:0;overflow:hidden;aspect-ratio:1/1;width:100%;');
+                        cell.dataset.imgUniform = 'true';
+                        if (prod.productImgs && prod.productImgs.length > 0) {
+                            const z = makeSlot(prod.productImgs, 0, 1, 'product');
+                            z.style.cssText += 'width:100%;height:100%;border-radius:1.5mm;';
+                            cell.appendChild(z);
+                        }
+                        imRow.appendChild(cell);
+                    });
+                    mainArea.appendChild(imRow);
+                }
+
+                if (hasSdRow && sharedDescEl) {
+                    const sdClone = sharedDescEl.cloneNode(true);
+                    sdClone.style.gridArea = 'sd';
+                    mainArea.appendChild(sdClone);
+                }
+
+                const nmRow = el('div', `grid-area:${hasImgRow || hasSdRow ? 'nm' : 'pd'};display:grid;gap:3mm;min-height:0;overflow:hidden;`);
+                nmRow.style.gridTemplateColumns = products.map(() => '1fr').join(' ');
+                if (!hasImgRow && !hasSdRow) {
+                    nmRow.style.height = '100%';
+                }
+                productPanels.forEach(({ panel }) => nmRow.appendChild(panel));
+                mainArea.appendChild(nmRow);
+
+            } else {
+                const hasSdRow = hasSharedDesc && descVisible;
+                const anyProdImgs = products.some(p => p.productImgs && p.productImgs.length > 0);
+                const hasImgRow = hasSdRow && anyProdImgs;
+
+                let areas, rows;
+                if (hasImgRow && hasSdRow) {
+                    areas = ['"im"', '"sd"', '"nm"'];
+                    rows = ['minmax(0,1fr)', 'auto', 'auto'];
+                } else if (hasSdRow) {
+                    areas = ['"sd"', '"nm"'];
+                    rows = ['auto', 'auto'];
+                } else {
+                    areas = ['"pd"'];
+                    rows = ['1fr'];
+                }
+
+                mainArea.style.gridTemplateColumns = '1fr';
+                mainArea.style.gridTemplateRows = rows.join(' ');
+                mainArea.style.gridTemplateAreas = areas.join(' ');
+                mainArea.style.gap = hasSdRow ? '3mm' : '0';
+
+                if (hasImgRow) {
+                    const imRow = el('div', 'grid-area:im;display:grid;gap:3mm;min-height:0;overflow:hidden;');
+                    imRow.style.gridTemplateColumns = products.map(() => '1fr').join(' ');
+                    products.forEach(prod => {
+                        const cell = el('div', 'min-height:0;overflow:hidden;aspect-ratio:1/1;width:100%;');
+                        cell.dataset.imgUniform = 'true';
+                        if (prod.productImgs && prod.productImgs.length > 0) {
+                            const z = makeSlot(prod.productImgs, 0, 1, 'product');
+                            z.style.cssText += 'width:100%;height:100%;border-radius:1.5mm;';
+                            cell.appendChild(z);
+                        }
+                        imRow.appendChild(cell);
+                    });
+                    mainArea.appendChild(imRow);
+                }
+
+                if (hasSdRow && sharedDescEl) {
+                    const sdClone = sharedDescEl.cloneNode(true);
+                    sdClone.style.gridArea = 'sd';
+                    mainArea.appendChild(sdClone);
+                }
+
+                const nmRow = el('div', `grid-area:${hasImgRow || hasSdRow ? 'nm' : 'pd'};display:grid;gap:3mm;min-height:0;overflow:hidden;`);
+                nmRow.style.gridTemplateColumns = products.map(() => '1fr').join(' ');
+                productPanels.forEach(({ panel }) => nmRow.appendChild(panel));
+                mainArea.appendChild(nmRow);
             }
 
-            // Render each column panel's internal layout
-            productPanels.forEach(({ panel, descEl, imgGrid, prod }, idx) => {
-                const s = imgStates[idx];
+            productPanels.forEach(({ panel, nameBox, descEl, imgGrid, prod, originalIndex }, idx) => {
+                const s = imgStates[originalIndex];
                 const anyImgs = s.imgVisible > 0 && prod.productImgs && prod.productImgs.length > 0;
                 const showDesc = descVisible;
+                const uniqueText = descContent.unique[originalIndex].trim().replace(/<[^>]*>/g, '').trim();
+                const sharedBannerVisible = hasSharedDesc && descVisible;
+                const showUniqueDesc = showDesc && (
+                    !hasSharedDesc
+                        ? true
+                        : uniqueText.length > 20 || !sharedBannerVisible
+                );
+                const descToShow = (hasSharedDesc && uniqueText.length <= 20 && !sharedBannerVisible)
+                    ? descContent.shared
+                    : (hasSharedDesc ? descContent.unique[originalIndex] : prod.descHTML);
+                const count = anyImgs ? Math.min(s.imgVisible, prod.productImgs.length) : 0;
 
-                imgGrid.innerHTML = '';
-                descEl.style.display = showDesc ? '' : 'none';
+                panel.style.borderLeft = 'none';
+                panel.style.borderTop = 'none';
+                panel.style.paddingLeft = '0';
+                panel.style.paddingTop = '0';
 
-                if (anyImgs) {
-                    const count = Math.min(s.imgVisible, prod.productImgs.length);
-                    imgGrid.style.display = 'grid';
-                    imgGrid.style.gridTemplateColumns = count >= 2 ? '1fr 1fr' : '1fr';
-                    imgGrid.style.gridTemplateRows = count >= 3 ? '1fr 1fr' : '1fr';
+                function buildImgGrid(container) {
+                    container.innerHTML = '';
+                    container.style.display = 'grid';
+                    container.style.gridTemplateColumns = count >= 2 ? '1fr 1fr' : '1fr';
+                    container.style.gridTemplateRows = count >= 3 ? '1fr 1fr' : '1fr';
+                    container.style.minHeight = '0';
+                    container.style.overflow = 'hidden';
                     for (let i = 0; i < count; i++) {
                         const z = makeSlot(prod.productImgs, i, count, 'product');
                         z.style.cssText += 'min-height:0;border-radius:1.5mm;border:none;width:100%;height:100%;';
-                        imgGrid.appendChild(z);
+                        container.appendChild(z);
                     }
-                } else {
-                    imgGrid.style.display = 'none';
                 }
 
-                const rows = [];
-                rows.push({ area: 'nm', size: 'auto' });
-                if (showDesc) rows.push({ area: 'tx', size: '1fr' });
-                if (anyImgs) rows.push({ area: 'im', size: !showDesc ? '1fr' : (s.imgVisible >= 2 ? 'minmax(0,42%)' : 'minmax(0,30%)') });
-                if (!showDesc && !anyImgs) rows.push({ area: 'tx', size: '1fr' });
+                if (layoutMode === 'horizontal') {
+                    const prodCols = n === 4 ? 2 : n === 3 ? 3 : n;
+                    const isFirstInRow = idx % prodCols === 0;
+                    if (!isFirstInRow) {
+                        panel.style.borderLeft = '0.3mm solid #e8e8e8';
+                        panel.style.paddingLeft = '3mm';
+                    }
 
-                panel.style.gridTemplateAreas = rows.map(r => `"${r.area}"`).join(' ');
-                panel.style.gridTemplateRows = rows.map(r => r.size).join(' ');
-                panel.style.gridTemplateColumns = '1fr';
+                    panel.innerHTML = '';
+                    panel.style.display = 'flex';
+                    panel.style.flexDirection = 'row';
+                    panel.style.gap = '2mm';
+                    panel.style.minHeight = '0';
+                    panel.style.overflow = 'hidden';
+
+                    const textStack = el('div', 'display:flex;flex-direction:column;gap:1.5mm;flex:1;min-width:0;overflow:hidden;');
+                    const freshNameBox = el('div', null);
+                    freshNameBox.className = 'fa-namebox';
+                    freshNameBox.style.cssText = 'flex-shrink:0;border-bottom:none;padding-bottom:1mm;margin-bottom:0;';
+                    freshNameBox.innerHTML = nameBox.innerHTML;
+                    textStack.appendChild(freshNameBox);
+                    if (showUniqueDesc) {
+                        const freshDesc = el('div', null, descToShow);
+                        freshDesc.className = 'fa-desc';
+                        freshDesc.style.cssText = descEl.style.cssText;
+                        freshDesc.style.overflow = 'hidden';
+                        freshDesc.style.flex = '1';
+                        textStack.appendChild(freshDesc);
+                    }
+                    panel.appendChild(textStack);
+
+                    if (anyImgs) {
+                        const imgFraction = hasSharedDesc ? 0.55 : 0.45;
+                        const imgSide = el('div', 'flex-shrink:0;overflow:hidden;min-height:0;');
+                        imgSide.style.width = `${Math.round(imgFraction * 100)}%`;
+                        const freshGrid = el('div', 'width:100%;height:100%;');
+                        buildImgGrid(freshGrid);
+                        imgSide.appendChild(freshGrid);
+                        panel.appendChild(imgSide);
+                    }
+
+                } else if (layoutMode === 'vertical-ls') {
+                    if (originalIndex > 0) {
+                        panel.style.borderTop = '0.3mm solid #e8e8e8';
+                        panel.style.paddingTop = '3mm';
+                    }
+
+                    panel.innerHTML = '';
+                    panel.style.display = 'flex';
+                    panel.style.flexDirection = 'row';
+                    panel.style.gap = '3mm';
+                    panel.style.minHeight = '0';
+                    panel.style.overflow = 'hidden';
+                    panel.style.alignItems = 'flex-start';
+
+                    const textCol = el('div', 'display:flex;flex-direction:column;gap:1.5mm;flex:1;min-width:0;overflow:hidden;');
+
+                    const freshNameBox = el('div', null);
+                    freshNameBox.className = 'fa-namebox';
+                    freshNameBox.style.cssText = 'flex-shrink:0;border-bottom:none;padding-bottom:1mm;margin-bottom:0;';
+                    freshNameBox.innerHTML = nameBox.innerHTML;
+                    textCol.appendChild(freshNameBox);
+
+                    if (showUniqueDesc) {
+                        const freshDesc = el('div', null, descToShow);
+                        freshDesc.className = 'fa-desc';
+                        freshDesc.style.cssText = descEl.style.cssText;
+                        freshDesc.style.overflow = 'hidden';
+                        freshDesc.style.flexShrink = '1';
+                        textCol.appendChild(freshDesc);
+                    }
+
+                    panel.appendChild(textCol);
+
+                    if (anyImgs) {
+                        const imgWrap = el('div', 'flex-shrink:0;display:flex;align-items:center;overflow:hidden;');
+                        imgWrap.style.width = '42%';
+                        const freshGrid = el('div', 'width:100%;');
+                        freshGrid.style.aspectRatio = count >= 3 ? '1/1' : (count >= 2 ? '2/1' : '1/1');
+                        buildImgGrid(freshGrid);
+                        imgWrap.appendChild(freshGrid);
+                        panel.appendChild(imgWrap);
+                    }
+
+                } else {
+                    if (originalIndex > 0) {
+                        panel.style.borderLeft = '0.3mm solid #e8e8e8';
+                        panel.style.paddingLeft = '3mm';
+                    }
+
+                    panel.innerHTML = '';
+                    panel.style.display = 'flex';
+                    panel.style.flexDirection = 'column';
+                    panel.style.minHeight = '0';
+                    panel.style.overflow = 'hidden';
+                    panel.style.alignItems = 'flex-start';
+                    panel.style.justifyContent = 'flex-start';
+
+                    const hasImgRow = hasSharedDesc && descVisible && anyImgs;
+
+                    if (anyImgs && !hasImgRow) {
+                        const freshGrid = el('div', 'width:100%;flex-shrink:0;overflow:hidden;');
+                        freshGrid.style.aspectRatio = '1/1';
+                        freshGrid.dataset.imgUniform = 'true';
+                        buildImgGrid(freshGrid);
+                        panel.appendChild(freshGrid);
+                    }
+
+                    const textWrap = el('div', 'display:flex;flex-direction:column;gap:1.5mm;width:100%;overflow:hidden;flex-shrink:1;');
+                    if (anyImgs && !hasImgRow) textWrap.style.marginTop = '3mm';
+
+                    const freshNameBox = el('div', null);
+                    freshNameBox.className = 'fa-namebox';
+                    freshNameBox.style.cssText = 'flex-shrink:0;border-bottom:none;padding-bottom:0;margin-bottom:0;';
+                    freshNameBox.innerHTML = nameBox.innerHTML;
+                    textWrap.appendChild(freshNameBox);
+
+                    if (showUniqueDesc) {
+                        const freshDesc = el('div', null, descToShow);
+                        freshDesc.className = 'fa-desc';
+                        freshDesc.style.cssText = descEl.style.cssText;
+                        freshDesc.style.overflow = 'hidden';
+                        freshDesc.style.flexShrink = '1';
+                        textWrap.appendChild(freshDesc);
+                    }
+
+                    panel.appendChild(textWrap);
+                }
             });
 
             requestAnimationFrame(() => {
-                const vg = productPanels.map(pp => pp.imgGrid).filter(g => g.style.display !== 'none');
-                if (vg.length > 1) {
-                    vg.forEach(g => { g.style.height = ''; g.style.maxHeight = ''; });
-                    const heights = vg.map(g => g.getBoundingClientRect().height);
-                    const maxH = Math.max(...heights);
-                    if (maxH > 0) {
-                        vg.forEach(g => {
-                            g.style.minHeight = maxH + 'px';
-                            g.style.maxHeight = maxH + 'px';
+                if (layoutMode !== 'horizontal' && layoutMode !== 'vertical-ls') {
+                    const imgEls = [];
+                    document.querySelectorAll('[data-img-uniform]').forEach(el => {
+                        if (mainArea.contains(el)) imgEls.push(el);
+                    });
+                    if (imgEls.length > 1) {
+                        imgEls.forEach(el => { el.style.width = ''; });
+                        const minW = Math.min(...imgEls.map(el => el.getBoundingClientRect().width));
+                        if (minW > 0) imgEls.forEach(el => {
+                            el.style.width = minW + 'px';
                         });
                     }
                 }
