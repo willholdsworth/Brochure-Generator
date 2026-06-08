@@ -311,7 +311,14 @@ Eg. https:www.futureautomation.co.uk/Product">https://www.futureautomation.co.uk
 <script>
 const visitedLinks = new Set();
 const processedUrls = new Set();
-const corsProxyAPI = 'https://api.codetabs.com/v1/proxy?quest=';
+const PROXIES = [
+    u => `https://proxy.will-holdsworth-design.workers.dev/?url=${encodeURIComponent(u)}`,
+    u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`,
+    u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+    u => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    u => `https://thingproxy.freeboard.io/fetch/${u}`
+];
 const cacheExpirationTime = 30 * 60 * 1000;
 const cache = {
     data: {},
@@ -350,46 +357,39 @@ async function fetchWithRetry(url, retries = 10) {
     const cached = cache.get(url);
     if (cached) return cached;
     for (let i = 0; i < retries; i++) {
-        try {
-            updateStatus(`Fetching: ${url.split('/').pop()}... (Attempt ${i + 1}/${retries})`);
-            const proxyUrl = `${corsProxyAPI}${encodeURIComponent(url)}`;
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 25000);
-            const res = await fetch(proxyUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
-            if (res.status === 429 || res.status === 503 || res.status === 502) {
-                const wait = 6000 + i * 2000;
-                updateStatus(`Rate limited. Waiting ${wait / 1000}s...`);
-                await delay(wait);
+        updateStatus(`Fetching: ${url.split('/').pop()}... (Attempt ${i + 1}/${retries})`);
+        for (const build of PROXIES) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 25000);
+                const res = await fetch(build(url), { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (res.status === 429 || res.status === 503 || res.status === 502) continue;
+                if (!res.ok) {
+                    if (res.status === 404) throw new Error('404 Not Found');
+                    continue;
+                }
+                const ct = res.headers.get('content-type') || '';
+                let html = '';
+                if (ct.includes('application/json')) {
+                    const json = await res.json();
+                    html = json.contents || '';
+                } else {
+                    html = await res.text();
+                }
+                if (!html || html.length < 500 || !html.toLowerCase().includes('futureautomation')) continue;
+                const data = { contents: html };
+                cache.set(url, data);
+                return data;
+            } catch (err) {
+                if (err.message === '404 Not Found') throw err;
                 continue;
             }
-            if (!res.ok) {
-                if (res.status === 404) throw new Error('404 Not Found');
-                throw new Error(`HTTP ${res.status}`);
-            }
-            const ct = res.headers.get('content-type') || '';
-            let html = '';
-            if (ct.includes('application/json')) {
-                const json = await res.json();
-                html = json.contents || '';
-            } else {
-                html = await res.text();
-            }
-            if (!html || html.length < 500 || !html.toLowerCase().includes('futureautomation')) {
-                throw new Error('Invalid or empty content');
-            }
-            const data = { contents: html };
-            cache.set(url, data);
-            return data;
-        } catch (err) {
-            if (err.message === '404 Not Found') throw err;
-            if (i < retries - 1) {
-                const wait = 2000 + i * 1000;
-                updateStatus(`Error (${err.message}). Retrying in ${wait / 1000}s...`);
-                await delay(wait);
-            } else {
-                throw err;
-            }
+        }
+        if (i < retries - 1) {
+            const wait = 2000 + i * 1000;
+            updateStatus(`Sources busy. Retrying in ${wait / 1000}s...`);
+            await delay(wait);
         }
     }
     throw new Error('Max retries exceeded');
